@@ -21,6 +21,7 @@
     let sceneOpen = false, sceneText = null, sceneData = null, sceneError = '', sceneQuery = '';
     const nativeOutput = row => row?.x32?.kind === 'output';
     const nativeAux = row => row?.x32?.kind === 'aux';
+    const nativeDirect = row => !row?.stagebox && row?.x32?.kind === 'channel' && Number.isInteger(row.x32.directPort) && row.x32.directPort >= 1 && row.x32.directPort <= 32;
     const tabs = () => [['inputs','Quellen'],['outputs',state.routing.outputs.some(nativeOutput) ? 'Ausgänge' : 'Monitoring'],['stageboxes','Stagebox'],...(state.stage?.x32Scene ? [['x32','I/O-Liste']] : [])];
     const viewTab = () => sceneOpen && state.stage?.x32Scene ? 'x32' : state.tab;
     function sceneInventory() {
@@ -68,7 +69,7 @@
     const heading = (title, detail = '') => '<div class="rw-view-heading"><h2>' + esc(title) + '</h2>' + detail + '</div>';
     const cardHead = (title, key, content) => '<div class="rw-card-title"><span>' + esc(title) + '</span>' + (key && !readonly() ? button(pencil, {'data-rw-open':key,'aria-label':title + ' bearbeiten','aria-expanded':String(openCard === key)}, {className:'rw-edit'}) : '') + '</div>' + content;
     const monoLabel = rows => rows.length > 1 && rows.every(row => row.stereoGroup && row.stereoGroup === rows[0].stereoGroup) ? 'Stereo' : rows.length === 2 ? 'Dual-Mono' : rows.length > 2 ? rows.length + ' Signale' : 'Mono';
-    const connected = rows => rows.filter(row => row.stagebox && row.stageboxPort || row.connector === 'Dante' && String(object(sourceId(row))?.playback?.target || '').trim()).length;
+    const connected = rows => rows.filter(row => nativeDirect(row) || row.stagebox && row.stageboxPort || row.connector === 'Dante' && String(object(sourceId(row))?.playback?.target || '').trim()).length;
     const stereoRows = (rows, direction) => {
       const groups = new Set(rows.map(row => row.stereoGroup).filter(Boolean));
       const members = (state.routing[direction] || []).filter(row => rows.some(selected => selected.id === row.id) || groups.has(row.stereoGroup));
@@ -172,6 +173,9 @@
       const key = 'patch-' + direction + '-' + idsOf(rows) + suffix, first = rows[0], assignedBox = box(first?.stagebox), linked = rows.length > 1;
       if (direction === 'outputs' && rows.some(nativeOutput)) {
         return '<article class="rw-card rw-patch-card">' + cardHead('Ausgang',null,art(icon(assignedBox?.type || 'mixer-wing-compact'))) + rows.map(row => '<strong class="rw-native-label">' + esc(row.x32.label || 'X32-Ausgang') + '</strong><p class="rw-card-meta">' + esc(row.stagebox && box(row.stagebox) ? box(row.stagebox).name + ' · OUT ' + row.stageboxPort : 'Zuordnung am Pult') + '</p>').join('') + (!readonly() ? button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true}) : '') + '</article>';
+      }
+      if (direction === 'inputs' && rows.some(nativeDirect)) {
+        return '<article class="rw-card rw-patch-card">' + cardHead('Input',null,art(icon('mixer-wing-compact'))) + rows.map(row => '<strong class="rw-native-label">' + esc(nativeDirect(row) ? 'Pult direkt · IN ' + row.x32.directPort : row.stagebox && box(row.stagebox) ? box(row.stagebox).name + ' · IN ' + (row.stageboxPort || '—') : 'Noch nicht zugeordnet') + '</strong>').join('') + (!readonly() ? button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true}) : '') + '</article>';
       }
       if (direction === 'inputs' && first?.connector === 'Dante') {
         const source = object(sourceId(first));
@@ -431,6 +435,7 @@
       const matches = values => !sceneQuery || normalized(values.join(' ')).includes(normalized(sceneQuery));
       const text = value => esc(value || '—');
       const target = (row,assignment,direction) => {
+        if (direction === 'inputs' && nativeDirect(row)) return 'Pult direkt · IN ' + row.x32.directPort;
         const stagebox = row ? row.stagebox : assignment?.stagebox, port = row ? row.stageboxPort : assignment?.port;
         return stagebox && box(stagebox) ? box(stagebox).name + ' · ' + (direction === 'inputs' ? 'IN ' : 'OUT ') + (port || '—') : stagebox ? 'Stagebox nicht verfügbar' : 'Noch nicht zugeordnet';
       };

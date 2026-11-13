@@ -288,7 +288,20 @@
       const stagebox=bounded(item.stagebox??'',100,'Stageboxkennung');
       if(item.port!=null&&!integer(item.port,1,64))fail('Ungültige Anschlussnummer im X32-Import.');
       if(!stagebox&&item.port!=null)fail('Eine X32-Anschlussnummer benötigt eine Stagebox-Zuordnung.');
-      return {[key]:id,...(direction==='output'?{destination:bounded(item.destination??'',100,'Zielbezeichnung')}:{}),stagebox,port:item.port==null?null:Number(item.port)};
+      const connection={};
+      if(direction==='input'){
+        if(own(item,'connection')){
+          if(!['direct','stagebox'].includes(item.connection))fail('Ungültiger Input-Anschluss im X32-Import.');
+          if(item.connection==='direct'&&stagebox)fail('Ein direkter Pulteingang kann nicht gleichzeitig einer Stagebox zugeordnet sein.');
+          connection.connection=item.connection;
+        }
+        if(own(item,'directPort')){
+          if(item.directPort!=null&&!integer(item.directPort,1,32))fail('Die direkte X32-Eingangsbuchse muss zwischen 1 und 32 liegen.');
+          if(item.directPort!=null&&(stagebox||item.connection==='stagebox'))fail('Eine direkte Pultbuchse kann nicht gleichzeitig einer Stagebox zugeordnet sein.');
+          connection.directPort=item.directPort==null?null:Number(item.directPort);
+        }
+      }
+      return {[key]:id,...(direction==='output'?{destination:bounded(item.destination??'',100,'Zielbezeichnung')}:{}),stagebox,port:item.port==null?null:Number(item.port),...connection};
     }),item=>item[direction+'Id'],'Anschlusszuordnung');
     return {version:1,inputIds,busRoles,outputAssignments:assignments(value.outputAssignments,'output'),inputAssignments:assignments(value.inputAssignments,'input')};
   }
@@ -383,6 +396,7 @@
         const origin=scene.channels.find(channel=>channel.number===Number(row.x32.channel));
         if(!origin)fail('Der ursprüngliche X32-Kanal '+row.x32.channel+' fehlt in dieser Vorlage. Bitte die Kanäle erneut importieren.');
         if(own(row.x32,'source')&&(!integer(row.x32.source,0,65535)||Number(row.x32.source)!==origin.source))fail('Die gespeicherte X32-Eingangsquelle für Kanal '+row.number+' passt nicht zur Vorlage. Bitte die Kanäle erneut importieren.');
+        if(row.x32.directPort!=null&&!integer(row.x32.directPort,1,32))fail('Die direkte Pultbuchse an Kanal '+row.number+' muss zwischen 1 und 32 liegen.');
         source=origin.source;
       }
       if(row.stagebox){
@@ -394,7 +408,14 @@
         const matches=scene.routing.sources.filter(candidate=>candidate.resolved&&candidate.bank===mapping.bank&&candidate.port===port);
         if(!matches.length)fail(BANKS[mapping.bank].label+' '+port+' ist in den aktiven Eingangsblöcken der Vorlage nicht enthalten. Bitte das Routing zuerst in X32-Edit vorbereiten.');
         source=(matches.find(candidate=>candidate.source===source)||matches[0]).source;
-      }else if(row.stageboxPort!=null&&row.stageboxPort!=='')fail('Kanal '+row.number+' hat eine Buchse ohne zugeordnete Stagebox.');
+      }else{
+        if(row.stageboxPort!=null&&row.stageboxPort!=='')fail('Kanal '+row.number+' hat eine Buchse ohne zugeordnete Stagebox.');
+        if(row.x32?.directPort!=null){
+          const port=Number(row.x32.directPort),matches=scene.routing.sources.filter(candidate=>candidate.resolved&&candidate.bank==='local'&&candidate.port===port);
+          if(!matches.length)fail('Pult direkt · Local '+port+' ist in den aktiven Eingangsblöcken der Vorlage nicht enthalten. Bitte das Routing zuerst in X32-Edit vorbereiten.');
+          source=(matches.find(candidate=>candidate.source===source)||matches[0]).source;
+        }
+      }
       if(!row.x32&&!row.stagebox)warnings.push('Kanal '+row.number+' übernimmt die Eingangsquelle der Vorlage ('+entry.sourceAddress.label+').');
       // Numeric spelling (e.g. +1 or 01) is not an edit. Preserve the token too.
       if(source!==entry.source)patch(path,3,source);

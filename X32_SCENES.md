@@ -12,10 +12,15 @@ Nach der Dateiauswahl führt der Wizard durch vier Schritte:
 1. **Inputs auswählen:** benannte Eingangskanäle und Aux-/USB-Kanäle sind
    vorausgewählt. Auch unbenannte Inputs lassen sich übernehmen. Die tatsächliche
    Stereo-Verknüpfung hält zusammengehörige Partner zusammen.
-2. **Eingänge zuordnen:** die aus der Szene gelesene Quelle wird angezeigt.
-   Vorhandene Stageboxen und deren Buchsen können ausdrücklich zugeordnet werden.
-   Fehlende Geräte oder nicht auflösbare Quellen bleiben offen. Das Programm
-   erfindet weder ein Stagebox-Modell noch eine Position auf der Bühne.
+2. **Eingänge zuordnen:** unter **Input** zwischen **Pult direkt** und
+   **Stagebox** wählen. Beim direkten Anschluss steht die tatsächliche lokale
+   Buchse bereits dabei: CH1 mit Quelle Local9 zeigt Buchse9. Unter Stagebox
+   erscheinen vorhandene passende Geräte oder eine kompakte Auswahl aus
+   **S16, S32, SD8 und SD16**. Weitere Geräte lassen sich direkt hinzufügen.
+   Nach der Auswahl öffnet sich das Gerätebild als Popup: Die Eingangsbuchse
+   wird angeklickt, belegte Buchsen sind markiert. AES50 A/B und die erste
+   Eingangsadresse können dort eingestellt werden. Nicht auflösbare Quellen
+   bleiben erkennbar; sie werden nicht als lokale Pultbuchsen geraten.
 3. **Busverwendung bestätigen:** alle Mixbusse erscheinen unabhängig von
    physischen Ausgängen. Erkennbare FX-Sends und Subgruppen sind vorbelegt;
    Monitor, In-Ear oder ein anderer Verwendungszweck wird vom Benutzer gewählt.
@@ -29,6 +34,8 @@ Nach der Dateiauswahl führt der Wizard durch vier Schritte:
 Erst **I/O-Routing übernehmen** ersetzt die bisherigen Routinglisten. Die
 Bühnenobjekte bleiben erhalten; deren automatisch erzeugte Routingzeilen werden
 zunächst deaktiviert. Die gesamte Übernahme ist ein Rückgängig-Schritt.
+Neu gewählte Stageboxen werden erst mit der abschließenden Übernahme auf der
+Bühne angelegt. Gerät und Routing gehören zum selben Rückgängig-Schritt.
 Abbrechen und Zurückblättern verändern das Projekt nicht. Die Alternative
 **Als Vorlage verwenden** behält die bisherigen Routinglisten.
 
@@ -93,6 +100,8 @@ explizit zugeordnete Eingangssignale. Ältere Projekte mit importierten Buszeile
 können weiterhin deren Namen und Stereo-Paare übertragen.
 
 Die neuen Busverwendungsangaben und Ausgangsziele dokumentieren den Aufbau.
+Direkte Pultbuchsen und bestätigte Stagebox-Anschlüsse werden über die vorhandenen
+Eingangsblöcke aufgelöst; fehlende Adressen werden vor dem Export erklärt.
 Aux-Namen, Ausgangsrouting, Sends, Fader, Mutes, Effekte, EQ, Dynamik und
 Vorverstärker/48 V bleiben aus der Vorlage erhalten. Ein Zielname im Stageplotter
 programmiert keinen Ausgang am Pult. Eine Umnummerierung eines normalen

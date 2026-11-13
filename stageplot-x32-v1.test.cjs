@@ -93,6 +93,34 @@ assert.throws(()=>X.exportScene(text,patched),/außerhalb/);
 patched.inputs[0].stageboxPort=null;assert.throws(()=>X.exportScene(text,patched),/Buchse/);
 assert.throws(()=>X.exportScene(text,{inputs:[{number:1,instrument:'Kick',stageboxPort:2}]}),/ohne zugeordnete/);
 
+// A physical local socket is independent from the console channel number and
+// is resolved through the active bank table, just like a stagebox patch.
+const direct=clone(imported.inputs[0]);direct.x32.directPort=9;
+const directResult=X.exportScene(text,{inputs:[direct]});
+assert.equal(X.parse(directResult.text).channels[0].sourceAddress.port,9);
+assert.equal(X.parse(directResult.text).channels[0].sourceAddress.bank,'local');
+assert.deepEqual(directResult.changes.map(change=>change.path),['/ch/01/config']);
+assert(directResult.text.includes('/config/routing/IN AN1-8 AN9-16 A1-8 A9-16 AUX1-4'),'Choosing a local socket never rewrites the bank routing');
+const fromAes=clone(imported.inputs.find(row=>row.number===17));fromAes.x32.directPort=9;
+assert.equal(X.parse(X.exportScene(text,{inputs:[fromAes]}).text).channels[16].source,9,'AES50 source can explicitly move to a reachable local socket');
+const reorderedLocal=text.replace('AN1-8 AN9-16 A1-8 A9-16','AN9-16 AN1-8 A1-8 A9-16');
+const onLocalNine=X.importRouting(reorderedLocal).inputs[0];onLocalNine.x32.directPort=9;
+assert.equal(X.exportScene(reorderedLocal,{inputs:[onLocalNine]}).text,reorderedLocal,'Local9 may already be input slot1; it must not become source9');
+const duplicateLocal=text.replace('AN1-8 AN9-16 A1-8 A9-16','AN1-8 AN1-8 A1-8 A9-16');
+const duplicateSource=clone(X.importRouting(duplicateLocal).inputs.find(row=>row.number===9));
+duplicateSource.mode='Mono';duplicateSource.stereoGroup='';duplicateSource.number=8;duplicateSource.x32.directPort=1;
+assert.equal(X.parse(X.exportScene(duplicateLocal,{inputs:[duplicateSource]}).text).channels[7].source,9,'Repeated physical input banks preserve the original matching source slot');
+for(const options of [{},{ending:'\r\n',bom:true},{ending:'\r',finalNewline:false}]){
+  const native=fixture(options),row=clone(X.importRouting(native).inputs[0]);row.x32.directPort=1;
+  assert.equal(X.exportScene(native,{inputs:[row]}).text,native,'An explicit unchanged local socket remains byte exact');
+}
+for(const directPort of [0,33,'',1.5,'bad'])assert.throws(()=>X.exportScene(text,{inputs:[{...clone(imported.inputs[0]),x32:{...imported.inputs[0].x32,directPort}}]}),/Pultbuchse/);
+assert.throws(()=>X.exportScene(text,{inputs:[{...clone(imported.inputs[0]),x32:{...imported.inputs[0].x32,source:17,directPort:1}}]}),/passt nicht zur Vorlage/,'Explicit direct patch cannot conceal corrupted origin metadata');
+assert.throws(()=>X.exportScene(text,{inputs:[{...clone(imported.inputs[0]),x32:{...imported.inputs[0].x32,directPort:25}}]}),/Local 25.*aktiven Eingangsblöcken/);
+const allRemote=text.replace('AN1-8 AN9-16 A1-8 A9-16','A1-8 A9-16 A17-24 A25-32');
+const remoteRow=clone(X.importRouting(allRemote).inputs[0]);remoteRow.x32.directPort=1;
+assert.throws(()=>X.exportScene(allRemote,{inputs:[remoteRow]}),/Pult direkt.*Local 1.*aktiven Eingangsblöcken/);
+
 const play=fixture({mode:'PLAY'}),playScene=X.parse(play);
 assert.equal(playScene.routing.activePath,'/config/routing/PLAY');assert.equal(playScene.channels[0].sourceAddress.bank,'card');
 const cardPlan=clone(imported);cardPlan.inputs[0].stagebox='card-device';cardPlan.inputs[0].stageboxPort=8;cardPlan.mappings=[{stagebox:'card-device',bank:'card',offset:8}];
@@ -278,6 +306,11 @@ assert.equal(X.inspectRouting(usbSource).inputs.find(input=>input.id==='aux-1').
 
 const choices={version:1,inputIds:['channel-1','channel-9','channel-10','aux-1'],busRoles:[{bus:1,role:'monitor'},{bus:13,role:'fx'}],inputAssignments:[{inputId:'channel-1',stagebox:'stagebox-a',port:1}],outputAssignments:[{outputId:'output-local-7',destination:'PA links',stagebox:'',port:null}]};
 const wizardAttachment=X.normalizeAttachment({...attachment,wizard:{...choices,ignored:true}});
+const directChoices={...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:null,connection:'direct',directPort:9},{inputId:'channel-9',stagebox:'box',port:1,connection:'stagebox',directPort:null}]};
+assert.deepEqual(X.normalizeWizard(directChoices),directChoices,'Explicit connection choices persist without mixing local and stagebox ports');
+assert.deepEqual(X.normalizeAttachment({...attachment,wizard:directChoices}).wizard,directChoices);
+assert.deepEqual(X.normalizeWizard({...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:null,connection:'direct',directPort:null}]}).inputAssignments[0],{inputId:'channel-1',stagebox:'',port:null,connection:'direct',directPort:null},'Unknown direct source can remain explicitly unresolved');
+assert.deepEqual(X.normalizeWizard({...choices,outputAssignments:[{...choices.outputAssignments[0],connection:'ignored',directPort:999}]}).outputAssignments,choices.outputAssignments,'Input-only connection metadata cannot change output normalization');
 assert.deepEqual(X.normalizeWizard({...choices,outputAssignments:[{outputId:'output-aes-1',destination:'Digital L',stagebox:'',port:null},{outputId:'output-rec-2',destination:'Record R',stagebox:'',port:null}]}).outputAssignments.map(item=>item.outputId),['output-aes-1','output-rec-2']);
 assert.deepEqual(wizardAttachment.wizard,choices);assert.deepEqual(X.normalizeAttachment(clone(wizardAttachment)),wizardAttachment);
 for(const bad of [
@@ -294,6 +327,11 @@ for(const bad of [
   {...choices,outputAssignments:[{outputId:'output-local-7',destination:'bad\nname',stagebox:'',port:null}]},
   {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:1}]},
   {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'box',port:65}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:null,connection:'unknown'}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:null,connection:'direct',directPort:33}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:null,connection:'direct',directPort:0}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'box',port:1,connection:'direct'}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'box',port:1,connection:'stagebox',directPort:1}]},
 ])assert.throws(()=>X.normalizeWizard(bad));
 
 // The same pure implementation also exposes the browser global, without Node.
