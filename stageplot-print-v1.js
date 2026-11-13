@@ -171,11 +171,28 @@ const StageplotPrint = (() => {
           if (!fits()) {
             row.remove();
             const continued = body.children.length > 0;
-            if (!continued) block.remove();
-            newContent();
-            block = section(source.title, continued);
-            body = tableShell();
+            if(continued||content.children.length>1){
+              if (!continued) block.remove();
+              newContent();
+              block = section(source.title, continued);
+              body = tableShell();
+            }
             body.append(row);
+            if(!fits()){
+              const texts=[...row.cells].map(cell=>cell.textContent),offsets=texts.map(()=>0);
+              row.remove();
+              while(texts.some((text,index)=>offsets[index]<text.length)){
+                const fragment=row.cloneNode(true);for(const cell of fragment.cells)cell.textContent='';body.append(fragment);
+                for(let index=0;index<texts.length;index++){
+                  const cell=fragment.cells[index],remaining=texts[index].slice(offsets[index]);cell.textContent='';
+                  let low=0,high=remaining.length;
+                  while(low<high){const middle=Math.ceil((low+high)/2);cell.textContent=remaining.slice(0,middle);if(fits())low=middle;else high=middle-1;}
+                  cell.textContent=remaining.slice(0,low);offsets[index]+=low;
+                }
+                if(![...fragment.cells].some(cell=>cell.textContent.length))throw Error('Die gewählte Tabellenformatierung passt nicht auf die PDF-Seite. Bitte eine kleinere Schrift wählen.');
+                if(texts.some((text,index)=>offsets[index]<text.length)){newContent();block=section(source.title,true);body=tableShell();}
+              }
+            }
           }
         }
       } else {

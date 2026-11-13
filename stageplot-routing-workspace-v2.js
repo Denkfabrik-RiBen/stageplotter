@@ -18,12 +18,13 @@
     let state, sources = [], monitors = [], activeSource = '', activeMonitor = '', activeBox = '', activePort = null;
     let query = '', micQuery = '', openCard = '', pickerBox = '', error = '', destroyed = false, frame = 0, lastTab = '', toolsOpen = false, stageboxLayout = 'grid', pendingField = null;
     let stageObserver = null, resizeTarget = null, highlighted = [], diPickerRow = '', diPickerFocus = null, diPickerDevices = false, diPickerNew = false;
+    let channelListOpen = false;
     let sceneOpen = false, sceneText = null, sceneData = null, sceneError = '', sceneQuery = '';
     const nativeOutput = row => row?.x32?.kind === 'output';
     const nativeAux = row => row?.x32?.kind === 'aux';
     const nativeDirect = row => !row?.stagebox && row?.x32?.kind === 'channel' && Number.isInteger(row.x32.directPort) && row.x32.directPort >= 1 && row.x32.directPort <= 32;
-    const tabs = () => [['inputs','Quellen'],['outputs',state.routing.outputs.some(nativeOutput) ? 'Ausgänge' : 'Monitoring'],['stageboxes','Stagebox'],...(state.stage?.x32Scene ? [['x32','I/O-Liste']] : [])];
-    const viewTab = () => sceneOpen && state.stage?.x32Scene ? 'x32' : state.tab;
+    const tabs = () => [['channels','Input-Liste'],['inputs','Quellen'],['outputs',state.routing.outputs.some(nativeOutput) ? 'Ausgänge' : 'Monitoring'],['stageboxes','Stagebox'],...(state.stage?.x32Scene ? [['x32','I/O-Liste']] : [])];
+    const viewTab = () => channelListOpen ? 'channels' : sceneOpen && state.stage?.x32Scene ? 'x32' : state.tab;
     function sceneInventory() {
       const text = state.stage?.x32Scene?.text;
       if (text !== sceneText) {
@@ -33,6 +34,8 @@
       return sceneData;
     }
     function selectTab(tab) {
+      if(tab === 'channels'){if(state.tab!=='inputs')api.dispatch({type:'selectTab',tab:'inputs'});channelListOpen=true;sceneOpen=false;render();return;}
+      channelListOpen=false;
       if (tab === 'x32' && state.stage?.x32Scene) { sceneOpen = true; toolsOpen = false; render(); return; }
       sceneOpen = false; doAction({type:'selectTab',tab});
     }
@@ -88,7 +91,8 @@
           map.set(source.id, {id:source.id, object:source, name:source.label || state.catalog[source.type].short || 'Instrument', rows:[]});
         }
       }
-      sources = [...map.values()];
+      sources = [...map.values()].sort((a,b)=>Math.min(...a.rows.map(row=>row.number||Infinity))-Math.min(...b.rows.map(row=>row.number||Infinity)));
+      for(const group of sources)group.rows.sort((a,b)=>(a.number||Infinity)-(b.number||Infinity));
       const monitorMap = new Map();
       for (const row of outputs) {
         const source = object(sourceId(row)), kind = monitorKind(row, source), id = row.stereoGroup || row.iemGroup || row.id;
@@ -424,6 +428,11 @@
       return content;
     }
 
+    function channelListView(){
+      const rows=(state.routing.inputs||[]).slice().sort((a,b)=>(a.number||Infinity)-(b.number||Infinity));
+      return heading('Input-Liste',readonly()?'':button('+ Kanal am Ende',{'data-rw-insert-channel':'end'},{mutation:true}))+ '<div class="rw-choice-row">'+(!readonly()?button('CSV importieren',{'data-rw-tool':'csvImport'})+button('X32 importieren / exportieren',{'data-rw-tool':'x32Scene'}):'')+button('PDF erstellen',{'data-rw-tool':'pdf'})+button('CSV exportieren',{'data-rw-export':'inputs'})+'</div>'+'<p>Nach Pultkanal sortiert. Eine belegte Kanalnummer tauscht die beiden Signale. „Davor einfügen“ schafft Platz und erhöht die folgenden Kanalnummern. Buchsen bleiben bei ihren Signalen.</p><div class="rw-scene-table-scroll"><table class="rw-channel-list"><thead><tr><th>CH</th><th>Signal</th><th>Input / Buchse</th><th>Bearbeiten</th></tr></thead><tbody>'+rows.map(row=>'<tr><td>'+field('Kanalnummer',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':'inputs'},{type:'number',min:1,max:999})+'</td><td>'+field('Signalname',row.instrument,{'data-rw-channel-field':'instrument','data-rw-row':row.id,'data-rw-direction':'inputs'})+'</td><td>'+esc(row.stagebox?(box(row.stagebox)?.name||'Stagebox')+' · '+(row.stageboxPort||'—'):nativeDirect(row)?'Pult direkt · '+row.x32.directPort:row.x32?.kind==='aux'?'AUX '+row.x32.channel:'Offen')+'</td><td>'+(!readonly()&&row.number?button('Davor einfügen',{'data-rw-insert-channel':row.number},{mutation:true}):'')+'</td></tr>').join('')+'</tbody></table></div>';
+    }
+
     function sceneView() {
       const inventory = sceneInventory();
       if (!inventory) return '<p class="rw-error" role="alert">' + esc(sceneError || 'Keine X32-Szene vorhanden.') + '</p>';
@@ -486,7 +495,7 @@
       const label = readonly() ? 'Nur Ansicht' : typeof saved === 'string' ? saved : saved?.text || 'Lokaler Entwurf';
       const list = state.tab === 'outputs' ? monitors : sources, active = state.tab === 'outputs' ? activeMonitor : activeSource;
       const index = list.findIndex(item => item.id === active), next = list.length > 1 ? list[(index + 1) % list.length] : null;
-      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (sceneOpen || state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
+      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (sceneOpen || channelListOpen || state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
     }
 
     function preserveFocus() {
@@ -520,9 +529,9 @@
       if (!state.stage?.x32Scene) sceneOpen = false;
       if (state.tab !== lastTab) { sceneOpen = false; query = ''; openCard = ''; diPickerRow = ''; lastTab = state.tab; error = ''; }
       groups(); highlighted = [];
-      const content = sceneOpen ? sceneView() : state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
+      const content = channelListOpen ? channelListView() : sceneOpen ? sceneView() : state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
       host.dataset.readonly = String(readonly()); host.dataset.tab = viewTab();
-      host.innerHTML = header() + '<div class="rw-layout">' + (sceneOpen ? '' : sidebar()) + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
+      host.innerHTML = header() + '<div class="rw-layout">' + (sceneOpen || channelListOpen ? '' : sidebar()) + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
       host.querySelector('.rw-main').scrollTop = mainScroll;
       if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
@@ -554,6 +563,7 @@
       if (data.rwSelect) { if (state.tab === 'stageboxes') {activeBox = data.rwSelect;activePort = null;} else if (state.tab === 'outputs') activeMonitor = data.rwSelect; else activeSource = data.rwSelect; openCard = ''; error = ''; render(); return; }
       if (data.rwPort) {activeBox = data.rwBox;activePort = {boxId:activeBox,direction:data.rwDirection,port:Number(data.rwPort)};openCard = '';render();return;}
       if (data.rwExport) {doAction({type:'exportPatch',direction:data.rwExport});return;}
+      if(data.rwInsertChannel)return doAction({type:'insertChannel',at:data.rwInsertChannel});
       if (data.rwSourceOutputs) {openCard = openCard === 'source-outputs-' + data.rwSourceOutputs ? '' : 'source-outputs-' + data.rwSourceOutputs;error = '';render();host.querySelector('.rw-source-output-editor')?.scrollIntoView({block:'nearest',inline:'nearest'});return;}
       if (readonly()) return;
       if (data.rwSourceEditor) return doAction({type:'openSourceEditor',sourceId:data.rwSourceEditor});

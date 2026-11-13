@@ -23,7 +23,7 @@ assert.deepEqual(clean.stage.routing.outputs[0],monitor);
 assert.deepEqual(S.clean(clean),clean,'Sharing twice does not change source or device identities.');
 const malformed=S.clean({stage:{routing:{devices:[{...sharedDi,name:{secret:'PRIVATE'},channels:['PRIVATE'],extra:'PRIVATE'}],inputs:[{diDeviceId:{secret:'PRIVATE'}}]}}});
 assert.equal(malformed.stage.routing.devices[0].name,null);assert.equal(malformed.stage.routing.devices[0].channels,null);assert.equal(malformed.stage.routing.inputs[0].diDeviceId,null);assert.ok(!JSON.stringify(malformed).includes('PRIVATE'));
-const sql=fs.readFileSync('supabase/migrations/0008_routing_devices.sql','utf8'),schema=sql.match(/share-schema:start[^\n]*\n\s*'([^']+)'::jsonb/)[1];assert.deepEqual(JSON.parse(schema),S.schema,'Client and server must enforce the same allowlist.');
+const sql=fs.readFileSync('supabase/migrations/0009_drum_laptop_channels.sql','utf8'),schema=sql.match(/share-schema:start[^\n]*\n\s*'([^']+)'::jsonb/)[1];assert.deepEqual(JSON.parse(schema),S.schema,'Client and server must enforce the same allowlist.');
 for(const value of ['sp-test-123','  SP-TEST-123  ','https://example.org/#p/SP-TEST-123','#p/SP-TEST-123'])assert.equal(S.projectId(value),'SP-TEST-123');
 for(const value of ['SP-','hello','https://example.org/?id=SP-X','#p/%ZZ','SP-X\nY','SP-'+'X'.repeat(80)])assert.equal(S.projectId(value),'');
 const config={url:'https://stageplot-qa.supabase.co',publishableKey:'sb_publishable_test'},requests=[];

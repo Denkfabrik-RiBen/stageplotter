@@ -31,3 +31,7 @@ assert.deepEqual(plain(moveCtx.drumStoredPoint(snare,wideLayout)),{x:3,y:-2},'Re
 assert.equal(wideLayout.w,wideLayout.vb[0]*.02);assert.equal(wideLayout.d,wideLayout.vb[1]*.02);
 const compact=D.drumLayout({...empty,extras:{parts:[P.part('vocal-boom','p1')]}});assert(compact.w<1&&compact.d<1.1,'The stage footprint follows the assembly, not the editing camera.');
 assert.match(P.imageMarkup(P.part('vocal-boom','p1')),/vocal-boom-top-v1.png/);assert(!P.imageMarkup(P.part('vocal-boom','p1')).includes('<path'));
+
+for(const size of [6,8,10,12,13,14])assert.equal(D.normalizeDrums({side:true,sideDiameter:size}).sideDiameter,size);
+const laptop=D.normalizeDrums({table:'laptop',rotations:{table:37}});assert.deepEqual(plain(D.drumChannels(laptop).filter(row=>row.part==='table').map(row=>row.id)),['laptop-l','laptop-r']);
+laptop.mics['laptop-r'].enabled=false;const laptopShared=D.normalizeDrums(S.clean({objects:[{id:'kit',type:'drums',drums:laptop}]}).objects[0].drums);assert.equal(laptopShared.rotations.table,37);assert.equal(laptopShared.mics['laptop-r'].enabled,false);

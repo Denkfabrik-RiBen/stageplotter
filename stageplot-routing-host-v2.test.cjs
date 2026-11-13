@@ -444,5 +444,11 @@ test('Unassigned imported DIs stay available on stage and copied boxes retain th
   const original=c.objects[0],copy={...clone(original),id:'copy',x:4,y:3};c.cloneRoutingDiObject(original,copy);c.objects.push(copy);c.syncRoutingFromStage(false,false);
   const copied=c.stage.routing.devices.find(device=>device.objectId==='copy');assert.equal(copied.modelId,'radial-prod2');assert(c.StageplotRoutingModel.occupancy(c.stage.routing,copied.id).every(port=>port.free));assert.notEqual(copy.label,original.label);
 });
+test('Number swap keeps source and socket identities; insertion shifts only later channels',()=>{
+ const c=harness();c.stage.routing.inputs=[{id:'route-a',number:1,instrument:'A',manual:true,sourceKey:'',stagebox:'',stageboxPort:null},{id:'route-b',number:2,instrument:'B',manual:true,sourceKey:'',stagebox:'',stageboxPort:null}];
+ c.dispatchRoutingWorkspace({type:'editChannel',direction:'inputs',rowId:'route-a',fields:{number:2}});
+ assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-b').number,1);assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-a').number,2);
+ c.dispatchRoutingWorkspace({type:'insertChannel',at:2});assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-a').number,3);assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-b').number,1);assert.equal(c.stage.routing.inputs.find(r=>r.instrument==='Neues Signal').number,2);
+});
 if(runFailures.length)throw Error(runFailures.length+' routing host tests failed: '+runFailures.join('; '));
 console.log('PASS ROUTING HOST: actual dispatch, atomic patch conflicts, undo rollback, readonly/lock guards, shared DI capacity, custom DI defaults, combo sockets, migration/remapping and monitoring formats.');

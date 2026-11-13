@@ -33,12 +33,13 @@ function createStageplotDrumModel(percussionModel=null) {
     const c={kickCount:integer(v.kickCount,0,2,1),kickDiameter:allowedSize(v.kickDiameter,[16,18,20,22,24],22),kickDepth:clamp(v.kickDepth,10,24,18),
       pedal:v.pedal==='double'?'double':'single',snare:typeof v.snare==='boolean'?v.snare:true,snareModel:short(v.snareModel),snareDiameter:allowedSize(v.snareDiameter,[10,12,13,14],14),snareDepth:clamp(v.snareDepth,3,10,6.5),
       snareMaterial:['Holz','Stahl','Messing','Aluminium','Bronze','Andere'].includes(v.snareMaterial)?v.snareMaterial:base.snareMaterial,
-      side:typeof v.side==='boolean'?v.side:base.side,sideModel:short(v.sideModel),sideDiameter:allowedSize(v.sideDiameter,[6,8],8),sideDepth:clamp(v.sideDepth,3,10,5),riserPreset:['none','2x','3x'].includes(v.riserPreset)?v.riserPreset:'none',
+      side:typeof v.side==='boolean'?v.side:base.side,sideModel:short(v.sideModel),sideDiameter:allowedSize(v.sideDiameter,[6,8,10,12,13,14],8),sideDepth:clamp(v.sideDepth,3,10,5),riserPreset:['none','2x','3x'].includes(v.riserPreset)?v.riserPreset:'none',
       rackToms:list('rackToms',4),floorToms:list('floorToms',3),throne:typeof v.throne==='boolean'?v.throne:true,hihat:v.hihat!==false,hatSize:allowedSize(v.hatSize,[13,14,15,16],14),ride:v.ride!==false,rideSize:allowedSize(v.rideSize,[18,20,21,22,24],22),
       crashes:Array.isArray(v.crashes)?v.crashes.slice(0,4).map(n=>allowedSize(n,[14,16,17,18,19,20],18)):base.crashes,splash:integer(v.splash,0,4,0),china:integer(v.china,0,2,0),clapstack:typeof v.clapstack==='boolean'?v.clapstack:base.clapstack,clapSize:allowedSize(v.clapSize,[8,10,12,14,16],12),
       pad:typeof v.pad==='boolean'?v.pad:base.pad,bongos:typeof v.bongos==='boolean'?v.bongos:base.bongos,table:['off','mixer','laptop'].includes(v.table)?v.table:base.table,leftHanded:v.leftHanded===true,positions:{},rotations:{},showMics:typeof v.showMics==='boolean'?v.showMics:base.showMics,overheads:['off','mono','stereo'].includes(v.overheads)?v.overheads:base.overheads,overheadMount:['boom','clamp'].includes(v.overheadMount)?v.overheadMount:base.overheadMount,
       room:['off','mono','stereo'].includes(v.room)?v.room:'off',overheadPickup:{...base.overheadPickup},mics:Object.fromEntries(Object.entries(base.mics).map(([id,m])=>[id,{...m}])),zOrder:[]};
     if(percussionModel){c.extras=percussionModel.normalize(v.extras||{parts:[]});c.extras.parts=c.extras.parts.filter(p=>/^p(?:[1-9]|[1-3][0-9]|4[0-8])$/.test(p.id));for(const p of c.extras.parts)for(const suffix of ['1','2','l','r'])c.mics['extra-'+p.id+'-'+suffix]={enabled:true,model:p.type==='vocal-boom'?'Shure SM58':percussionModel.byId[p.type].electronic?'Direktausgang':'Generisches Drum-Mikrofon',phantom:false};}
+    if(c.table==='laptop')for(const id of ['laptop-l','laptop-r'])c.mics[id]={enabled:true,model:'Direktausgang',phantom:false};
     if(v.positions&&typeof v.positions==='object')for(const [id,p] of Object.entries(v.positions)){
       if(/^(throne|kick[12]|snare|side|rack[1-4]|floor[1-3]|hihat|ride|crash[1-4]|splash[1-4]|china[12]|clapstack|pad|bongos|table|extra-p(?:[1-9]|[1-3][0-9]|4[0-8]))$/.test(id)&&p&&typeof p==='object')
         c.positions[id]={x:clamp(p.x,-16,16,.5),y:clamp(p.y,-16,16,.5)};
@@ -53,7 +54,7 @@ function createStageplotDrumModel(percussionModel=null) {
     }
     for(const id of ['splash3','splash4']){c.overheadPickup[id]=true;c.mics[id]={enabled:false,model:'Generisches Kleinmembran-Mikrofon',phantom:true};}
     if(v.mics&&typeof v.mics==='object')for(const [id,m] of Object.entries(v.mics)){
-      if(/^(kick[12]-(in|out)|snare-(up|down)|side-(up|down)|rack[1-4]|floor[1-3]|hihat|ride|crash[1-4]|splash[1-4]|china[12]|clapstack|oh-(mono|l|r)|room-(mono|l|r)|pad-[lr]|bongos|extra-p(?:[1-9]|[1-3][0-9]|4[0-8])-[12lr])$/.test(id)&&m&&typeof m==='object')
+      if(/^(kick[12]-(in|out)|snare-(up|down)|side-(up|down)|rack[1-4]|floor[1-3]|hihat|ride|crash[1-4]|splash[1-4]|china[12]|clapstack|oh-(mono|l|r)|room-(mono|l|r)|pad-[lr]|laptop-[lr]|bongos|extra-p(?:[1-9]|[1-3][0-9]|4[0-8])-[12lr])$/.test(id)&&m&&typeof m==='object')
         c.mics[id]={enabled:m.enabled!==false,model:typeof m.model==='string'?m.model.slice(0,80).trim():base.mics[id]?.model||c.mics[id]?.model||'',phantom:m.phantom===true};
     }
     if(v.overheadPickup&&typeof v.overheadPickup==='object')for(const id of allCymbalPartIds)if(typeof v.overheadPickup[id]==='boolean')c.overheadPickup[id]=v.overheadPickup[id];
@@ -178,6 +179,7 @@ function createStageplotDrumModel(percussionModel=null) {
     const overheadParts=layout.parts.filter(part=>(part.kind==='cymbal'||part.kind==='hihat')&&c.overheadPickup[part.id]!==false).map(part=>part.id);
     if(overheadParts.length){row('oh-l','OH L',c.ride?'ride':c.snare?'snare':overheadParts[0],{x:layout.vb[0]*.2,y:layout.vb[1]*.45,overhead:true,overheadParts});row('oh-r','OH R',c.hihat?'hihat':c.snare?'snare':overheadParts.at(-1),{x:layout.vb[0]*.8,y:layout.vb[1]*.45,overhead:true,overheadParts});}
     if(c.pad){row('pad-l','SPD-SX L','pad',{method:'di'});row('pad-r','SPD-SX R','pad',{method:'di'});}
+    if(c.table==='laptop'){row('laptop-l','Laptop L','table',{method:'di'});row('laptop-r','Laptop R','table',{method:'di'});}
     if(c.bongos)row('bongos','Bongos','bongos');
     if(percussionModel)for(const channel of percussionModel.channels(c.extras))row('extra-'+channel.id,channel.name,'extra-'+channel.partId,{method:channel.electronic?'di':'xlr'});
     return rows;
