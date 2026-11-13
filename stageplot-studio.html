@@ -536,6 +536,18 @@
   </section>
   <section id="sp-document-print" class="sp-document-print" hidden><header><div><span>STAGEPLOT · TECHNICAL DOCUMENT</span><h1 id="sp-document-title"></h1></div><div id="sp-document-meta"></div></header><section id="sp-document-project"></section><div id="sp-document-floor" class="sp-document-floor"></div><section id="sp-document-routing"></section><section id="sp-document-contacts"></section><section id="sp-document-notes"></section></section>
   <dialog id="sp-storage-dialog" class="sp-clear-dialog" aria-labelledby="sp-storage-title"><div class="sp-dialog-heading"><h2 id="sp-storage-title">Lokale Speicherung</h2><button type="button" class="sp-button" id="sp-storage-close" aria-label="Speicherhinweis schließen">×</button></div><p>Projekte werden in diesem Browserprofil gespeichert. Es gibt keine garantierte Aufbewahrungsdauer. Beim Löschen von Website-Daten oder des Browserprofils gehen lokale Projekte verloren. Im privaten Modus werden sie in der Regel beim Schließen gelöscht; auch automatische Browserbereinigung kann Daten entfernen. Regelmäßig eine Sicherungsdatei herunterladen.</p><p>Ein Account schützt ein Projekt nur, wenn dessen Abgleich erfolgreich abgeschlossen wurde. Eine heruntergeladene Sicherungsdatei lässt sich über „Import“ wieder öffnen.</p><button type="button" class="sp-button sp-primary" id="sp-storage-backup">Sicherung herunterladen</button></dialog>
+  <dialog id="sp-x32-dialog" class="sp-clear-dialog sp-x32-dialog" aria-labelledby="sp-x32-title" aria-describedby="sp-x32-description">
+    <div class="sp-dialog-heading"><h2 id="sp-x32-title">X32-Szene</h2><button class="sp-button" type="button" id="sp-x32-close" aria-label="X32-Szene schließen">×</button></div>
+    <p id="sp-x32-description">Eine Szene als Vorlage laden, Kanäle im Stageplotter planen und wieder für das X32 exportieren.</p>
+    <p class="sp-muted">EQ, Effekte, Pegel, 48 V, AUX-/USB-Kanäle und der physische Ausgangs-Patch bleiben aus der Vorlage erhalten. Die Vorlage wird mit dem Projekt gesichert; öffentliche Ansichtslinks enthalten sie nicht.</p>
+    <label>Szene auswählen (.scn)<input id="sp-x32-file" type="file" accept=".scn,text/plain"></label>
+    <p id="sp-x32-error" role="alert" hidden></p>
+    <section id="sp-x32-preview" hidden><h3 id="sp-x32-summary"></h3><div class="sp-x32-scroll"><table><thead><tr><th scope="col">Kanal</th><th scope="col">Name</th><th scope="col">Quelle</th><th scope="col">Format</th></tr></thead><tbody id="sp-x32-preview-body"></tbody></table></div><ul id="sp-x32-warnings" class="sp-x32-warnings" hidden></ul></section>
+    <section id="sp-x32-import-options" hidden><label>Wie soll die Szene übernommen werden?<select id="sp-x32-mode"><option value="template">Als Vorlage verwenden · vorhandenes Routing behalten</option><option value="routing">Kanal- und Buslisten aus der Szene übernehmen</option></select></label><p class="sp-muted">Beim Übernehmen der Listen wird das bisherige Routing ersetzt. Die Bühnenobjekte bleiben stehen. Mixbusse werden zunächst als Line-Wege geführt; Monitore und IEM lassen sich anschließend zuordnen. AUX-/USB-Kanäle werden nicht in die Kanalliste importiert.</p><button class="sp-button sp-primary" type="button" id="sp-x32-import" disabled>Szene übernehmen</button></section>
+    <section id="sp-x32-attached" hidden><h3>Vorlage im Projekt</h3><strong id="sp-x32-filename"></strong><details><summary>Stageboxen am X32 zuordnen</summary><p>Der erste Eingang bezeichnet die Buchse am X32-Anschluss, die Buchse 1 dieser Stagebox entspricht. Beispiel: eine zweite S16 an AES50 A beginnt bei Eingang 17. Die Eingangsblöcke werden aus der Vorlage verwendet.</p><p id="sp-x32-no-stageboxes" class="sp-muted">Im Plan sind keine Stageboxen angelegt. Die Kanalquellen bleiben aus der Vorlage erhalten.</p><div id="sp-x32-mappings"></div><button type="button" class="sp-button" id="sp-x32-save-mappings">Zuordnungen speichern</button></details><div class="sp-actions"><button class="sp-button sp-primary" type="button" id="sp-x32-export">Export vorbereiten</button><button class="sp-button" type="button" id="sp-x32-remove">Vorlage entfernen</button></div><div id="sp-x32-changes"></div><button class="sp-button sp-primary" type="button" id="sp-x32-download" hidden>Szene herunterladen (.scn)</button></section>
+    <p id="sp-x32-status" role="status" aria-live="polite"></p>
+  </dialog>
+
   <dialog id="sp-channel-dialog" class="sp-clear-dialog sp-channel-dialog" aria-labelledby="sp-channel-title">
     <div class="sp-dialog-heading"><div><span class="sp-eyebrow">SIGNAL BEARBEITEN</span><h2 id="sp-channel-title">Signal bearbeiten</h2></div><button class="sp-button" type="button" id="sp-channel-close" aria-label="Signal schließen">×</button></div>
     <div id="sp-audio-context" class="sp-audio-context" aria-label="Aktuelles Instrument und Kanal"></div>
@@ -740,6 +752,11 @@
       <section class="sp-help-section sp-release-notes" aria-labelledby="sp-release-title">
         <div class="sp-release-heading"><div><h3 id="sp-release-title">Release Notes</h3><p class="sp-muted">Änderungen nach Datum zusammengefasst.</p></div><span class="sp-version-badge" data-release-version="0.1.0-beta.31">v0.1.0-beta.31</span></div>
         <div class="sp-release-list">
+          <article class="sp-release-card">
+            <header><div><strong>In Entwicklung</strong></div><time datetime="2026-11-13">13. November 2026</time></header>
+            <h4>X32-Szenen im Routing</h4>
+            <ul><li>Eine X32-Szene als Vorlage laden oder ihre Kanal- und Buslisten übernehmen. Namen, Stereo-Paare und zugeordnete Eingänge lassen sich vor dem Szenen-Download prüfen. Klangbearbeitung und Ausgangs-Patch bleiben erhalten; die Originalszene wird im Projekt gesichert und nicht in öffentlichen Ansichtslinks geteilt.</li></ul>
+          </article>
           <article class="sp-release-card" data-current="true">
             <header><div><strong>v0.1.0-beta.31</strong><span>Aktuell</span></div><time datetime="2026-10-07">7. Oktober 2026</time></header>
             <h4>Drum Designer im Objektmenü</h4>
@@ -6869,6 +6886,36 @@ html,body { height:100%; overflow:hidden; }
 
 <style>
 #sp-routing[data-workspace-v2="true"] > :not(#sp-routing-workspace-v2){display:none!important}
+/* build-inline:start stageplot-x32-v1.css — generiert via scripts/build-inline.cjs, nicht hier editieren */
+#sp-prototype .sp-x32-dialog { width:min(850px,calc(100vw - 28px)); max-width:calc(100vw - 28px); max-height:calc(100dvh - 28px); padding:22px; overflow:auto; color:var(--sp-ink); background:var(--sp-panel); }
+#sp-prototype .sp-x32-dialog h2 { margin:0; }
+#sp-prototype .sp-x32-dialog h3 { margin:0 0 10px; font-size:15px; }
+#sp-prototype .sp-x32-dialog p { font-size:13px; line-height:1.5; }
+#sp-prototype .sp-x32-dialog label { display:grid; gap:6px; font-size:12px; font-weight:650; min-width:0; }
+#sp-prototype .sp-x32-dialog :is(input,select) { min-width:0; width:100%; min-height:44px; box-sizing:border-box; padding:8px; border:1px solid var(--sp-line); border-radius:8px; background:var(--sp-soft); color:var(--sp-ink); font:inherit; }
+#sp-prototype .sp-x32-dialog input[type=file] { font-size:12px; }
+#sp-prototype .sp-x32-dialog .sp-button { min-height:44px; white-space:normal; }
+#sp-prototype .sp-x32-dialog section { margin-top:18px; padding-top:16px; border-top:1px solid var(--sp-line); }
+#sp-prototype .sp-x32-dialog .sp-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+#sp-prototype .sp-x32-scroll { overflow:auto; max-height:280px; border:1px solid var(--sp-line); border-radius:8px; }
+#sp-prototype .sp-x32-dialog table { width:100%; border-collapse:collapse; font-size:12px; text-align:left; }
+#sp-prototype .sp-x32-dialog :is(th,td) { padding:9px; border-bottom:1px solid var(--sp-line); vertical-align:top; overflow-wrap:anywhere; }
+#sp-prototype .sp-x32-dialog th { position:sticky; top:0; background:var(--sp-soft); }
+#sp-prototype .sp-x32-dialog :is(th,td):first-child, #sp-prototype .sp-x32-dialog :is(th,td):last-child { white-space:nowrap; overflow-wrap:normal; }
+#sp-prototype .sp-x32-mapping { display:grid; grid-template-columns:minmax(100px,1fr) minmax(130px,1.5fr) 110px; gap:12px; align-items:center; margin:12px 0; }
+#sp-prototype #sp-x32-filename { display:block; overflow-wrap:anywhere; }
+#sp-prototype #sp-x32-error { padding:12px; border:1px solid #b94b55; border-radius:8px; background:light-dark(#fff0f0,#3b2027); color:light-dark(#992435,#ffbec7); }
+#sp-prototype .sp-x32-warnings { padding:12px 12px 12px 30px; border-radius:8px; background:light-dark(#fff6db,#3a321c); color:light-dark(#735311,#f5d98b); font-size:12px; line-height:1.5; }
+#sp-prototype .sp-x32-change-list { list-style:none; padding:0; max-height:300px; overflow:auto; }
+#sp-prototype .sp-x32-change-list li { display:grid; gap:4px; margin:8px 0; padding:10px; border-radius:8px; background:var(--sp-soft); }
+#sp-prototype .sp-x32-change-list span { display:block; font-size:12px; overflow-wrap:anywhere; }
+@media(max-width:600px){
+  #sp-prototype .sp-x32-dialog { padding:14px; }
+  #sp-prototype .sp-x32-mapping { grid-template-columns:minmax(0,1fr) 105px; }
+  #sp-prototype .sp-x32-mapping strong { grid-column:1/-1; }
+  #sp-prototype .sp-x32-dialog :is(th,td) { padding:6px; font-size:11px; }
+}
+/* build-inline:end stageplot-x32-v1.css */
 /* build-inline:start stageplot-routing-workspace-v2.css — generiert via scripts/build-inline.cjs, nicht hier editieren */
 /* Shared, local routing workspace. The host retains ownership of project data. */
 #sp-prototype #sp-routing[data-workspace-v2="true"] {padding:0!important;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:var(--sp-panel);}
@@ -9176,6 +9223,258 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
 })(typeof globalThis!=='undefined'?globalThis:this);
 /* build-inline:end stageplot-stageboxes-v1.js */
 
+/* build-inline:start stageplot-x32-v1.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
+/* Offline X32 scene adapter. Original scene text is the source of truth.
+ * parse(text) describes a #4.0# template without changing it.
+ * importRouting(text) returns manual Stageplot rows; it never invents stage objects.
+ * exportScene(text,{inputs,outputs,mappings}) overlays names, odd/even links and
+ * explicitly mapped channel sources. Every other byte stays in the template.
+ * mappings: [{stagebox: objectId, bank: 'local'|'aes50-a'|'aes50-b'|'card', offset: 0}].
+ * offset is added to a stagebox socket number. Existing console input banks are
+ * resolved, never reprogrammed. Unknown/User-In/Aux routing remains untouched.
+ * normalizeAttachment(value) validates {version:1,text,filename,mappings}.
+ * This module has no DOM, storage, network or console-control dependency. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.StageplotX32=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  const MAX_TEXT=250000;
+  const BANKS=Object.freeze({local:{label:'Local',limit:32},'aes50-a':{label:'AES50 A',limit:48},'aes50-b':{label:'AES50 B',limit:48},card:{label:'Card',limit:32}});
+  const validationCache=new Map();
+  const own=(value,key)=>Object.prototype.hasOwnProperty.call(value||{},key);
+  const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+  const integer=(value,min,max)=>(typeof value==='number'||typeof value==='string'&&value.trim()!=='')&&Number.isInteger(Number(value))&&Number(value)>=min&&Number(value)<=max;
+  const fail=message=>{throw new Error(message);};
+  const pad=value=>String(value).padStart(2,'0');
+  const cleanText=value=>typeof value==='string'?value:'';
+
+  function tokens(line){
+    const result=[];let at=0;
+    while(at<line.length){
+      while(/[ \t]/.test(line[at]||'')&&at<line.length)at++;
+      if(at===line.length)break;
+      const start=at;let value='';
+      if(line[at]==='"'){
+        at++;const content=at;while(at<line.length&&line[at]!=='"')at++;
+        if(at===line.length)fail('Die X32-Szene enthält eine nicht geschlossene Zeichenfolge.');
+        value=line.slice(content,at++);
+        if(at<line.length&&!/[ \t]/.test(line[at]))fail('Ungültige Zeichen nach einem X32-Namen.');
+      }else{
+        while(at<line.length&&!/[ \t]/.test(line[at]))at++;
+        value=line.slice(start,at);
+        if(value.includes('"'))fail('Ungültige Anführungszeichen in der X32-Szene.');
+      }
+      result.push({value,start,end:at});
+    }
+    return result;
+  }
+
+  function read(text){
+    if(typeof text!=='string'||!text.length||text.length>MAX_TEXT)fail('Die X32-Szene muss eine Textdatei mit höchstens 250.000 Zeichen sein.');
+    if(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(text))fail('Die X32-Szene enthält ungültige Steuerzeichen.');
+    const lines=[];let start=0;
+    for(const match of text.matchAll(/\r\n|\n|\r/g)){lines.push({body:text.slice(start,match.index),ending:match[0]});start=match.index+match[0].length;}
+    if(start<text.length)lines.push({body:text.slice(start),ending:''});
+    if(lines.length>10000)fail('Die X32-Szene enthält zu viele Zeilen.');
+    const header=tokens((lines[0]?.body||'').replace(/^\uFEFF/,''));
+    if(header[0]?.value!=='#4.0#')fail('Diese X32-Szene wird nicht unterstützt. Bitte eine Szene im Format #4.0# verwenden.');
+    const records=new Map();
+    for(let index=1;index<lines.length;index++){
+      const body=lines[index].body;
+      if(!body.trim()||/^\s*#/.test(body))continue;
+      const parts=tokens(body),path=parts[0]?.value;
+      if(!path?.startsWith('/'))fail('Ungültige Zeile '+(index+1)+' in der X32-Szene.');
+      if(records.has(path))fail('Die X32-Szene enthält den Pfad '+path+' mehrfach.');
+      records.set(path,{index,path,parts:parts.slice(1)});
+    }
+    // Group/leaf forms can override each other depending on file order. Editing
+    // only one would silently export a different result from the preview.
+    for(const path of records.keys()){
+      if(/^\/(?:ch|bus)\/\d+\/config\//.test(path)||/^\/config\/(?:chlink|buslink)\//.test(path)||/^\/config\/routing\/(?:IN|PLAY)\//.test(path)){
+        fail('Die X32-Szene verwendet einzelne Parameter ('+path+'). Bitte zuerst in X32-Edit als vollständige Szene speichern.');
+      }
+    }
+    const values=path=>(records.get(path)?.parts||[]).map(part=>part.value);
+    const links=(path,count)=>{
+      const list=values(path);
+      if(!list.length)return null;
+      if(list.length!==count||list.some(value=>value!=='ON'&&value!=='OFF'))fail('Ungültige Stereo-Verknüpfungen in '+path+'.');
+      return list;
+    };
+    const channelFlags=links('/config/chlink',16),busFlags=links('/config/buslink',8);
+    const mode=values('/config/routing')[0]||'',activePath=mode==='REC'?'/config/routing/IN':mode==='PLAY'?'/config/routing/PLAY':'';
+    const banks=activePath?values(activePath):[];
+    const warnings=[];
+    if(!channelFlags)warnings.push('Kanal-Verknüpfungen fehlen in der Vorlage; Stereo-Änderungen sind nicht möglich.');
+    if(!busFlags)warnings.push('Bus-Verknüpfungen fehlen in der Vorlage; Stereo-Änderungen sind nicht möglich.');
+    if(!activePath||banks.length<4)warnings.push('Die aktive X32-Eingangszuordnung ist nicht vollständig auflösbar; sie bleibt unverändert.');
+    const sourceAddress=source=>{
+      const unknown={bank:'unknown',port:null,label:source===0?'Aus':'X32-Quelle '+source+' (nicht aufgelöst)',resolved:false};
+      if(!integer(source,1,32))return unknown;
+      const slot=Number(source)-1,bank=banks[Math.floor(slot/8)]||'',match=/^(AN|A|B|CARD)(\d+)-(\d+)$/.exec(bank);
+      if(!match)return {...unknown,label:'Input '+source+(bank?' · '+bank:'')+' (nicht aufgelöst)'};
+      const name={AN:'local',A:'aes50-a',B:'aes50-b',CARD:'card'}[match[1]],first=Number(match[2]),last=Number(match[3]),port=first+slot%8;
+      if(last-first!==7||first<1||last>BANKS[name].limit)return unknown;
+      return {bank:name,port,label:BANKS[name].label+' '+port,resolved:true};
+    };
+    const channels=[],buses=[],auxInputs=[];
+    for(const [path,record] of records){
+      const match=/^\/(ch|bus|auxin)\/(\d+)\/config$/.exec(path);if(!match)continue;
+      const family=match[1],number=Number(match[2]),max=family==='ch'?32:family==='bus'?16:8,parts=record.parts.map(part=>part.value);
+      if(!integer(number,1,max)||match[2]!==pad(number)||parts.length<(family==='bus'?3:4))fail('Ungültiger X32-Kanal in '+path+'.');
+      const entry={number,name:parts[0],icon:parts[1],color:parts[2]};
+      if(family!=='bus'){
+        if(!integer(parts[3],0,65535)||parts[3]==='')fail('Ungültige X32-Eingangsquelle in '+path+'.');
+        entry.source=Number(parts[3]);entry.sourceAddress=sourceAddress(entry.source);
+      }
+      (family==='ch'?channels:family==='bus'?buses:auxInputs).push(entry);
+    }
+    if(!channels.length)fail('Die Datei enthält keine X32-Eingangskanäle.');
+    const sort=list=>list.sort((a,b)=>a.number-b.number);
+    const pairs=flags=>(flags||[]).flatMap((value,index)=>value==='ON'?[[index*2+1,index*2+2]]:[]);
+    const result={version:'4.0',name:header[1]?.value||'',channels:sort(channels),buses:sort(buses),auxInputs:sort(auxInputs),channelLinks:pairs(channelFlags),busLinks:pairs(busFlags),routing:{mode,activePath,banks:banks.slice(),sources:Array.from({length:32},(_,i)=>({source:i+1,...sourceAddress(i+1)}))},warnings};
+    return {text,lines,records,channelFlags,busFlags,result};
+  }
+
+  function parse(text){return read(text).result;}
+
+  function importRouting(text,options={}){
+    const scene=parse(text),warnings=scene.warnings.slice();
+    const selected=(entries,pairs,keep)=>{
+      const numbers=new Set(entries.filter(keep).map(entry=>entry.number));
+      for(const [left,right] of pairs)if(numbers.has(left)||numbers.has(right)){numbers.add(left);numbers.add(right);}
+      return entries.filter(entry=>numbers.has(entry.number));
+    };
+    const rows=(entries,pairs,kind)=>entries.map(entry=>{
+      const pair=pairs.find(pair=>pair.includes(entry.number)),prefix=kind==='channel'?'ch':'bus',stereoGroup=pair?'x32-'+prefix+'-'+pair[0]+'-'+pair[1]:'';
+      return {id:'route-x32-'+prefix+'-'+entry.number,manual:true,edited:true,sourceKey:'',number:entry.number,instrument:entry.name,generatedInstrument:'',pickup:'Direct',signalType:'Line',connector:'XLR',mode:pair?'Stereo '+(entry.number===pair[0]?'L':'R'):'Mono',stereoGroup,stagebox:'',stageboxPort:null,notes:'',linkedSources:[],...(kind==='bus'?{outputKind:'line'}:{}),x32:{kind,channel:entry.number,...(kind==='channel'?{source:entry.source}:{})}};
+    });
+    // rows takes links separately; keeping selection and pairing explicit avoids
+    // inferring stereo from channel labels such as "Keys L" alone.
+    const inRows=rows(selected(scene.channels,scene.channelLinks,entry=>options.includeUnnamed===true||!!entry.name),scene.channelLinks,'channel');
+    const outRows=rows(selected(scene.buses,scene.busLinks,entry=>options.includeUnnamed===true||!!entry.name&&!/^MixBus\s*\d+$/i.test(entry.name)),scene.busLinks,'bus');
+    const unresolved=inRows.filter(row=>!scene.channels.find(entry=>entry.number===row.number)?.sourceAddress.resolved).length;
+    if(unresolved)warnings.push(unresolved+' Eingang'+(unresolved===1?' hat':'änge haben')+' eine nicht aufgelöste X32-Quelle; die Originalzuordnung bleibt erhalten.');
+    if(scene.auxInputs.length)warnings.push('Aux-/USB-Eingänge bleiben in der Originalszene erhalten und werden nicht als Bühnenkanäle importiert.');
+    return {inputs:inRows,outputs:outRows,summary:{name:scene.name,inputCount:inRows.length,busCount:outRows.length,channelPairs:scene.channelLinks.filter(pair=>pair.every(number=>inRows.some(row=>row.number===number))).length,busPairs:scene.busLinks.filter(pair=>pair.every(number=>outRows.some(row=>row.number===number))).length,auxCount:scene.auxInputs.length},warnings};
+  }
+
+  function normalizeMappings(value){
+    if(value==null)return [];
+    if(!Array.isArray(value)||value.length>128)fail('Ungültige X32-Stagebox-Zuordnungen.');
+    const used=new Set();
+    return value.map(item=>{
+      if(!object(item)||typeof item.stagebox!=='string'||!item.stagebox.trim()||item.stagebox.length>100||/[\u0000-\u001f\u007f]/.test(item.stagebox)||!own(BANKS,item.bank)||!integer(item.offset??0,0,BANKS[item.bank].limit-1))fail('Ungültige X32-Stagebox-Zuordnung.');
+      const stagebox=item.stagebox.trim();if(used.has(stagebox))fail('Eine Stagebox darf nur einmal dem X32 zugeordnet werden.');used.add(stagebox);
+      return {stagebox,bank:item.bank,offset:Number(item.offset??0)};
+    });
+  }
+
+  function normalizeAttachment(value){
+    if(value==null)return null;
+    if(!object(value)||value.version!==1||typeof value.text!=='string')fail('Die gespeicherte X32-Vorlage ist ungültig.');
+    if(!validationCache.has(value.text)){
+      read(value.text);validationCache.set(value.text,true);
+      if(validationCache.size>2)validationCache.delete(validationCache.keys().next().value);
+    }
+    const filename=cleanText(value.filename).split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,120)||'X32-Vorlage.scn';
+    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings)};
+  }
+
+  function label(value,current,path,warnings){
+    const original=String(value??'');
+    if(original===current)return original;
+    if(/["\\\u0000-\u001f\u007f]/.test(original))fail('Der Name für '+path+' enthält Anführungszeichen, Rückstriche oder Steuerzeichen. Bitte einen einfachen X32-Namen verwenden.');
+    const substitutions={'ä':'ae','ö':'oe','ü':'ue','Ä':'Ae','Ö':'Oe','Ü':'Ue','ß':'ss','·':' '};
+    const ascii=original.replace(/[äöüÄÖÜß·]/g,char=>substitutions[char]).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\x20-\x7e]/g,'?');
+    const result=ascii.slice(0,12);
+    if(original&& !/[A-Za-z0-9]/.test(result)&&/[^\x20-\x7e]/.test(original))fail('Der Name für '+path+' lässt sich nicht als lesbarer X32-Name übertragen.');
+    if(result!==original)warnings.push(path+': „'+original+'“ wird als „'+result+'“ übertragen (X32: höchstens 12 ASCII-Zeichen).');
+    return result;
+  }
+
+  function exportScene(templateText,plan={}){
+    if(!object(plan))fail('Ungültige X32-Exportdaten.');
+    const data=read(templateText),scene=data.result,warnings=scene.warnings.slice(),changes=[],replacements=new Map(),mappings=normalizeMappings(plan.mappings);
+    const patch=(path,index,value,quote=false)=>{
+      const record=data.records.get(path);if(!record||!record.parts[index])fail('Der Parameter '+path+' fehlt in der X32-Vorlage.');
+      if(record.parts[index].value===String(value))return;
+      let map=replacements.get(path);if(!map){map=new Map();replacements.set(path,map);}
+      map.set(index,quote?'"'+value+'"':String(value));
+    };
+    const checkRows=(value,kind,max)=>{
+      if(value==null)return [];
+      if(!Array.isArray(value)||value.length>max)fail('Das X32 unterstützt höchstens '+max+' '+(kind==='channel'?'Eingangskanäle':'Busse')+'.');
+      const used=new Set();
+      return value.map(row=>{
+        if(!object(row)||!integer(row.number,1,max)||row.number==null||row.number==='')fail('Für den X32-Export braucht jeder '+(kind==='channel'?'Eingang':'Bus')+' eine Nummer von 1 bis '+max+'.');
+        const number=Number(row.number);if(used.has(number))fail((kind==='channel'?'Kanal ':'Bus ')+number+' ist im X32-Export mehrfach belegt.');used.add(number);
+        if(row.x32&&(!object(row.x32)||row.x32.kind!==kind||!integer(row.x32.channel,1,max)))fail('Die gespeicherte X32-Kanalzuordnung ist ungültig.');
+        return row;
+      });
+    };
+    const inputs=checkRows(plan.inputs,'channel',32),outputs=checkRows(plan.outputs,'bus',16);
+    const updateLinks=(rows,path,flags)=>{
+      const groups=new Map(),byNumber=new Map(rows.map(row=>[Number(row.number),row]));
+      for(const row of rows){
+        const stereo=/^Stereo [LR]$/.test(row.mode||'');
+        if(stereo!==!!row.stereoGroup)fail('Stereo-Kanal '+row.number+' braucht ein vollständiges, verknüpftes L/R-Paar.');
+        if(row.stereoGroup){const group=groups.get(row.stereoGroup)||[];group.push(row);groups.set(row.stereoGroup,group);}
+      }
+      for(const group of groups.values()){
+        const left=group.find(row=>row.mode==='Stereo L'),right=group.find(row=>row.mode==='Stereo R');
+        if(group.length!==2||!left||!right||Number(left.number)%2!==1||Number(right.number)!==Number(left.number)+1)fail('Das X32 verknüpft nur vollständige ungerade/gerade Stereo-Paare, zum Beispiel 9/10.');
+      }
+      const count=path==='/config/chlink'?16:8;
+      for(let index=0;index<count;index++){
+        const left=byNumber.get(index*2+1),right=byNumber.get(index*2+2);if(!left&&!right)continue;
+        const linked=left&&right&&left.stereoGroup&&left.stereoGroup===right.stereoGroup;
+        if(!flags){if(linked)fail('Stereo-Verknüpfungen fehlen in der X32-Vorlage.');continue;}
+        if((!left||!right)&&flags[index]==='ON')fail('Für Änderungen am verknüpften X32-Paar '+(index*2+1)+'/'+(index*2+2)+' müssen beide Kanäle im Export enthalten sein.');
+        if(left&&right)patch(path,index,linked?'ON':'OFF');
+      }
+    };
+    updateLinks(inputs,'/config/chlink',data.channelFlags);updateLinks(outputs,'/config/buslink',data.busFlags);
+    for(const [rows,kind] of [[inputs,'ch'],[outputs,'bus']])for(const row of rows){
+      const path='/'+kind+'/'+pad(row.number)+'/config',entry=(kind==='ch'?scene.channels:scene.buses).find(entry=>entry.number===Number(row.number));
+      if(!entry)fail('Der '+(kind==='ch'?'Kanal ':'Bus ')+row.number+' fehlt in der X32-Vorlage.');
+      patch(path,0,label(row.instrument,entry.name,path,warnings),true);
+      if(row.x32&&Number(row.x32.channel)!==Number(row.number))warnings.push((kind==='ch'?'Kanal ':'Bus ')+row.x32.channel+' wird auf '+row.number+' übertragen. Der ursprüngliche Kanal und die Klangbearbeitung des Zielkanals bleiben unverändert.');
+      if(kind==='bus'){
+        if(row.stagebox||row.stageboxPort!=null)warnings.push('Bus '+row.number+': Die physische Ausgangszuordnung bleibt wie in der X32-Vorlage. Stagebox-Ausgangsbuchsen werden nicht übertragen.');
+        continue;
+      }
+      let source=entry.source;
+      if(row.x32){
+        const origin=scene.channels.find(channel=>channel.number===Number(row.x32.channel));
+        if(!origin)fail('Der ursprüngliche X32-Kanal '+row.x32.channel+' fehlt in dieser Vorlage. Bitte die Kanäle erneut importieren.');
+        if(own(row.x32,'source')&&(!integer(row.x32.source,0,65535)||Number(row.x32.source)!==origin.source))fail('Die gespeicherte X32-Eingangsquelle für Kanal '+row.number+' passt nicht zur Vorlage. Bitte die Kanäle erneut importieren.');
+        source=origin.source;
+      }
+      if(row.stagebox){
+        const mapping=mappings.find(mapping=>mapping.stagebox===row.stagebox);
+        if(!mapping)fail('Für die Stagebox an Kanal '+row.number+' fehlt die X32-Zuordnung.');
+        if(!integer(row.stageboxPort,1,128))fail('Für Kanal '+row.number+' fehlt eine gültige Stagebox-Buchse.');
+        const port=Number(row.stageboxPort)+mapping.offset;
+        if(port>BANKS[mapping.bank].limit)fail('Die Stagebox-Buchse an Kanal '+row.number+' liegt außerhalb von '+BANKS[mapping.bank].label+'.');
+        const matches=scene.routing.sources.filter(candidate=>candidate.resolved&&candidate.bank===mapping.bank&&candidate.port===port);
+        if(!matches.length)fail(BANKS[mapping.bank].label+' '+port+' ist in den aktiven Eingangsblöcken der Vorlage nicht enthalten. Bitte das Routing zuerst in X32-Edit vorbereiten.');
+        source=(matches.find(candidate=>candidate.source===source)||matches[0]).source;
+      }else if(row.stageboxPort!=null&&row.stageboxPort!=='')fail('Kanal '+row.number+' hat eine Buchse ohne zugeordnete Stagebox.');
+      if(!row.x32&&!row.stagebox)warnings.push('Kanal '+row.number+' übernimmt die Eingangsquelle der Vorlage ('+entry.sourceAddress.label+').');
+      // Numeric spelling (e.g. +1 or 01) is not an edit. Preserve the token too.
+      if(source!==entry.source)patch(path,3,source);
+    }
+    for(const [path,map] of replacements){
+      const record=data.records.get(path),line=data.lines[record.index],before=line.body;
+      let after=before;
+      for(const [index,value] of [...map.entries()].sort((a,b)=>b[0]-a[0])){const part=record.parts[index];after=after.slice(0,part.start)+value+after.slice(part.end);}
+      line.body=after;changes.push({path,before,after});
+    }
+    return {text:data.lines.map(line=>line.body+line.ending).join(''),changes,warnings};
+  }
+
+  return {parse,importRouting,exportScene,normalizeAttachment,normalizeMappings,MAX_TEXT,BANKS};
+});
+/* build-inline:end stageplot-x32-v1.js */
 /* build-inline:start stageplot-routing-model-v2.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
 /* Canonical routing rows own signals and patches. DI devices own only physical capacity.
  * This module has no DOM, storage, clock or network dependency. Mutators validate
@@ -9449,7 +9748,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     function header() {
       const inputs = state.routing.inputs || [], outputs = state.routing.outputs || [], selectedRows = state.tab === 'outputs' ? outputs : inputs;
       const boxCount = (state.boxes || []).length, total = selectedRows.length, patched = connected(selectedRows), summary = state.tab === 'stageboxes' ? boxCount + (boxCount === 1 ? ' Stagebox · ' : ' Stageboxen · ') + connected([...inputs,...outputs]) + ' Verbindungen' : state.tab === 'outputs' ? monitors.length + ' Monitorwege · ' + outputs.length + ' Ausgänge' : total + ' Signale · ' + patched + ' verbunden' + (total > patched ? ' · ' + (total - patched) + ' offen' : '');
-      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + [['inputs','Quellen'],['outputs','Monitoring'],['stageboxes','Stagebox']].map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(state.tab === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren']].map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
+      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + [['inputs','Quellen'],['outputs','Monitoring'],['stageboxes','Stagebox']].map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(state.tab === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren'],['x32Scene','X32-Szene']].map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
     }
 
     function sidebar() {
@@ -12342,6 +12641,12 @@ if(typeof module==='object'&&module.exports)module.exports=createStageplotOrches
     };
     return {name:projectText(source.name||title,60)||'Mein Live-Setup',date:/^\d{4}-\d{2}-\d{2}$/.test(source.date||'')?source.date:'',artist:projectText(source.artist,80),venue:projectText(source.venue,100),author:projectText(source.author,80),tour:projectText(source.tour,80),company:projectText(source.company,100),unit:source.unit==='ft'?'ft':'m',contacts:{stageManager:cleanContact('stageManager'),foh:cleanContact('foh'),monitor:cleanContact('monitor'),advance:cleanContact('advance')},notes:projectText(source.notes,2000),production:normalizeProductionInfo(source.production)};
   }
+  function normalizeX32RouteBinding(value,direction){
+    if(!value||typeof value!=='object')return {};
+    const kind=direction==='outputs'?'bus':'channel',max=kind==='bus'?16:32;
+    if(value.kind!==kind||!Number.isInteger(value.channel)||value.channel<1||value.channel>max)return {};
+    return {x32:{kind,channel:value.channel,...(kind==='channel'&&Number.isInteger(value.source)&&value.source>=0&&value.source<=65535?{source:value.source}:{})}};
+  }
   const routeModes=new Set(['Mono','Stereo L','Stereo R','Mic','DI','Direct']);
   const routeSignals=new Set(['Mic','Line','Instrument','Digital']);
   function normalizeRouteChannel(value,index,direction,idMap=null,allowLinks=true){
@@ -12349,7 +12654,7 @@ if(typeof module==='object'&&module.exports)module.exports=createStageplotOrches
     if(idMap&&rawKey.includes(':')){const split=rawKey.indexOf(':'),mapped=idMap.get(rawKey.slice(0,split));if(mapped)sourceKey=mapped+rawKey.slice(split);}
     if(idMap?.has(stagebox))stagebox=idMap.get(stagebox);
     const mapKey=key=>{const text=projectText(key,140),split=text.indexOf(':');return split>0&&idMap?.has(text.slice(0,split))?idMap.get(text.slice(0,split))+text.slice(split):text;};
-    return {...(typeof StageplotRoutingModel!=='undefined'?StageplotRoutingModel.rowExtras(source,idMap):{}),adoptedSource:source.adoptedSource===true,edited:source.edited===true,pickup:['Mic','DI','Direct','Digital'].includes(source.pickup)?source.pickup:source.mode==='DI'?'DI':source.signalType==='Mic'?'Mic':source.signalType==='Digital'?'Digital':'Direct',outputKind:['monitor','iem','line'].includes(source.outputKind)?source.outputKind:'',linkedSources:allowLinks&&Array.isArray(source.linkedSources)?source.linkedSources.slice(0,512).map((row,i)=>normalizeRouteChannel(row,i,direction,idMap,false)):[],id:/^route-[a-z0-9-]+$/.test(source.id||'')?source.id:'route-'+direction+'-'+(index+1),sourceKey,number:Number.isFinite(Number(source.number))&&Number(source.number)>0?Math.min(999,Math.round(Number(source.number))):null,instrument:projectText(source.instrument,100),generatedInstrument:projectText(source.generatedInstrument,100),mode:routeModes.has(source.mode)?source.mode:'Mono',signalType:routeSignals.has(source.signalType)?source.signalType:'Mic',connector:source.pickup==='DI'||source.mode==='DI'?'XLR':normalizeIoConnector(source.connector,source.signalType==='Digital'?'Digital':'XLR'),portIndex:Number.isFinite(Number(source.portIndex))&&Number(source.portIndex)>0?Math.min(512,Math.round(Number(source.portIndex))):null,stereoGroup:mapKey(source.stereoGroup),iemName:projectText(source.iemName,80),iemMode:source.iemMode==='stereo'?'stereo':source.iemMode==='mono'?'mono':'',iemTransport:source.iemTransport==='wireless'?'wireless':source.iemTransport==='cable'?'cable':'',iemGroup:mapKey(source.iemGroup),frequencyBand:projectText(source.frequencyBand,100),microphone:projectText(source.microphone,80),phantom:source.phantom===true,stagebox,stageboxPort:Number.isFinite(Number(source.stageboxPort))&&Number(source.stageboxPort)>0?Math.min(128,Math.round(Number(source.stageboxPort))):null,notes:projectText(source.notes,240),manual:source.manual===true||!sourceKey};
+    return {...(typeof normalizeX32RouteBinding==='function'?normalizeX32RouteBinding(source.x32,direction):{}),...(typeof StageplotRoutingModel!=='undefined'?StageplotRoutingModel.rowExtras(source,idMap):{}),adoptedSource:source.adoptedSource===true,edited:source.edited===true,pickup:['Mic','DI','Direct','Digital'].includes(source.pickup)?source.pickup:source.mode==='DI'?'DI':source.signalType==='Mic'?'Mic':source.signalType==='Digital'?'Digital':'Direct',outputKind:['monitor','iem','line'].includes(source.outputKind)?source.outputKind:'',linkedSources:allowLinks&&Array.isArray(source.linkedSources)?source.linkedSources.slice(0,512).map((row,i)=>normalizeRouteChannel(row,i,direction,idMap,false)):[],id:/^route-[a-z0-9-]+$/.test(source.id||'')?source.id:'route-'+direction+'-'+(index+1),sourceKey,number:Number.isFinite(Number(source.number))&&Number(source.number)>0?Math.min(999,Math.round(Number(source.number))):null,instrument:projectText(source.instrument,100),generatedInstrument:projectText(source.generatedInstrument,100),mode:routeModes.has(source.mode)?source.mode:'Mono',signalType:routeSignals.has(source.signalType)?source.signalType:'Mic',connector:source.pickup==='DI'||source.mode==='DI'?'XLR':normalizeIoConnector(source.connector,source.signalType==='Digital'?'Digital':'XLR'),portIndex:Number.isFinite(Number(source.portIndex))&&Number(source.portIndex)>0?Math.min(512,Math.round(Number(source.portIndex))):null,stereoGroup:mapKey(source.stereoGroup),iemName:projectText(source.iemName,80),iemMode:source.iemMode==='stereo'?'stereo':source.iemMode==='mono'?'mono':'',iemTransport:source.iemTransport==='wireless'?'wireless':source.iemTransport==='cable'?'cable':'',iemGroup:mapKey(source.iemGroup),frequencyBand:projectText(source.frequencyBand,100),microphone:projectText(source.microphone,80),phantom:source.phantom===true,stagebox,stageboxPort:Number.isFinite(Number(source.stageboxPort))&&Number(source.stageboxPort)>0?Math.min(128,Math.round(Number(source.stageboxPort))):null,notes:projectText(source.notes,240),manual:source.manual===true||!sourceKey};
   }
   function normalizeRouting(value,idMap=null){
     const source=value&&typeof value==='object'?value:{},ids=new Set(),list=(key)=>Array.isArray(source[key])?source[key].slice(0,512).map((row,i)=>{
@@ -13714,6 +14019,7 @@ function createStageplotSymbolV3(type, options = {}) {
     const title=$('sp-title').value.trim()||'Mein Live-Setup',project=normalizeProjectInfo(stage?.project,title);project.name=title;
     const stairs=$('sp-stairs').value,stairsAlong=stage?.stairs===stairs&&Number.isFinite(stage?.stairsAlong)?stage.stairsAlong:undefined;
     const result={title,w:Number($('sp-width').value),d:Number($('sp-depth').value),estimated:false,surface:stage?.surface||stageSurfaceDefault,complex:stage?.complex===true,stairs,stairsOffset:Number($('sp-stairs-offset').value),stairsAlong,stairsWidth:Number.isFinite(stage?.stairsWidth)?stage.stairsWidth:1.2,stairsDepth:Number.isFinite(stage?.stairsDepth)?stage.stairsDepth:.9,stairsSteps:stage?.stairsSteps||3,extraStairs:Array.isArray(stage?.extraStairs)?clone(stage.extraStairs):[],cables:normalizeCables(stage?.cables),iem:$('sp-iem').value,iemLength:Number($('sp-iem-length').value),iemDepth:Number($('sp-iem-depth').value),iemX:Number($('sp-iem-x').value),iemY:Number($('sp-iem-y').value),project,routing:normalizeRouting(stage?.routing)};
+    if(stage?.x32Scene)result.x32Scene=clone(stage.x32Scene);
     result.surface=setupStageSurface||result.surface;
     const geometry=typeof setupGeometryOverride!=='undefined'?setupGeometryOverride:stage?.geometry;
     if(geometry)result.geometry=clone(geometry);
@@ -14962,6 +15268,11 @@ function createStageplotSymbolV3(type, options = {}) {
     });
     s.extraStairs=normalizeExtraStairs(source.extraStairs,s);s.cables=normalizeCables(source.cables,idMap,list);s.project=cleanProject(source.project,s.title);s.project.name=s.title;
     s.routing=cleanRouting(source.routing,idMap);
+    if(source.x32Scene!==undefined&&source.x32Scene!==null){
+      if(typeof StageplotX32==='undefined')throw Error('Diese X32-Vorlage benötigt eine neuere App-Version.');
+      s.x32Scene=StageplotX32.normalizeAttachment(source.x32Scene);
+      s.x32Scene.mappings=s.x32Scene.mappings.map(mapping=>({...mapping,stagebox:idMap.get(mapping.stagebox)||mapping.stagebox}));
+    }
     const legacyCajons=new Set(value.objects.filter(o=>o.type==='cajon').map(o=>idMap.get(o.id)));const migrateCajonKey=key=>{if(typeof key!=='string')return key;const [id,port]=key.split(':');return legacyCajons.has(id)&&['front','rear'].includes(port)?id+':perc-p1-'+(port==='front'?1:2):key;};for(const direction of ['inputs','outputs'])for(const row of s.routing[direction]||[]){row.sourceKey=migrateCajonKey(row.sourceKey);for(const member of row.linkedSources||[])member.sourceKey=migrateCajonKey(member.sourceKey);}if(legacyCajons.size)s.routing.disabledSources=(s.routing.disabledSources||[]).map(migrateCajonKey);
     const identity=projectIdentity(source.projectId);if(identity)s.projectId=identity;
     if(source.geometry)s.geometry=StageplotGeometry.normalize(source.geometry);
@@ -15981,6 +16292,7 @@ function dispatchRoutingWorkspace(action){
   if(action.type==='autoPatch'){autoAssignRouting();return;}
   if(action.type==='openPlayback'){openPlaybackDialog(action.sourceId);return;}
   if(action.type==='openSourceEditor'){openRoutingSourceEditor(action.sourceId);return;}
+  if(action.type==='x32Scene'){openX32Scene();return;}
   if(action.type==='csvImport'){if(routingTab==='stageboxes')routingTab='inputs';$('sp-routing-csv-file').click();return;}
   const before=snapshot(),transactionHistory=history.slice(),transactionFuture=future.slice(),transactionNextId=nextId,direction=action.direction==='outputs'?'outputs':'inputs',routing=stage.routing;
   try{
@@ -16031,6 +16343,182 @@ function exportRoutingWorkspace(direction='all'){
   const csv='\ufeff'+[headers,...data].map(row=>row.map(csvCell).join(';')).join('\r\n')+'\r\n';downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),exportModel.safeFilename(stage.title+'-Patch',{extension:'csv'}));say('Patchliste exportiert');
 }
 /* build-inline:end stageplot-routing-host-v2.js */
+/* build-inline:start stageplot-x32-host-v1.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
+// Embedded in the app closure; scene edits share the existing project/undo store.
+let x32Pending=null,x32Prepared=null,x32ReadGeneration=0;
+function x32Error(message=''){
+  $('sp-x32-error').textContent=message;$('sp-x32-error').hidden=!message;
+}
+function x32InvalidateExport(){
+  x32Prepared=null;$('sp-x32-download').hidden=true;$('sp-x32-changes').replaceChildren();
+}
+function x32ClearBindings(rows){
+  for(const row of rows){delete row.x32;if(Array.isArray(row.linkedSources))x32ClearBindings(row.linkedSources);}
+}
+function x32Warnings(messages,host){
+  host.replaceChildren();
+  for(const message of messages||[]){const item=document.createElement('li');item.textContent=message;host.append(item);}
+  host.hidden=!host.children.length;
+}
+function x32SceneSummary(text){
+  const parsed=StageplotX32.parse(text),imported=StageplotX32.importRouting(text);
+  return {parsed,imported};
+}
+function x32RenderPreview(text){
+  const {parsed,imported}=x32SceneSummary(text);
+  $('sp-x32-summary').textContent=imported.inputs.length+' Eingangskanäle · '+imported.outputs.length+' benannte Mixbusse · '+(parsed.name||'X32-Szene');
+  const body=$('sp-x32-preview-body');body.replaceChildren();
+  for(const row of imported.inputs){
+    const channel=parsed.channels.find(item=>item.number===row.number),tr=document.createElement('tr');
+    for(const value of ['CH '+row.number,row.instrument||'Ohne Namen',channel?.sourceAddress?.label||'Zuordnung aus Vorlage',row.stereoGroup?row.mode:'Mono']){
+      const td=document.createElement('td');td.textContent=value;tr.append(td);
+    }
+    body.append(tr);
+  }
+  for(const row of imported.outputs){
+    const tr=document.createElement('tr');
+    for(const value of ['Bus '+row.number,row.instrument||'Ohne Namen','Mixbus · Ausgangs-Patch bleibt erhalten',row.stereoGroup?row.mode:'Mono']){
+      const td=document.createElement('td');td.textContent=value;tr.append(td);
+    }
+    body.append(tr);
+  }
+  x32Warnings(imported.warnings,$('sp-x32-warnings'));
+  $('sp-x32-preview').hidden=false;
+}
+function x32RenderMappings(){
+  const host=$('sp-x32-mappings'),mappings=stage.x32Scene?.mappings||[];host.replaceChildren();
+  const boxes=allRoutingStageboxes();
+  $('sp-x32-no-stageboxes').hidden=boxes.length>0;
+  for(const box of boxes){
+    const mapping=mappings.find(item=>item.stagebox===box.id),row=document.createElement('div');row.className='sp-x32-mapping';
+    const name=document.createElement('strong');name.textContent=box.name;row.append(name);
+    const label=document.createElement('label');label.textContent='Am X32 angeschlossen an';
+    const select=document.createElement('select');select.dataset.x32Bank=box.id;select.setAttribute('aria-label',box.name+' · X32-Anschluss');
+    for(const [value,text] of [['','Bitte zuordnen'],['local','Lokale Eingänge'],['aes50-a','AES50 A'],['aes50-b','AES50 B'],['card','Card / USB-Karte']]){
+      const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);
+    }
+    select.value=mapping?.bank||'';label.append(select);row.append(label);
+    const portLabel=document.createElement('label');portLabel.textContent='Erster Eingang';
+    const input=document.createElement('input');input.type='number';input.min='1';input.max='48';input.step='1';input.value=String((mapping?.offset||0)+1);input.dataset.x32First=box.id;input.setAttribute('aria-label',box.name+' · Erster X32-Eingang');
+    portLabel.append(input);row.append(portLabel);host.append(row);
+  }
+  $('sp-x32-save-mappings').hidden=!boxes.length;
+}
+function x32CurrentMappings(){
+  return [...$('sp-x32-mappings').querySelectorAll('[data-x32-bank]')].filter(select=>select.value).map(select=>{
+    const row=select.closest('.sp-x32-mapping'),first=Number(row.querySelector('[data-x32-first]').value);
+    if(!Number.isInteger(first)||first<1||first>48)throw Error('Der erste X32-Eingang muss zwischen 1 und 48 liegen.');
+    return {stagebox:select.dataset.x32Bank,bank:select.value,offset:first-1};
+  });
+}
+function x32DescribeChange(change,before,after){
+  const match=/^\/(ch|bus)\/(\d+)\/config$/.exec(change.path);
+  if(match){
+    const channels=match[1]==='ch',number=Number(match[2]),key=channels?'channels':'buses';
+    const previous=before[key].find(item=>item.number===number),next=after[key].find(item=>item.number===number),details=[];
+    if(previous.name!==next.name)details.push('Name: '+(previous.name||'ohne Namen')+' → '+(next.name||'ohne Namen'));
+    if(channels&&previous.source!==next.source)details.push('Quelle: '+previous.sourceAddress.label+' → '+next.sourceAddress.label);
+    return {title:(channels?'Kanal ':'Mixbus ')+number,details};
+  }
+  const channels=change.path==='/config/chlink',key=channels?'channelLinks':'busLinks',previous=new Set(before[key].map(pair=>pair.join('/'))),next=new Set(after[key].map(pair=>pair.join('/')));
+  return {title:channels?'Kanal-Stereopaare':'Bus-Stereopaare',details:[...new Set([...previous,...next])].filter(pair=>previous.has(pair)!==next.has(pair)).map(pair=>pair+': '+(next.has(pair)?'Stereo verknüpft':'Verknüpfung aufgehoben'))};
+}
+function x32RenderAttached(){
+  const attachment=stage.x32Scene;
+  $('sp-x32-attached').hidden=!attachment;
+  $('sp-x32-filename').textContent=attachment?.filename||'';
+  $('sp-x32-import').disabled=!x32Pending;
+  if(attachment)x32RenderMappings();
+}
+function openX32Scene(){
+  if(sharedReadOnly)return;
+  finishEdit();x32Pending=null;x32ReadGeneration++;x32InvalidateExport();x32Error();
+  $('sp-x32-status').textContent='';$('sp-x32-file').value='';$('sp-x32-import-options').hidden=true;$('sp-x32-preview').hidden=true;
+  x32RenderAttached();if(stage.x32Scene)x32RenderPreview(stage.x32Scene.text);
+  $('sp-x32-dialog').showModal();
+}
+function x32Commit(fn,message){
+  if(sharedReadOnly)throw Error('Diese Freigabe ist schreibgeschützt.');
+  const before=snapshot();fn();keepHistory(before);renderRouting();say(message);$('sp-x32-status').textContent=message;
+}
+$('sp-x32-close').addEventListener('click',()=>$('sp-x32-dialog').close());
+$('sp-x32-dialog').addEventListener('close',()=>{x32ReadGeneration++;x32Pending=null;x32InvalidateExport();});
+$('sp-x32-file').addEventListener('change',async()=>{
+  const generation=++x32ReadGeneration,owner=stage,file=$('sp-x32-file').files?.[0];x32Pending=null;x32Error();x32InvalidateExport();$('sp-x32-import').disabled=true;$('sp-x32-import-options').hidden=true;
+  if(!file)return;
+  try{
+    if(file.size>250000)throw Error('Bitte eine X32-Szene unter 250 kB wählen.');
+    const bytes=await file.arrayBuffer();let text;
+    try{text=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes);}
+    catch{throw Error('Die Szene ist nicht als UTF-8 lesbar. Bitte erneut aus X32-Edit exportieren.');}
+    if(generation!==x32ReadGeneration||owner!==stage||!$('sp-x32-dialog').open||sharedReadOnly)return;
+    const attachment=StageplotX32.normalizeAttachment({version:1,text,filename:file.name,mappings:[]});
+    x32RenderPreview(text);x32Pending={attachment,owner,imported:StageplotX32.importRouting(text)};
+    $('sp-x32-mode').value=stage.routing.inputs.length||stage.routing.outputs.length?'template':'routing';
+    $('sp-x32-import-options').hidden=false;$('sp-x32-import').disabled=false;
+    $('sp-x32-status').textContent='Vorschau geladen. Das Projekt wurde noch nicht geändert.';
+  }catch(error){if(generation===x32ReadGeneration){$('sp-x32-preview').hidden=true;x32Error('Szene nicht geladen: '+error.message);}}
+});
+$('sp-x32-import').addEventListener('click',()=>{
+  try{
+    x32Error();if(!x32Pending||x32Pending.owner!==stage)throw Error('Bitte die Szene für dieses Projekt erneut auswählen.');
+    const {attachment,imported}=x32Pending,replace=$('sp-x32-mode').value==='routing';
+    const routing=replace?normalizeRouting({...stage.routing,inputs:imported.inputs,outputs:imported.outputs,disabledSources:[...new Set([...stage.routing.disabledSources,...generatedInputSpecs().map(row=>row.sourceKey),...generatedOutputSpecs().map(row=>row.sourceKey)])]}):null;
+    x32Commit(()=>{
+      stage.x32Scene=attachment;
+      if(routing)stage.routing=routing;
+      else for(const direction of ['inputs','outputs'])x32ClearBindings(stage.routing[direction]);
+      reconcileCablesWithRouting();
+    },replace?'X32-Kanäle und Mixbusse übernommen.':'X32-Vorlage im Projekt gespeichert.');
+    x32Pending=null;$('sp-x32-import-options').hidden=true;$('sp-x32-file').value='';x32InvalidateExport();x32RenderAttached();
+  }catch(error){x32Error(error.message);}
+});
+$('sp-x32-save-mappings').addEventListener('click',()=>{
+  try{
+    x32Error();if(!stage.x32Scene)throw Error('Bitte zuerst eine Szene als Vorlage laden.');
+    const attachment=StageplotX32.normalizeAttachment({...stage.x32Scene,mappings:x32CurrentMappings()});
+    x32Commit(()=>{stage.x32Scene=attachment;},'X32-Anschlüsse gespeichert.');x32InvalidateExport();
+  }catch(error){x32Error(error.message);}
+});
+$('sp-x32-mappings').addEventListener('input',x32InvalidateExport);
+$('sp-x32-mappings').addEventListener('change',x32InvalidateExport);
+$('sp-x32-export').addEventListener('click',()=>{
+  try{
+    x32Error();x32InvalidateExport();
+    if(!stage.x32Scene)throw Error('Bitte zuerst eine Szene als Vorlage laden.');
+    if(x32Pending)throw Error('Bitte die neue Vorlage erst übernehmen oder den Dialog erneut öffnen.');
+    const mappings=x32CurrentMappings(),result=StageplotX32.exportScene(stage.x32Scene.text,{inputs:stage.routing.inputs,outputs:stage.routing.outputs,mappings});
+    const host=$('sp-x32-changes'),heading=document.createElement('h3');heading.textContent=result.changes.length+' Änderungen gegenüber der Vorlage';host.append(heading);
+    const explanation=document.createElement('p');explanation.textContent='Nur die aufgeführten Beschriftungen, Kanalquellen und Stereo-Verknüpfungen werden geändert. Nicht aufgeführte Kanäle und alle Klang- und Ausgangseinstellungen bleiben aus der Vorlage.';host.append(explanation);
+    const list=document.createElement('ul');list.className='sp-x32-change-list';
+    const original=StageplotX32.parse(stage.x32Scene.text),updated=StageplotX32.parse(result.text);
+    for(const change of result.changes){
+      const description=x32DescribeChange(change,original,updated),item=document.createElement('li'),title=document.createElement('strong');title.textContent=description.title;item.append(title);
+      for(const detail of description.details){const line=document.createElement('span');line.textContent=detail;item.append(line);}
+      list.append(item);
+    }
+    host.append(list);const warnings=document.createElement('ul');warnings.className='sp-x32-warnings';x32Warnings(result.warnings,warnings);host.append(warnings);
+    x32Prepared={...result,snapshot:snapshot(),mappings:JSON.stringify(mappings)};
+    $('sp-x32-download').hidden=false;$('sp-x32-status').textContent=result.changes.length?'Export geprüft. Änderungen ansehen und die Szene herunterladen.':'Keine Änderungen: Der Download entspricht exakt der Vorlage.';
+  }catch(error){x32Error('Export nicht vorbereitet: '+error.message);}
+});
+$('sp-x32-download').addEventListener('click',()=>{
+  try{
+    if(sharedReadOnly||!x32Prepared||x32Prepared.snapshot!==snapshot()||x32Prepared.mappings!==JSON.stringify(x32CurrentMappings()))throw Error('Das Projekt hat sich geändert. Bitte den Export erneut vorbereiten.');
+    const filename=exportModel.safeFilename(stage.title+'-X32',{extension:'scn'});
+    downloadBlob(new Blob([x32Prepared.text],{type:'text/plain;charset=utf-8'}),filename);
+    $('sp-x32-status').textContent='X32-Szene heruntergeladen.';
+  }catch(error){x32InvalidateExport();x32Error(error.message);}
+});
+$('sp-x32-remove').addEventListener('click',()=>{
+  if(!stage.x32Scene||sharedReadOnly)return;
+  confirmSetupAction('X32-Vorlage entfernen?','Die Kanal- und Buslisten bleiben im Projekt. Für einen weiteren X32-Export wird wieder eine Szene als Vorlage benötigt.','Vorlage entfernen',()=>{
+    x32Commit(()=>{delete stage.x32Scene;for(const direction of ['inputs','outputs'])x32ClearBindings(stage.routing[direction]);},'X32-Vorlage entfernt.');
+    x32Pending=null;x32InvalidateExport();$('sp-x32-preview').hidden=true;x32RenderAttached();
+  },true);
+});
+/* build-inline:end stageplot-x32-host-v1.js */
+
   function renderLegacyRouting(){
     if(!stage)return;syncRoutingFromStage(false,false);
     for(const direction of ['inputs','outputs']){$('sp-'+(direction==='inputs'?'input':'output')+'-count').textContent=stage.routing[direction].length;$('sp-'+(direction==='inputs'?'input':'output')+'-tab').setAttribute('aria-selected',String(routingTab===direction));}

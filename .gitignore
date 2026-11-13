@@ -10,5 +10,6 @@ __pycache__/
 *.private.jwk
 *.stageplot.json
 *.stageplot-drums.json
+*.scn
 npm-debug.log*
 test-results/

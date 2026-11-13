@@ -18,9 +18,11 @@ Die Online-Freigabe benötigt die Einrichtung aus [ACCOUNT_SETUP.md](ACCOUNT_SET
 
 ## Entwicklung und Prüfungen
 
-`npm run check` prüft alle Laufzeitmodule und eingebetteten Skripte. `npm test` prüft den Build-Abgleich und die 50 Funktionstestgruppen. Für Browserprüfungen einmal `npm ci` und `npx playwright install chromium webkit` ausführen, danach `npm run test:browser` und `BROWSER=webkit npm run test:browser`. Ohne `APP_URL` startet und beendet der Lauf seinen eigenen lokalen Vorschau-Server. Screenshots und die PDF-Gegenprobe mit Schlagzeug und Jazzmaster liegen in `test-results/`. GitHub Actions prüft Chromium und WebKit; beide müssen vor dem Deployment erfolgreich sein. Details: [Mobile QA](MOBILE_QA.md).
+`npm run check` prüft alle Laufzeitmodule und eingebetteten Skripte. `npm test` prüft den Build-Abgleich und die 51 Funktionstestgruppen. Für Browserprüfungen einmal `npm ci` und `npx playwright install chromium webkit` ausführen, danach `npm run test:browser` und `BROWSER=webkit npm run test:browser`. Ohne `APP_URL` startet und beendet der Lauf seinen eigenen lokalen Vorschau-Server. Screenshots und die PDF-Gegenprobe mit Schlagzeug und Jazzmaster liegen in `test-results/`. GitHub Actions prüft Chromium und WebKit; beide müssen vor dem Deployment erfolgreich sein. Details: [Mobile QA](MOBILE_QA.md).
 
 ## Funktionen
+
+- **X32-Szenen (in Entwicklung):** Unter „Routing → Werkzeuge → X32-Szene“ eine `.scn`-Vorlage laden, Kanal- und Buslisten übernehmen oder das vorhandene Routing verwenden. Der Export zeigt geänderte Namen, Stereo-Paare und Eingangszuordnungen vor dem Download; die übrigen Mischereinstellungen bleiben erhalten. Die Originalszene wird mit dem Projekt gesichert und aus öffentlichen Ansichtslinks ausgeschlossen. [Bedienung und Grenzen](X32_SCENES.md).
 
 - **Bassmodelle:** J-Bass, P-Bass, PJ-Bass, Shortscale (EB-0-Bauform), Mustang, Akustikbass, Kontrabass, Höfner Violin Bass und Rickenbacker 4003 mit neun einzeln generierten, transparenten PNGs. Auswahl unter „Bass“, Kontrabass zusätzlich unter „Streicher“ und im Orchester-Editor. Vorhandene Bassmaße und gespeicherte Routingdaten bleiben erhalten. [Assets, Prompts und Herstellerreferenzen](stageplot-assets/objects/bass-instruments-v1.json).
 

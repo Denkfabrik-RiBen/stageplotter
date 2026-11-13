@@ -360,6 +360,7 @@ function dispatchRoutingWorkspace(action){
   if(action.type==='autoPatch'){autoAssignRouting();return;}
   if(action.type==='openPlayback'){openPlaybackDialog(action.sourceId);return;}
   if(action.type==='openSourceEditor'){openRoutingSourceEditor(action.sourceId);return;}
+  if(action.type==='x32Scene'){openX32Scene();return;}
   if(action.type==='csvImport'){if(routingTab==='stageboxes')routingTab='inputs';$('sp-routing-csv-file').click();return;}
   const before=snapshot(),transactionHistory=history.slice(),transactionFuture=future.slice(),transactionNextId=nextId,direction=action.direction==='outputs'?'outputs':'inputs',routing=stage.routing;
   try{

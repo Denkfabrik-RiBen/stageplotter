@@ -7,6 +7,7 @@ const sync=spawnSync(process.execPath,['scripts/build-inline.cjs','--check'],{st
 if(sync.status!==0)process.exit(sync.status||1);
 
 const tests=[
+  'stageplot-x32-v1.test.cjs',
   'stageplot-stageboxes-v1.test.cjs',
   'stageplot-object-menu-v1.test.cjs',
   'stageplot-inspector-v1.test.cjs',
