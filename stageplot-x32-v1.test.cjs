@@ -173,8 +173,131 @@ for(const bad of [
   'x'.repeat(X.MAX_TEXT+1),
 ])assert.throws(()=>X.parse(bad));
 
+// The wizard inventory keeps buses, internal output slots and destinations
+// distinct. These synthetic paths exercise the real multi-stage output patch.
+const detailed=text.replace('/fx/1/type HALL','/fx/1 HALL').replace('/ch/01/mix ON -6.0 +0 ON -oo','/ch/01/mix ON -6.0 OFF +0 OFF -oo')+[
+  '/config/auxlink OFF OFF OFF OFF',
+  '/config/fxlink ON ON ON ON',
+  '/config/mtxlink ON OFF OFF',
+  '/config/routing/OUT OUT9-12 OUT5-8 OUT1-4 OUT13-16',
+  '/config/routing/AES50B UOUT1-8 OUT9-16',
+  '/config/routing/CARD AN1-8 CARD9-16',
+  '/outputs/main/02 20 PRE OFF',
+  '/outputs/main/03 21 POST ON',
+  '/outputs/main/05 0 POST OFF',
+  '/outputs/main/06 76 POST OFF',
+  '/outputs/main/07 20 POST OFF',
+  '/outputs/main/07/delay ON 17.5',
+  '/outputs/main/08 21 POST OFF',
+  '/outputs/main/09 66 POST OFF',
+  '/outputs/main/10 26 <-EQ ON',
+  '/outputs/main/11 1 POST OFF',
+  '/outputs/main/12 99 POST OFF',
+  '/outputs/aux/01 14 POST OFF',
+  '/outputs/p16/01 58 PRE OFF',
+  '/outputs/aes/01 1 POST OFF',
+  '/outputs/aes/02 2 POST ON',
+  '/outputs/rec/01 1 <-EQ',
+  '/outputs/rec/02 2 <-EQ',
+  '/mtx/01/config "PA L" 66 WH',
+  '/mtx/02/config "PA R" 66 WH',
+  '/main/st/config "" 66 WH',
+  '/main/st/mix ON -oo +0',
+  '/main/st/mix/01 ON 0.0 +0 POST 0',
+  '/main/st/mix/02 ON 0.0',
+  '/ch/01/mix/05 ON -oo +0 GRP 0',
+  '/ch/01/mix/06 OFF -oo',
+  '/ch/01/insert ON POST FX5L',
+  '/ch/02/insert ON POST FX5R',
+  '/bus/05/mix ON -1.0 ON +0 OFF -oo',
+  '/bus/05/insert ON PRE FX8L',
+  '/fx/1/source MIX13 MIX13',
+  '/fx/2 RPLT',
+  '/fx/2/source MIX14 MIX14',
+  '/fx/4 DLY',
+  '/fx/4/source MIX16 MIX16',
+  '/fx/5 ULC2',
+  '/fx/8 LEC2',
+  '/fxrtn/01/config "Hall L" 61 MG',
+  '/fxrtn/02/config "Hall R" 61 MG',
+  '/fxrtn/07/config "Delay L" 61 MG',
+  '/fxrtn/08/config "Delay R" 61 MG',
+  '/fxrtn/07/mix ON 0.0 ON -100 OFF 0.0',
+  '/fxrtn/07/mix/13 ON -oo -100 POST 0',
+  '/fxrtn/07/mix/14 ON 0.0',
+  '/fxrtn/08/mix/13 ON -oo +100 POST 0',
+  '/fxrtn/08/mix/14 ON 0.0',
+].join('\n')+'\n';
+const inventory=X.inspectRouting(detailed);
+assert.equal(inventory.inputs.length,33,'All configured inputs, including unnamed and Aux, can be selected');
+assert.deepEqual(inventory.inputs[16].sourceAddress,{bank:'aes50-a',port:1,label:'AES50 A 1',resolved:true});
+assert.deepEqual(inventory.inputs.find(input=>input.id==='aux-1').sourceAddress,{bank:'aux',port:1,label:'Aux In 1',resolved:true});
+assert.equal(inventory.inputs.find(input=>input.id==='channel-9').linkedWith,10);
+assert.equal(inventory.inputs.find(input=>input.id==='channel-1').mix.mainStereo,false,'Direct Main assignment is separate from subgroup routing');
+assert.deepEqual(inventory.buses.find(bus=>bus.number===5).roles,['subgroup'],'A GRP send stays a subgroup even when its unused numeric level is -oo');
+assert.deepEqual(inventory.buses.find(bus=>bus.number===13).roles,['fx-send']);
+assert.deepEqual(inventory.buses.find(bus=>bus.number===1).roles,[],'A monitor-like name does not establish a role');
+assert.deepEqual(inventory.buses.find(bus=>bus.number===13).fxSlots,[1]);
+const subgroupSends=inventory.inputs[0].sends.filter(send=>[5,6].includes(send.number));
+assert.equal(subgroupSends[0].enabled,true);assert.equal(subgroupSends[0].levelDb,null);assert.equal(subgroupSends[0].level,'-oo');
+assert.equal(subgroupSends[1].enabled,false);assert.equal(subgroupSends[1].tap,'GRP');assert.deepEqual(subgroupSends[1].pair,[5,6]);
+const plateReturn=inventory.buses.find(bus=>bus.number===14).sources.find(send=>send.sourceId==='return-7');
+assert.equal(plateReturn.levelDb,0);assert.equal(plateReturn.tap,'POST');assert.equal(plateReturn.enabled,true);
+assert.equal(inventory.returns.find(entry=>entry.number===7).slot,4);assert.equal(inventory.returns.find(entry=>entry.number===7).linkedWith,8);
+assert.equal(inventory.fx.find(slot=>slot.number===4).left.number,16);
+assert.deepEqual(inventory.fx.find(slot=>slot.number===5).inserts.map(insert=>[insert.targetId,insert.side]),[['channel-1','L'],['channel-2','R']]);
+assert.equal(inventory.fx.find(slot=>slot.number===8).inserts[0].position,'PRE');
+assert.equal(inventory.matrices[0].linkedWith,2);assert.equal(inventory.mains[0].sends[1].tap,'POST');
+const xlr1=inventory.outputs.find(output=>output.id==='output-local-1');
+assert.equal(xlr1.slotId,'output-main-9','XLR 1 need not come from Out 1');assert.equal(xlr1.source.kind,'return');assert.equal(xlr1.source.number,1);
+const xlr7=inventory.outputs.find(output=>output.id==='output-local-7');
+assert.equal(xlr7.source.kind,'matrix');assert.equal(xlr7.source.number,1);assert.equal(xlr7.source.label,'Matrix 1 · PA L');
+assert.deepEqual(xlr7.delay,{enabled:true,ms:17.5});assert.equal(xlr7.tap,'POST');
+assert.equal(inventory.outputs.find(output=>output.id==='output-local-4').resolved,false,'Unknown output source remains visible');
+assert.equal(inventory.outputs.find(output=>output.id==='output-local-5').source.kind,'off');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes50-a-1').source.kind,'bus');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes50-a-1').source.number,1);
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes50-b-1').resolved,false,'User Out must not become guessed XLR routing');
+assert.equal(inventory.outputs.find(output=>output.id==='output-card-1').source.kind,'input-port');
+assert.equal(inventory.outputs.find(output=>output.id==='output-card-1').source.bank,'local');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aux-1').source.number,11);
+assert.equal(inventory.outputs.find(output=>output.id==='output-p16-1').source.kind,'aux');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes-1').label,'AES/EBU L');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes-2').source.label,'Main R');
+assert.equal(inventory.outputs.find(output=>output.id==='output-aes-2').polarity,true);
+assert.equal(inventory.outputs.find(output=>output.id==='output-rec-1').label,'USB Recorder L');
+assert.equal(inventory.outputs.find(output=>output.id==='output-rec-1').tap,'<-EQ');
+assert.equal(inventory.outputs.find(output=>output.id==='output-rec-2').source.label,'Main R');
+assert.equal(inventory.outputs.find(output=>output.id==='output-rec-2').polarity,null,'Recorder does not invent an absent invert parameter');
+assert.equal(X.exportScene(detailed,X.importRouting(detailed)).text,detailed,'Inspecting rich routing never changes native values');
+assert(!X.inspectRouting(text).outputs.some(output=>output.bank==='local'),'Missing XLR blocks are not treated as identity patch');
+const remappedAux=X.inspectRouting(detailed.replace('AUX1-4\n','A1-2\n'));
+assert.equal(remappedAux.inputs.find(input=>input.id==='aux-1').sourceAddress.bank,'aes50-a');
+const usbSource=detailed.replace('/auxin/01/config "Playback" 55 GN 33','/auxin/01/config "Playback" 55 GN 39');
+assert.equal(X.inspectRouting(usbSource).inputs.find(input=>input.id==='aux-1').sourceAddress.bank,'usb');
+
+const choices={version:1,inputIds:['channel-1','channel-9','channel-10','aux-1'],busRoles:[{bus:1,role:'monitor'},{bus:13,role:'fx'}],inputAssignments:[{inputId:'channel-1',stagebox:'stagebox-a',port:1}],outputAssignments:[{outputId:'output-local-7',destination:'PA links',stagebox:'',port:null}]};
+const wizardAttachment=X.normalizeAttachment({...attachment,wizard:{...choices,ignored:true}});
+assert.deepEqual(X.normalizeWizard({...choices,outputAssignments:[{outputId:'output-aes-1',destination:'Digital L',stagebox:'',port:null},{outputId:'output-rec-2',destination:'Record R',stagebox:'',port:null}]}).outputAssignments.map(item=>item.outputId),['output-aes-1','output-rec-2']);
+assert.deepEqual(wizardAttachment.wizard,choices);assert.deepEqual(X.normalizeAttachment(clone(wizardAttachment)),wizardAttachment);
+for(const bad of [
+  {...choices,version:2},
+  {...choices,inputIds:['channel-33']},
+  {...choices,outputAssignments:[{outputId:'output-local-17',stagebox:'',port:null}]},
+  {...choices,outputAssignments:[{outputId:'output-aes50-a-49',stagebox:'',port:null}]},
+  {...choices,outputAssignments:[{outputId:'output-aes-3',stagebox:'',port:null}]},
+  {...choices,outputAssignments:[{outputId:'output-rec-3',stagebox:'',port:null}]},
+  {...choices,inputIds:['channel-1','channel-1']},
+  {...choices,busRoles:[{bus:17,role:'monitor'}]},
+  {...choices,busRoles:[{bus:1,role:'monitor'},{bus:1,role:'fx'}]},
+  {...choices,busRoles:[{bus:1,role:'guessed'}]},
+  {...choices,outputAssignments:[{outputId:'output-local-7',destination:'bad\nname',stagebox:'',port:null}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'',port:1}]},
+  {...choices,inputAssignments:[{inputId:'channel-1',stagebox:'box',port:65}]},
+])assert.throws(()=>X.normalizeWizard(bad));
+
 // The same pure implementation also exposes the browser global, without Node.
 const context={};vm.createContext(context);vm.runInContext(fs.readFileSync('stageplot-x32-v1.js','utf8'),context);
 assert.equal(typeof context.StageplotX32.exportScene,'function');
 assert.equal(context.StageplotX32.exportScene(text,context.StageplotX32.importRouting(text)).text,text);
-console.log('PASS X32 SCENES: exact template roundtrip, known input-bank mapping, explicit stagebox offsets, sparse overlays, channel/bus stereo, unchanged DSP/phantom/outputs, native-name preview, metadata validation and malformed-scene rejection.');
+console.log('PASS X32 SCENES: wizard input/bus/FX/output inventory, output bank resolution, paired send taps, preserved wizard choices, exact template roundtrip, known input-bank mapping, explicit stagebox offsets, sparse overlays, channel/bus stereo, unchanged DSP/phantom/outputs, native-name preview, metadata validation and malformed-scene rejection.');

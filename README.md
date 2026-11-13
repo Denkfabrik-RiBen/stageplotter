@@ -22,7 +22,7 @@ Die Online-Freigabe benötigt die Einrichtung aus [ACCOUNT_SETUP.md](ACCOUNT_SET
 
 ## Funktionen
 
-- **X32-Szenen (in Entwicklung):** Unter „Routing → Werkzeuge → X32-Szene“ eine `.scn`-Vorlage laden, Kanal- und Buslisten übernehmen oder das vorhandene Routing verwenden. Der Export zeigt geänderte Namen, Stereo-Paare und Eingangszuordnungen vor dem Download; die übrigen Mischereinstellungen bleiben erhalten. Die Originalszene wird mit dem Projekt gesichert und aus öffentlichen Ansichtslinks ausgeschlossen. [Bedienung und Grenzen](X32_SCENES.md).
+- **X32-Szenen (in Entwicklung):** Unter „Routing → Werkzeuge → X32-Szene“ führt ein Wizard durch Inputauswahl, Stagebox-Anschlüsse, Busverwendung und Ausgangsziele. Die neue I/O-Liste zeigt Inputs, Busse, Matrizen, FX und aufgelöste Ausgänge getrennt; unbekannte Zuordnungen bleiben offen. Der Export zeigt geänderte Kanalnamen, Stereo-Paare und Eingangszuordnungen vor dem Download; die übrigen Mischereinstellungen bleiben erhalten. Die Originalszene wird mit dem Projekt gesichert und aus öffentlichen Ansichtslinks ausgeschlossen. [Bedienung und Grenzen](X32_SCENES.md).
 
 - **Bassmodelle:** J-Bass, P-Bass, PJ-Bass, Shortscale (EB-0-Bauform), Mustang, Akustikbass, Kontrabass, Höfner Violin Bass und Rickenbacker 4003 mit neun einzeln generierten, transparenten PNGs. Auswahl unter „Bass“, Kontrabass zusätzlich unter „Streicher“ und im Orchester-Editor. Vorhandene Bassmaße und gespeicherte Routingdaten bleiben erhalten. [Assets, Prompts und Herstellerreferenzen](stageplot-assets/objects/bass-instruments-v1.json).
 

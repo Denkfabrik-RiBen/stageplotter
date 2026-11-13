@@ -131,6 +131,168 @@
     return {inputs:inRows,outputs:outRows,summary:{name:scene.name,inputCount:inRows.length,busCount:outRows.length,channelPairs:scene.channelLinks.filter(pair=>pair.every(number=>inRows.some(row=>row.number===number))).length,busPairs:scene.busLinks.filter(pair=>pair.every(number=>outRows.some(row=>row.number===number))).length,auxCount:scene.auxInputs.length},warnings};
   }
 
+  // A read-only inventory for the import wizard. Native output slots and
+  // connector/transport destinations are deliberately different objects.
+  // Unknown banks/selectors stay visible and never become guessed hardware.
+  function inspectRouting(text){
+    const data=read(text),scene=data.result,warnings=scene.warnings.slice();
+    const values=path=>(data.records.get(path)?.parts||[]).map(part=>part.value);
+    const on=value=>value==='ON'?true:value==='OFF'?false:null;
+    const numeric=value=>value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
+    const pairs=(path,count)=>{
+      const flags=values(path);
+      if(flags.length&& (flags.length!==count||flags.some(value=>!['ON','OFF'].includes(value)))){warnings.push('Stereo-Zuordnung '+path+' ist nicht auflösbar.');return [];}
+      return flags.flatMap((value,index)=>value==='ON'?[[index*2+1,index*2+2]]:[]);
+    };
+    const auxLinks=pairs('/config/auxlink',4),returnLinks=pairs('/config/fxlink',4),matrixLinks=pairs('/config/mtxlink',3);
+    const physical=(bank,port)=>({bank,port,label:(BANKS[bank]?.label||{aux:'Aux In',usb:'USB Playback'}[bank]||bank)+' '+port,resolved:true});
+    const unknownSource=source=>({bank:'unknown',port:null,label:source===0?'Aus':'X32-Quelle '+source+' (nicht aufgelöst)',resolved:source===0});
+    const inputAddress=source=>{
+      if(source>=1&&source<=32){const {source:slot,...address}=scene.routing.sources[source-1];return address;}
+      if(source>=33&&source<=38){
+        const port=source-32,remap=scene.routing.banks[4]||'';
+        if(remap==='AUX1-4')return physical('aux',port);
+        const match=/^(AN|A|B|CARD)1-([246])$/.exec(remap);
+        if(match)return port<=Number(match[2])?physical({AN:'local',A:'aes50-a',B:'aes50-b',CARD:'card'}[match[1]],port):physical('aux',port);
+        return {...unknownSource(source),label:'Aux '+port+(remap?' · '+remap:'')+' (nicht aufgelöst)'};
+      }
+      if(source===39||source===40)return physical('usb',source-38);
+      // Additional native selectors and User-In require their exact firmware
+      // table. Keeping them opaque is safer than inventing an input socket.
+      return unknownSource(source);
+    };
+    const mix=path=>{
+      const raw=values(path+'/mix');
+      const main=path.startsWith('/main/');
+      return {enabled:on(raw[0]),level:raw[1]??null,levelDb:numeric(raw[1]),mainStereo:main?null:on(raw[2]),pan:main?(path==='/main/st'?numeric(raw[2]):null):numeric(raw[3]),mainMono:main?null:on(raw[4]),monoLevel:main?null:raw[5]??null};
+    };
+    const sends=(path,destinationKind,count)=>{
+      const list=[];
+      for(let number=1;number<=count;number++){
+        const raw=values(path+'/mix/'+pad(number));if(!raw.length)continue;
+        const first=number%2?number:number-1,pair=values(path+'/mix/'+pad(first));
+        list.push({number,destinationKind,destinationId:destinationKind+'-'+number,enabled:on(raw[0]),level:raw[1]??null,levelDb:numeric(raw[1]),tap:pair[3]||'',pair:[first,first+1],pan:numeric(pair[2]),panFollow:numeric(pair[4])});
+      }
+      return list;
+    };
+    const insert=(path,id)=>{
+      const raw=values(path+'/insert');if(!raw.length)return null;
+      const match=/^FX([1-8])([LR])$/.exec(raw[2]||'');
+      return {targetId:id,enabled:on(raw[0]),position:raw[1]||'',source:raw[2]||'',slot:match?Number(match[1]):null,side:match?match[2]:null};
+    };
+    const strip=(kind,entry,path,links,destinationKind='bus',count=16)=>{
+      const id=kind+'-'+entry.number,pair=links.find(pair=>pair.includes(entry.number));
+      return {...entry,id,kind,label:({channel:'CH',aux:'Aux',bus:'Bus',matrix:'Matrix',return:'FX Return'}[kind]||kind)+' '+entry.number+(entry.name?' · '+entry.name:''),linkedWith:pair?pair.find(number=>number!==entry.number):null,mix:mix(path),sends:sends(path,destinationKind,count),insert:insert(path,id)};
+    };
+    const configEntries=(prefix,max)=>{
+      const entries=[];
+      for(let number=1;number<=max;number++){
+        const raw=values('/'+prefix+'/'+pad(number)+'/config');if(!raw.length)continue;
+        entries.push({number,name:raw[0],icon:raw[1]||'',color:raw[2]||''});
+      }
+      return entries;
+    };
+    const inputs=[...scene.channels.map(entry=>strip('channel',{...entry,sourceAddress:inputAddress(entry.source)},'/ch/'+pad(entry.number),scene.channelLinks)),...scene.auxInputs.map(entry=>strip('aux',{...entry,sourceAddress:inputAddress(entry.source)},'/auxin/'+pad(entry.number),auxLinks))];
+    const buses=scene.buses.map(entry=>strip('bus',entry,'/bus/'+pad(entry.number),scene.busLinks,'matrix',6));
+    const matrices=configEntries('mtx',6).map(entry=>strip('matrix',entry,'/mtx/'+pad(entry.number),matrixLinks,'matrix',0));
+    const returns=configEntries('fxrtn',8).map(entry=>({...strip('return',entry,'/fxrtn/'+pad(entry.number),returnLinks),slot:Math.ceil(entry.number/2),side:entry.number%2?'L':'R'}));
+    const mains=['st','m'].filter(key=>values('/main/'+key+'/config').length||values('/main/'+key+'/mix').length).map(key=>({id:'main-'+key,kind:'main',number:key==='st'?1:3,name:values('/main/'+key+'/config')[0]||'',label:key==='st'?'Main L/R':'Main M/C',mix:mix('/main/'+key),sends:sends('/main/'+key,'matrix',6),insert:insert('/main/'+key,'main-'+key)}));
+    const inserts=[...inputs,...buses,...matrices,...returns,...mains].flatMap(entry=>entry.insert?[entry.insert]:[]);
+    const fxSource=token=>{
+      const match=/^MIX(\d+)$/.exec(token||'');
+      if(match&&integer(match[1],1,16))return {kind:'bus',number:Number(match[1]),id:'bus-'+Number(match[1]),label:'Bus '+Number(match[1]),resolved:true};
+      if(token==='INS')return {kind:'insert',number:null,id:'',label:'Insert',resolved:true};
+      if(token==='M/C')return {kind:'main',number:3,id:'main-m',label:'Main M/C',resolved:true};
+      return {kind:'unknown',number:null,id:'',label:token||'Nicht angegeben',resolved:false};
+    };
+    const fx=[];
+    for(let number=1;number<=8;number++){
+      const raw=values('/fx/'+number),leaf=values('/fx/'+number+'/type'),sources=values('/fx/'+number+'/source');
+      if(!raw.length&&!leaf.length&&!sources.length)continue;
+      const assigned=inserts.filter(entry=>entry.slot===number);
+      fx.push({id:'fx-'+number,number,type:raw[0]||leaf[0]||'',left:fxSource(sources[0]||(number>4?'INS':'')),right:fxSource(sources[1]||(number>4?'INS':'')),returns:returns.filter(entry=>entry.slot===number).map(entry=>entry.id),inserts:assigned});
+    }
+    for(const bus of buses){
+      bus.fxSlots=fx.filter(slot=>[slot.left,slot.right].some(source=>source.kind==='bus'&&source.number===bus.number)).map(slot=>slot.number);
+      bus.roles=[];if(bus.fxSlots.length)bus.roles.push('fx-send');
+      bus.sources=[...inputs,...returns].flatMap(entry=>entry.sends.filter(send=>send.number===bus.number).map(send=>({...send,sourceId:entry.id,sourceLabel:entry.label})));
+      if(bus.sources.some(send=>send.enabled===true&&send.tap==='GRP'))bus.roles.push('subgroup');
+      bus.main={stereo:bus.mix.mainStereo,mono:bus.mix.mainMono};
+    }
+    const sourceRef=code=>{
+      const base={code,kind:'unknown',number:null,channel:null,id:'',label:'X32-Ausgangsquelle '+code+' (nicht aufgelöst)',resolved:false};
+      if(!integer(code,0,65535))return base;
+      if(code===0)return {...base,kind:'off',label:'Aus',resolved:true};
+      let kind,number,entry,label;
+      if(code>=1&&code<=3){kind='main';number=code;label=['','Main L','Main R','Main M/C'][code];}
+      else if(code<=19){kind='bus';number=code-3;entry=buses.find(item=>item.number===number);label='Bus '+number;}
+      else if(code<=25){kind='matrix';number=code-19;entry=matrices.find(item=>item.number===number);label='Matrix '+number;}
+      else if(code<=57){kind='channel';number=code-25;entry=inputs.find(item=>item.kind==='channel'&&item.number===number);label='CH '+number;}
+      else if(code<=65){kind='aux';number=code-57;entry=inputs.find(item=>item.kind==='aux'&&item.number===number);label='Aux '+number;}
+      else if(code<=73){kind='return';number=code-65;entry=returns.find(item=>item.number===number);label='FX '+Math.ceil(number/2)+(number%2?' L':' R');}
+      else if(code<=75){kind='monitor';number=code-73;label='Monitor '+(number===1?'L':'R');}
+      else if(code===76){kind='talkback';number=1;label='Talkback';}
+      else return base;
+      return {...base,kind,number,channel:number,id:kind==='main'?(number===3?'main-m':'main-st'):kind+'-'+number,label:label+(entry?.name?' · '+entry.name:''),resolved:true};
+    };
+    const outputSlots=[];
+    for(const [kind,count] of [['main',16],['aux',6],['p16',16],['aes',2],['rec',2]])for(let number=1;number<=count;number++){
+      const path='/outputs/'+kind+'/'+pad(number),raw=values(path);if(!raw.length)continue;
+      const delay=values(path+'/delay');
+      outputSlots.push({id:'output-'+kind+'-'+number,kind,number,label:({main:'Out',aux:'Aux Out',p16:'Ultranet',aes:'AES/EBU',rec:'USB Recorder'}[kind])+' '+(['aes','rec'].includes(kind)?number===1?'L':'R':number),source:sourceRef(numeric(raw[0])),tap:raw[1]||'',polarity:on(raw[2]),delay:delay.length?{enabled:on(delay[0]),ms:numeric(delay[1])}:null});
+    }
+    const unknownOutput=block=>({slotId:null,source:{kind:'unknown',number:null,channel:null,id:'',label:(block||'Nicht angegeben')+' (nicht aufgelöst)',resolved:false},tap:'',delay:null,resolved:false});
+    const resolveBlock=(block,index,size)=>{
+      const match=/^(OUT|P16|AN|A|B|CARD)(\d+)-(\d+)$/.exec(block||'');
+      if(!match||Number(match[3])-Number(match[2])+1!==size)return unknownOutput(block);
+      const number=Number(match[2])+index,kind=match[1];
+      if(kind==='OUT'||kind==='P16'){
+        const slot=outputSlots.find(slot=>slot.kind===(kind==='OUT'?'main':'p16')&&slot.number===number);
+        return slot?{slotId:slot.id,source:{...slot.source},tap:slot.tap,delay:slot.delay,polarity:slot.polarity,resolved:slot.source.resolved}:unknownOutput(block);
+      }
+      const bank={AN:'local',A:'aes50-a',B:'aes50-b',CARD:'card'}[kind];
+      if(number<1||number>BANKS[bank].limit)return unknownOutput(block);
+      return {slotId:null,source:{kind:'input-port',number,channel:number,id:'input-'+bank+'-'+number,bank,port:number,label:BANKS[bank].label+' '+number,resolved:true},tap:'',delay:null,resolved:true};
+    };
+    const outputs=[];
+    for(const [bank,path,size,label] of [['local','OUT',4,'XLR'],['aes50-a','AES50A',8,'AES50 A'],['aes50-b','AES50B',8,'AES50 B'],['card','CARD',8,'Card']]){
+      const blocks=values('/config/routing/'+path),max=bank==='local'?4:bank==='card'?4:6;
+      for(let group=0;group<Math.min(blocks.length,max);group++)for(let index=0;index<size;index++){
+        const port=group*size+index+1;outputs.push({id:'output-'+bank+'-'+port,bank,port,label:label+' '+port,block:blocks[group],...resolveBlock(blocks[group],index,size)});
+      }
+    }
+    for(const slot of outputSlots.filter(slot=>slot.kind!=='main'))outputs.push({id:slot.id,bank:slot.kind,port:slot.number,label:slot.label,block:'',slotId:slot.id,source:{...slot.source},tap:slot.tap,delay:slot.delay,polarity:slot.polarity,resolved:slot.source.resolved});
+    if(!values('/config/routing/OUT').length)warnings.push('Die Zuordnung der lokalen XLR-Ausgänge fehlt; Out 1–16 werden nicht mit XLR-Buchsen gleichgesetzt.');
+    if(outputs.some(output=>!output.resolved))warnings.push('Einige Ausgangsblöcke oder Signalquellen sind nicht auflösbar. Diese Zuordnungen bleiben als offen gekennzeichnet.');
+    if(inputs.some(input=>!input.sourceAddress.resolved))warnings.push('Einige Eingangsquellen sind nicht auflösbar. Die ursprünglichen Quellnummern bleiben erhalten.');
+    return {scene,inputs,buses,matrices,mains,fx,returns,inserts,outputSlots,outputs,warnings:[...new Set(warnings)]};
+  }
+
+  function normalizeWizard(value){
+    if(value==null)return null;
+    if(!object(value)||value.version!==1)fail('Ungültige X32-Importzuordnungen.');
+    const bounded=(value,max,label)=>{
+      if(typeof value!=='string'||value.length>max||/[\u0000-\u001f\u007f]/.test(value))fail('Ungültige '+label+' im X32-Import.');
+      return value.trim();
+    };
+    const list=(value,max,label)=>{if(value==null)return [];if(!Array.isArray(value)||value.length>max)fail('Ungültige '+label+' im X32-Import.');return value;};
+    const unique=(items,key,label)=>{const ids=new Set();for(const item of items){const id=key(item);if(ids.has(id))fail('Doppelte '+label+' im X32-Import.');ids.add(id);}return items;};
+    const inputIds=unique(list(value.inputIds,40,'Eingangsauswahl').map(id=>{const result=bounded(id,40,'Eingangskennung');if(!/^(?:channel-(?:[1-9]|[12]\d|3[0-2])|aux-[1-8])$/.test(result))fail('Ungültige Eingangskennung im X32-Import.');return result;}),id=>id,'Eingangskennung');
+    const roles=new Set(['unspecified','monitor','iem','subgroup','fx','line']);
+    const busRoles=unique(list(value.busRoles,16,'Buszuordnungen').map(item=>{if(!object(item)||!integer(item.bus,1,16)||!roles.has(item.role))fail('Ungültige Buszuordnung im X32-Import.');return {bus:Number(item.bus),role:item.role};}),item=>item.bus,'Buszuordnung');
+    const assignments=(raw,direction)=>unique(list(raw,direction==='input'?40:170,'Anschlusszuordnungen').map(item=>{
+      const key=direction+'Id';if(!object(item))fail('Ungültige Anschlusszuordnung im X32-Import.');
+      const id=bounded(item[key],64,'Anschlusskennung');
+      const outputMatch=/^output-(local|aes50-a|aes50-b|card|aux|p16|aes|rec)-([1-9]\d?)$/.exec(id),limits={local:16,'aes50-a':48,'aes50-b':48,card:32,aux:6,p16:16,aes:2,rec:2};
+      if(direction==='input'?!/^(?:channel-(?:[1-9]|[12]\d|3[0-2])|aux-[1-8])$/.test(id):!outputMatch||Number(outputMatch[2])>limits[outputMatch[1]])fail('Ungültige Anschlusskennung im X32-Import.');
+      const stagebox=bounded(item.stagebox??'',100,'Stageboxkennung');
+      if(item.port!=null&&!integer(item.port,1,64))fail('Ungültige Anschlussnummer im X32-Import.');
+      if(!stagebox&&item.port!=null)fail('Eine X32-Anschlussnummer benötigt eine Stagebox-Zuordnung.');
+      return {[key]:id,...(direction==='output'?{destination:bounded(item.destination??'',100,'Zielbezeichnung')}:{}),stagebox,port:item.port==null?null:Number(item.port)};
+    }),item=>item[direction+'Id'],'Anschlusszuordnung');
+    return {version:1,inputIds,busRoles,outputAssignments:assignments(value.outputAssignments,'output'),inputAssignments:assignments(value.inputAssignments,'input')};
+  }
+
   function normalizeMappings(value){
     if(value==null)return [];
     if(!Array.isArray(value)||value.length>128)fail('Ungültige X32-Stagebox-Zuordnungen.');
@@ -150,7 +312,7 @@
       if(validationCache.size>2)validationCache.delete(validationCache.keys().next().value);
     }
     const filename=cleanText(value.filename).split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,120)||'X32-Vorlage.scn';
-    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings)};
+    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings),...(value.wizard!=null?{wizard:normalizeWizard(value.wizard)}:{})};
   }
 
   function label(value,current,path,warnings){
@@ -246,5 +408,5 @@
     return {text:data.lines.map(line=>line.body+line.ending).join(''),changes,warnings};
   }
 
-  return {parse,importRouting,exportScene,normalizeAttachment,normalizeMappings,MAX_TEXT,BANKS};
+  return {parse,inspectRouting,importRouting,exportScene,normalizeAttachment,normalizeMappings,normalizeWizard,MAX_TEXT,BANKS};
 });

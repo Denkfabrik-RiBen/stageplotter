@@ -1,77 +1,115 @@
 # X32-Szenen
 
-Unter **Routing → Werkzeuge → X32-Szene** lassen sich lokale UTF-8-kodierte `.scn`-Dateien im
-Format `#4.0#` als Vorlage laden und wieder exportieren. Es ist keine Verbindung
-zum Mischpult nötig. Eine vollständige Szene aus X32-Edit oder vom Pult dient als
-Ausgangspunkt; die App erzeugt keine neue Mischung ohne Vorlage.
+Unter **Routing → Werkzeuge → X32-Szene** lassen sich lokale UTF-8-kodierte
+`.scn`-Dateien im Format `#4.0#` lesen und als Vorlage wieder exportieren.
+Es ist keine Verbindung zum Mischpult nötig. Eine vollständige Szene aus
+X32-Edit oder vom Pult dient als Ausgangspunkt.
 
-## Import
+## Import-Wizard
 
-Nach der Dateiauswahl zeigt die App eine Vorschau. Erst **Szene übernehmen**
-ändert das Projekt. Es gibt zwei Möglichkeiten:
+Nach der Dateiauswahl führt der Wizard durch vier Schritte:
 
-- **Als Vorlage verwenden:** vorhandenes Stageplot-Routing behalten und die Szene
-  für den späteren Export hinterlegen.
-- **Kanal- und Buslisten übernehmen:** die bisherigen Routinglisten durch die
-  benannten Eingangskanäle und Mixbusse ersetzen. Leere Partner eines importierten
-  Stereopaars werden ebenfalls übernommen. Vorhandene Bühnenobjekte bleiben
-  erhalten, ihre automatisch erzeugten Routingzeilen werden zunächst deaktiviert.
+1. **Inputs auswählen:** benannte Eingangskanäle und Aux-/USB-Kanäle sind
+   vorausgewählt. Auch unbenannte Inputs lassen sich übernehmen. Die tatsächliche
+   Stereo-Verknüpfung hält zusammengehörige Partner zusammen.
+2. **Eingänge zuordnen:** die aus der Szene gelesene Quelle wird angezeigt.
+   Vorhandene Stageboxen und deren Buchsen können ausdrücklich zugeordnet werden.
+   Fehlende Geräte oder nicht auflösbare Quellen bleiben offen. Das Programm
+   erfindet weder ein Stagebox-Modell noch eine Position auf der Bühne.
+3. **Busverwendung bestätigen:** alle Mixbusse erscheinen unabhängig von
+   physischen Ausgängen. Erkennbare FX-Sends und Subgruppen sind vorbelegt;
+   Monitor, In-Ear oder ein anderer Verwendungszweck wird vom Benutzer gewählt.
+   Eine solche Beschreibung verändert keine Sends oder Effekte der Szene.
+4. **Ausgangsziele festlegen:** die Liste zeigt Anschluss bzw. Transportkanal,
+   Signalquelle, Abgriffpunkt und vorhandenes Delay. Die tatsächlich benötigten
+   Ausgänge werden ausgewählt und erhalten Zielnamen, beispielsweise PA links
+   oder IEM Drums. AES50-Kanal und Stagebox-Ausgangsbuchse werden ausdrücklich
+   einander zugeordnet.
 
-Die Szene enthält keine Bühnenpositionen oder verlässlichen Instrumentmodelle.
-Deshalb entstehen beim Import keine geratenen Bühnenobjekte. Mixbusse werden
-zunächst als Line-Wege geführt: Ein Bus kann Monitor, IEM, Subgruppe oder Effektweg
-sein. AUX-/USB-Eingänge bleiben ausschließlich in der Originalszene.
+Erst **I/O-Routing übernehmen** ersetzt die bisherigen Routinglisten. Die
+Bühnenobjekte bleiben erhalten; deren automatisch erzeugte Routingzeilen werden
+zunächst deaktiviert. Die gesamte Übernahme ist ein Rückgängig-Schritt.
+Abbrechen und Zurückblättern verändern das Projekt nicht. Die Alternative
+**Als Vorlage verwenden** behält die bisherigen Routinglisten.
 
-Die vollständige Vorlage gehört zum Projekt: Sie überlebt lokales Speichern,
-Neuladen, Rückgängig/Wiederholen, Projektkopien und die portable JSON-Sicherung.
-Der bestehende private Account-Abgleich behandelt sie wie die übrigen privaten
-Projektdaten. Öffentliche Freigaben und Offline-Ansichtslinks enthalten weder die
-Szenendatei noch ihren Dateinamen. Beim Entfernen der Vorlage bleiben die
-Routinglisten erhalten.
+Über **Zuordnung im Wizard bearbeiten** können gespeicherte Zuordnungen erneut
+bearbeitet werden. Vorhandene Kanalnamen und geplante Eingangsverbindungen bleiben
+beim erneuten Zuordnen erhalten. Ungültige Buchsen, widersprüchliche
+Stagebox-Anschlüsse und doppelt belegte Ausgangsbuchsen werden erklärt.
 
-## Eingangszuordnung
+## I/O-Liste
 
-Unter **Stageboxen am X32 zuordnen** wird jede verwendete Stagebox einem Anschluss
-und einem ersten Eingang zugeordnet. Beispiel: Buchse 1 einer zweiten S16
-entspricht **AES50 A, Eingang 17**.
+Nach dem Import öffnet sich unter Routing der zusätzliche Bereich **I/O-Liste**.
+Er zeigt auch nicht übernommene Einträge der Szene und bietet eine Suche:
 
-Unterstützt werden lokale Eingänge, AES50 A/B und Card-Eingänge in den vorhandenen
-8er-Blöcken der Vorlage. Der aktuelle REC-/PLAY-Modus bestimmt die verwendete
-Eingangstabelle. Ein Stagebox-Port wird darüber in einen X32-Kanalquellen-Slot
-übersetzt. Fehlende Zuordnungen oder nicht verfügbare Eingänge verhindern den
-Export mit einer Erklärung. Die App programmiert keine neuen Eingangsblöcke.
-User-In und andere unbekannte Quellen werden unverändert erhalten; ihre
-physische Zuordnung wird noch nicht aufgelöst.
+- Inputs mit Quelladresse, Stereo-Verknüpfung, Zuordnung und einzelnen Sends;
+- Mixbusse, Main und Matrizen mit Quellen, Zielen und Insert-Zuweisungen;
+- FX-Slots mit L/R-Eingängen, Returns, deren Sends und Inserts;
+- interne Output-Slots sowie physische Ausgänge und Transportkanäle.
+
+**Bus 5, Out 5 und XLR 5 sind verschiedene Identitäten.** Ausgangszeilen im
+normalen Routing stehen für die gewählten Anschlüsse und Ziele. Aux-Kanäle behalten
+ihre eigene AUX-Nummer. Die allgemeine automatische Portvergabe verändert keine
+importierten X32-Zuordnungen.
+
+Pegel, Send-Aktivierung, paarweise Abgriffpunkte und Stereo-Verknüpfungen bleiben
+unterscheidbar. Ein Send auf −∞ ist weiterhin eine konfigurierte Verbindung;
+daraus wird keine Aussage über den hörbaren Mix abgeleitet. Effektbusse werden
+aus ihrer Verbindung zum FX-Prozessor erkannt; Bus 13–16 sind nicht fest dafür
+reserviert. FX-Returns können weitere Busse speisen.
+
+CSV/PDF/XLSX verwenden weiterhin die übernommenen Routingzeilen. Das vollständige
+Szeneninventar mit allen internen Bussen und FX wird in der I/O-Liste angezeigt.
+
+## Speicherung
+
+Die Vorlage und Wizard-Zuordnungen gehören zum lokalen Projekt: Sie überleben
+Neuladen, Rückgängig/Wiederholen, Projektkopien und portable JSON-Sicherungen.
+Der private Account-Abgleich behandelt sie wie die übrigen privaten Projektdaten.
+Öffentliche Freigaben und Offline-Ansichtslinks enthalten weder die Szenendatei
+noch ihren Dateinamen oder die vollständige Szenenübersicht. Die übernommenen
+Routingzeilen bleiben Teil der normalen Ansicht. Beim Entfernen der Vorlage
+bleiben diese Zeilen erhalten.
+
+## Auflösung und Grenzen
+
+Eingangsquellen werden anhand der aktiven REC-/PLAY-Eingangsblöcke auf Local,
+AES50 A/B oder Card zurückgeführt. Aux-Remap und USB-Playback werden berücksichtigt.
+Ausgangsblöcke für lokale XLR-Anschlüsse, AES50 und Card werden auf interne
+Out-/P16-Slots oder durchgereichte Eingangsanschlüsse zurückgeführt. Aux-, Ultranet-, AES/EBU- und
+USB-Recorder-Ausgänge werden ebenfalls angezeigt. Main, Busse, Matrizen, Direct-Outs,
+FX-Returns, Monitor und Talkback werden als unterschiedliche Quellen geführt.
+
+User-In/User-Out und nicht unterstützte zusammengesetzte Bankzuordnungen bleiben
+**nicht aufgelöst** sichtbar. Ohne expliziten XLR-Patch werden interne Out-Slots
+nicht als lokale XLR-Buchsen ausgegeben. Die Szene allein identifiziert weder die
+angeschlossene Hardware noch deren Betriebsart oder Bühnenposition.
 
 ## Export
 
-**Export vorbereiten** zeigt Änderungen und Hinweise. Erst **Szene herunterladen**
-erzeugt die Datei. Übertragen werden:
+**Export vorbereiten** zeigt Änderungen und Hinweise vor dem Download.
+Übertragen werden Namen und Stereo-Paare der normalen Eingangskanäle sowie
+explizit zugeordnete Eingangssignale. Ältere Projekte mit importierten Buszeilen
+können weiterhin deren Namen und Stereo-Paare übertragen.
 
-- Namen der Eingangskanäle und Mixbusse gemäß ihren Kanal-/Busnummern;
-- vollständige Stereo-Paare mit ungerader/gerader Nummer, beispielsweise 9/10;
-- explizit zugeordnete Eingangssignale.
+Die neuen Busverwendungsangaben und Ausgangsziele dokumentieren den Aufbau.
+Aux-Namen, Ausgangsrouting, Sends, Fader, Mutes, Effekte, EQ, Dynamik und
+Vorverstärker/48 V bleiben aus der Vorlage erhalten. Ein Zielname im Stageplotter
+programmiert keinen Ausgang am Pult. Eine Umnummerierung eines normalen
+Eingangskanals überträgt Beschriftung und Quelle auf den Zielkanal; sie verschiebt
+weder dessen Klangbearbeitung noch löscht sie den ursprünglichen Kanal.
 
-Nicht im Plan aufgeführte Kanäle bleiben erhalten. Eine Umnummerierung überträgt
-Beschriftung und Quelle auf den Zielkanal; sie verschiebt weder dessen
-Klangbearbeitung noch löscht sie den ursprünglichen Kanal. Die Vorschau weist
-darauf hin. EQ, Dynamik, Effekte, Fader, Mutes, Sends, Vorverstärker/48 V und alle
-physischen Ausgangszuordnungen bleiben aus der Vorlage erhalten. Eine
-Monitor-Stagebox-Verbindung im Plan programmiert deshalb keinen Ausgang am Pult.
-
-Geänderte Namen werden auf maximal zwölf ASCII-Zeichen abgebildet; Umlaute werden
-umschrieben und lange Namen gekürzt. Jede solche Anpassung erscheint vor dem
-Download als Hinweis. Unveränderte Originalnamen bleiben exakt erhalten. Dateien
-mit mehrdeutigen oder nicht unterstützten Parameterformen werden abgelehnt.
+Geänderte X32-Namen werden auf höchstens zwölf ASCII-Zeichen abgebildet; Umlaute
+werden umschrieben. Die Vorschau meldet solche Anpassungen. Unveränderte Inhalte,
+Zeilenenden und unbekannte Parameter bleiben exakt erhalten.
 
 ## Prüfstand
 
-Automatische Tests prüfen den unveränderten Datei-Roundtrip einschließlich
-Zeilenenden, die Begrenzung auf erlaubte Parameter, Quellenauflösung, Stereo-Paare,
-Fehlerfälle sowie Speicherung, Sicherung, Freigaben und Browserbedienung. Sie
-verwenden synthetische Szenen ohne Nutzerdaten.
+Synthetische Tests prüfen Quellenauflösung, nicht identische Out-/XLR-Zuordnungen,
+Stereo, Aux/USB, FX-/Subgruppenwege, Delay, unbekannte Quellen, Wizard-Validierung
+und bytegleichen Export. Browserprüfungen decken Abbrechen, Zurückblättern,
+Zuordnungen, Rückgängig, Neuladen, Sicherungen, Freigaben und schmale Ansichten ab.
+Eine Gegenprobe in X32-Edit und am Pult steht noch aus.
 
-Eine Gegenprobe in X32-Edit und am Pult steht noch aus. Die Formatumsetzung
-orientiert sich an exportierten Szenen und an den
-[X32-Formatreferenzen von Patrick Maillot](https://github.com/pmaillot/X32-Behringer)
-(unabhängige Dokumentation).
+Grundlage sind die X32-Bedienungsanleitung, exportierte Szenen und die unabhängigen
+[X32-Formatreferenzen von Patrick Maillot](https://github.com/pmaillot/X32-Behringer).

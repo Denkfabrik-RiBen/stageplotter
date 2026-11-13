@@ -18,6 +18,23 @@
     let state, sources = [], monitors = [], activeSource = '', activeMonitor = '', activeBox = '', activePort = null;
     let query = '', micQuery = '', openCard = '', pickerBox = '', error = '', destroyed = false, frame = 0, lastTab = '', toolsOpen = false, stageboxLayout = 'grid', pendingField = null;
     let stageObserver = null, resizeTarget = null, highlighted = [], diPickerRow = '', diPickerFocus = null, diPickerDevices = false, diPickerNew = false;
+    let sceneOpen = false, sceneText = null, sceneData = null, sceneError = '', sceneQuery = '';
+    const nativeOutput = row => row?.x32?.kind === 'output';
+    const nativeAux = row => row?.x32?.kind === 'aux';
+    const tabs = () => [['inputs','Quellen'],['outputs',state.routing.outputs.some(nativeOutput) ? 'Ausgänge' : 'Monitoring'],['stageboxes','Stagebox'],...(state.stage?.x32Scene ? [['x32','I/O-Liste']] : [])];
+    const viewTab = () => sceneOpen && state.stage?.x32Scene ? 'x32' : state.tab;
+    function sceneInventory() {
+      const text = state.stage?.x32Scene?.text;
+      if (text !== sceneText) {
+        sceneText = text; sceneData = null; sceneError = '';
+        if (text) try { sceneData = global.StageplotX32.inspectRouting(text); } catch (exception) { sceneError = exception.message || 'Die Szene konnte nicht gelesen werden.'; }
+      }
+      return sceneData;
+    }
+    function selectTab(tab) {
+      if (tab === 'x32' && state.stage?.x32Scene) { sceneOpen = true; toolsOpen = false; render(); return; }
+      sceneOpen = false; doAction({type:'selectTab',tab});
+    }
     host.classList.add('sp-routing-workspace-v2');
 
     const object = id => (state.objects || []).find(item => item.id === id);
@@ -74,7 +91,7 @@
       const monitorMap = new Map();
       for (const row of outputs) {
         const source = object(sourceId(row)), kind = monitorKind(row, source), id = row.stereoGroup || row.iemGroup || row.id;
-        if (!monitorMap.has(id)) monitorMap.set(id, {id, name:row.iemName || baseName(row.instrument) || 'Monitorweg', object:source, kind, rows:[]});
+        if (!monitorMap.has(id)) monitorMap.set(id, {id, name:row.iemName || baseName(row.instrument) || (nativeOutput(row) ? row.x32.label || row.x32.sourceLabel || 'X32-Ausgang' : 'Monitorweg'), object:source, kind, rows:[]});
         monitorMap.get(id).rows.push(row);
       }
       monitors = [...monitorMap.values()];
@@ -102,20 +119,20 @@
 
     function header() {
       const inputs = state.routing.inputs || [], outputs = state.routing.outputs || [], selectedRows = state.tab === 'outputs' ? outputs : inputs;
-      const boxCount = (state.boxes || []).length, total = selectedRows.length, patched = connected(selectedRows), summary = state.tab === 'stageboxes' ? boxCount + (boxCount === 1 ? ' Stagebox · ' : ' Stageboxen · ') + connected([...inputs,...outputs]) + ' Verbindungen' : state.tab === 'outputs' ? monitors.length + ' Monitorwege · ' + outputs.length + ' Ausgänge' : total + ' Signale · ' + patched + ' verbunden' + (total > patched ? ' · ' + (total - patched) + ' offen' : '');
-      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + [['inputs','Quellen'],['outputs','Monitoring'],['stageboxes','Stagebox']].map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(state.tab === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren'],['x32Scene','X32-Szene']].map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
+      const boxCount = (state.boxes || []).length, total = selectedRows.length, patched = connected(selectedRows), summary = sceneOpen ? 'Inputs · Busse & FX · Outputs' : state.tab === 'stageboxes' ? boxCount + (boxCount === 1 ? ' Stagebox · ' : ' Stageboxen · ') + connected([...inputs,...outputs]) + ' Verbindungen' : state.tab === 'outputs' ? monitors.length + (outputs.some(nativeOutput) ? ' Ausgangswege · ' : ' Monitorwege · ') + outputs.length + ' Ausgänge' : total + ' Signale · ' + patched + ' verbunden' + (total > patched ? ' · ' + (total - patched) + ' offen' : '');
+      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + tabs().map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(viewTab() === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? (sceneOpen ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['x32Scene','Zuordnung bearbeiten']] : [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren'],['x32Scene','X32-Szene']]).map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':sceneOpen || state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
     }
 
     function sidebar() {
       const tab = state.tab, stageboxTab = tab === 'stageboxes', monitoring = tab === 'outputs';
       const items = stageboxTab ? state.boxes || [] : monitoring ? monitors : sources;
-      const title = stageboxTab ? 'Stageboxen' : monitoring ? 'Monitorwege' : 'Instrumente';
+      const title = stageboxTab ? 'Stageboxen' : monitoring ? state.routing.outputs.some(nativeOutput) ? 'Ausgangswege' : 'Monitorwege' : 'Instrumente';
       const filtered = items.filter(item => normalized([item.name, ...(item.rows || []).map(row => row.instrument)].join(' ')).includes(normalized(query)));
       const rows = filtered.map(item => {
         const selected = item.id === (stageboxTab ? activeBox : monitoring ? activeMonitor : activeSource);
         const related = stageboxTab ? [...(state.routing.inputs || []), ...(state.routing.outputs || [])].filter(row => row.stagebox === item.id && row.stageboxPort) : item.rows;
         const total = related.length, linked = stageboxTab ? total : connected(related), complete = stageboxTab || total > 0 && linked === total;
-        const subtitle = stageboxTab ? (state.routing.inputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.inputs + ' In · ' + (state.routing.outputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.outputs + ' Out' : monitoring ? kindName(item.kind) + ' · ' + (item.rows.length > 1 && item.rows[0].stereoGroup ? 'Stereo' : 'Mono') : total ? total + (total === 1 ? ' Signal' : ' Signale') + (monoLabel(item.rows) === 'Stereo' ? ' · Stereo' : '') : 'Noch keine Abnahme';
+        const subtitle = stageboxTab ? (state.routing.inputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.inputs + ' In · ' + (state.routing.outputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.outputs + ' Out' : monitoring ? (nativeOutput(item.rows[0]) ? item.rows[0].x32.label : kindName(item.kind)) + ' · ' + (item.rows.length > 1 && item.rows[0].stereoGroup ? 'Stereo' : 'Mono') : total ? total + (total === 1 ? ' Signal' : ' Signale') + (monoLabel(item.rows) === 'Stereo' ? ' · Stereo' : '') : 'Noch keine Abnahme';
         return '<button type="button" class="rw-list-item"' + attrs({'data-rw-select':item.id,'aria-pressed':String(selected)}) + '><span class="rw-list-art">' + icon(stageboxTab ? item.type : item.object || (monitoring ? item.kind === 'monitor' ? 'wedge' : 'rack' : 'mic')) + '</span><span class="rw-list-copy"><strong>' + esc(item.name) + '</strong><small>' + esc(subtitle) + '</small></span><span class="rw-state-dot" data-complete="' + complete + '" aria-label="' + (complete ? 'Verbunden' : linked + ' von ' + total + ' verbunden') + '">' + (complete ? '✓' : '•') + '</span></button>';
       }).join('');
       let add = '';
@@ -153,6 +170,9 @@
 
     function patchCard(rows, direction, suffix = '') {
       const key = 'patch-' + direction + '-' + idsOf(rows) + suffix, first = rows[0], assignedBox = box(first?.stagebox), linked = rows.length > 1;
+      if (direction === 'outputs' && rows.some(nativeOutput)) {
+        return '<article class="rw-card rw-patch-card">' + cardHead('Ausgang',null,art(icon(assignedBox?.type || 'mixer-wing-compact'))) + rows.map(row => '<strong class="rw-native-label">' + esc(row.x32.label || 'X32-Ausgang') + '</strong><p class="rw-card-meta">' + esc(row.stagebox && box(row.stagebox) ? box(row.stagebox).name + ' · OUT ' + row.stageboxPort : 'Zuordnung am Pult') + '</p>').join('') + (!readonly() ? button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true}) : '') + '</article>';
+      }
       if (direction === 'inputs' && first?.connector === 'Dante') {
         const source = object(sourceId(first));
         return '<article class="rw-card rw-patch-card">' + cardHead('Anschluss',null,art(icon(source || 'laptop'))) + '<strong class="rw-network-label">Dante · Netzwerk</strong><p class="rw-card-meta">RJ45 · CAT5e / CAT6</p><p class="rw-card-meta">' + esc(source?.playback?.target || 'Ziel noch offen') + '</p>' + (source?.type === 'laptop' && !readonly() ? button('Playback-Setup',{'data-rw-playback':source.id},{mutation:true}) : '') + '</article>';
@@ -284,6 +304,7 @@
     }
 
     function channelCard(row, direction = 'inputs') {
+      if (nativeAux(row)) return '<article class="rw-card rw-channel-card">' + cardHead('Aux-Kanal', null, '<div class="rw-channel-emblem" aria-hidden="true"><small>AUX</small><strong>' + esc(row.x32.channel) + '</strong></div>') + field('Kanalname',row.instrument,{'data-rw-channel-field':'instrument','data-rw-row':row.id,'data-rw-direction':direction}) + '<p class="rw-card-meta">Aux-/USB-Kanal aus der Szene</p></article>';
       return '<article class="rw-card rw-channel-card">' + cardHead('Kanal', null, '<div class="rw-channel-emblem" aria-hidden="true"><small>' + (direction === 'inputs' ? 'CH' : 'BUS') + '</small><strong>' + esc(row.number ? String(row.number).padStart(2,'0') : '—') + '</strong></div>') + field('Kanalnummer',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':direction},{type:'number',min:1,max:999,placeholder:'—',className:'rw-number-field'}) + field('Kanalname',row.instrument,{'data-rw-channel-field':'instrument','data-rw-row':row.id,'data-rw-direction':direction}) + '<p class="rw-card-meta">' + esc(row.stereoGroup ? row.mode === 'Stereo R' ? 'Stereo · R' : 'Stereo · L' : 'Mono') + '</p></article>';
     }
 
@@ -356,8 +377,9 @@
       if (!group) return '<div class="rw-empty"><strong>Noch keine Monitorwege</strong><p>Lege links einen IEM-, Wedge- oder Line-Weg an.</p></div>';
       const rows = group.rows, first = rows[0], stereo = rows.length > 1 && !!first.stereoGroup, ids = idsOf(rows), kind = group.kind, transport = first.iemTransport || 'wireless';
       if (!embedded) highlighted = [...new Set([group.object?.id,...rows.map(row => row.stagebox)].filter(Boolean))];
-      const mode = '<span class="rw-format-badge">' + kindName(kind) + '</span><div class="rw-choice-row rw-heading-choices" role="group" aria-label="Monitorformat">' + ['mono','stereo'].map(format => button(format === 'mono' ? 'Mono' : 'Stereo',{'data-rw-monitor-format':format,'data-rw-rows':ids},{pressed:stereo === (format === 'stereo'),mutation:true})).join('') + '</div>';
-      const mix = '<article class="rw-card rw-mix-card">' + cardHead('Mix',null,art(icon('mixer-wing-compact'))) + field('Mixname',group.name,{'data-rw-monitor-field':'name','data-rw-rows':ids}) + '<div class="rw-bus-fields">' + rows.map((row,index) => field(stereo ? index === 0 ? 'Bus · L' : 'Bus · R' : 'Bus',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':'outputs'},{type:'number',min:1,max:999,placeholder:'—'})).join('') + '</div><p class="rw-card-meta">' + (stereo ? 'L / R' : 'Mono') + '</p></article>';
+      const native = rows.some(nativeOutput);
+      const mode = '<span class="rw-format-badge">' + kindName(kind) + '</span>' + (native ? '<span class="rw-card-meta">Format aus der Szene</span>' : '<div class="rw-choice-row rw-heading-choices" role="group" aria-label="Monitorformat">' + ['mono','stereo'].map(format => button(format === 'mono' ? 'Mono' : 'Stereo',{'data-rw-monitor-format':format,'data-rw-rows':ids},{pressed:stereo === (format === 'stereo'),mutation:true})).join('') + '</div>');
+      const mix = native ? '<article class="rw-card rw-mix-card rw-native-source">' + cardHead('Signalquelle',null,art(icon('mixer-wing-compact'))) + rows.map(row => '<strong>' + esc(row.x32.sourceLabel || 'Quelle nicht aufgelöst') + '</strong><span>' + esc(row.x32.label || row.x32.endpoint) + '</span>').join('') + '<p class="rw-card-meta">Ausgangs-Patch aus der Szene</p></article>' : '<article class="rw-card rw-mix-card">' + cardHead('Mix',null,art(icon('mixer-wing-compact'))) + field('Mixname',group.name,{'data-rw-monitor-field':'name','data-rw-rows':ids}) + '<div class="rw-bus-fields">' + rows.map((row,index) => field(stereo ? index === 0 ? 'Bus · L' : 'Bus · R' : 'Bus',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':'outputs'},{type:'number',min:1,max:999,placeholder:'—'})).join('') + '</div><p class="rw-card-meta">' + (stereo ? 'L / R' : 'Mono') + '</p></article>';
       const equipment = '<article class="rw-card rw-monitor-device">' + cardHead('Gerät',null,art(icon(kind === 'monitor' ? 'wedge' : kind === 'iem' ? 'rack' : group.object || 'rack'))) + '<div class="rw-choice-row" role="group" aria-label="Monitorgerät">' + ['iem','monitor','line'].map(value => button(kindName(value),{'data-rw-monitor-kind':value,'data-rw-rows':ids},{pressed:kind === value,mutation:true})).join('') + '</div>' + field(kind === 'iem' ? transport === 'wireless' ? 'IEM-Sender' : 'Kopfhörerverstärker' : 'Modell',first.monitorDeviceName || '',{'data-rw-monitor-field':'monitorDeviceName','data-rw-rows':ids},{placeholder:'Gerätename'}) + (kind === 'iem' ? '<div class="rw-choice-row" role="group" aria-label="IEM-Übertragung">' + [['wireless','Funk'],['cable','Kabel']].map(([value,label]) => button(label,{'data-rw-monitor-value':'iemTransport','data-rw-value':value,'data-rw-rows':ids},{pressed:transport === value,mutation:true})).join('') + '</div>' + (transport === 'wireless' ? field('Frequenz',first.frequencyBand,{'data-rw-monitor-field':'frequencyBand','data-rw-rows':ids},{placeholder:'MHz'}) : '') : kind === 'monitor' ? '<div class="rw-choice-row" role="group" aria-label="Wedge-Bauart">' + [true,false].map(active => button(active ? 'Aktiv' : 'Passiv',{'data-rw-monitor-value':'monitorActive','data-rw-value':String(active),'data-rw-rows':ids},{pressed:(first.monitorActive !== false) === active,mutation:true})).join('') + '</div>' + (first.monitorActive === false ? field('Endstufe',first.monitorAmplifierName,{'data-rw-monitor-field':'monitorAmplifierName','data-rw-rows':ids},{placeholder:'Endstufenmodell'}) : '') : '') + '<p class="rw-card-meta">' + (stereo ? 'Stereo' : 'Mono') + '</p></article>';
       const recipient = '<article class="rw-card rw-monitor-recipient">' + cardHead(kind === 'iem' ? 'Empfänger' : 'Musiker',null,art(icon(kind === 'iem' ? 'iem-earphones' : group.object || 'wedge'))) + field('Musiker',first.monitorReceiverName || first.iemName || group.name,{'data-rw-monitor-field':'monitorReceiverName','data-rw-rows':ids}) + '<p class="rw-card-meta">' + (kind === 'iem' ? transport === 'wireless' ? 'Bodypack · ' : 'Kabel · ' : '') + (stereo ? 'Stereo' : 'Mono') + '</p></article>';
       const chosenBox = box(first.stagebox), compactPorts = chosenBox ? '<section class="rw-monitor-ports"><h3>' + esc(chosenBox.name) + ' · Ausgänge</h3>' + ports('outputs', chosenBox,rows) + '</section>' : '';
@@ -388,7 +410,7 @@
           content += direction === 'inputs' && source ? sourceFlow(source,occupied) : monitor ? monitorView(monitor,true) : channelCard(occupied,direction);
           if (!readonly()) content += button('Verbindung lösen',{'data-rw-unpatch':occupied.id,'data-rw-direction':direction},{className:'rw-quiet-danger',mutation:true});
         } else {
-          content += '<div class="rw-open-port"><strong>Freie Buchse</strong>' + (readonly() ? '' : '<div class="rw-route-choices">' + (state.routing[direction] || []).filter(row => (!row.stagebox || !row.stageboxPort) && row.connector !== 'Dante' && (!row.stereoGroup || row.mode !== 'Stereo R')).map(row => {
+          content += '<div class="rw-open-port"><strong>Freie Buchse</strong>' + (readonly() ? '' : '<div class="rw-route-choices">' + (state.routing[direction] || []).filter(row => !nativeOutput(row) && (!row.stagebox || !row.stageboxPort) && row.connector !== 'Dante' && (!row.stereoGroup || row.mode !== 'Stereo R')).map(row => {
             const members = stereoRows([row],direction), pair = members.length > 1, invalid = members.some((member,index) => activePort.port + index > selectedBox[direction] || (state.routing[direction] || []).some(occupant => !members.some(item => item.id === occupant.id) && occupant.stagebox === selectedBox.id && Number(occupant.stageboxPort) === activePort.port + index));
             return button('<strong>' + esc(pair ? baseName(row.instrument) : row.instrument) + '</strong><small>' + (pair ? 'Stereo · L / R · ' : '') + esc(direction === 'inputs' ? row.microphone || pickupName(pickupKind(row)) : kindName(monitorKind(row,object(sourceId(row))))) + '</small>',{'data-rw-patch':activePort.port,'data-rw-box':selectedBox.id,'data-rw-direction':direction,'data-rw-rows':idsOf(members)},{className:'rw-route-choice',disabled:invalid,mutation:true});
           }).join('') + '</div>') + '</div>';
@@ -398,12 +420,68 @@
       return content;
     }
 
+    function sceneView() {
+      const inventory = sceneInventory();
+      if (!inventory) return '<p class="rw-error" role="alert">' + esc(sceneError || 'Keine X32-Szene vorhanden.') + '</p>';
+      const wizard = state.stage.x32Scene.wizard || {}, roleNames = {unspecified:'Noch offen',monitor:'Monitor',iem:'IEM',subgroup:'Subgruppe',fx:'Effektweg',line:'Line', 'fx-send':'Effektweg'};
+      const inputRow = entry => state.routing.inputs.find(row => row.x32?.kind === entry.kind && row.x32.channel === entry.number);
+      const outputRow = entry => state.routing.outputs.find(row => nativeOutput(row) && row.x32.endpoint === entry.id);
+      const busRow = entry => state.routing.outputs.find(row => row.x32?.kind === 'bus' && row.x32.channel === entry.number);
+      const names = new Map([...inventory.inputs,...inventory.buses,...inventory.matrices,...inventory.mains,...inventory.returns].map(entry => [entry.id, (entry.kind === 'channel' || entry.kind === 'aux') && inputRow(entry)?.instrument ? (entry.kind === 'channel' ? 'CH ' : 'Aux ') + entry.number + (inputRow(entry).number && inputRow(entry).number !== entry.number ? ' → CH ' + inputRow(entry).number + ' geplant' : '') + ' · ' + inputRow(entry).instrument : entry.kind === 'bus' && busRow(entry)?.instrument ? 'Bus ' + entry.number + ' · ' + busRow(entry).instrument : entry.label]));
+      const matches = values => !sceneQuery || normalized(values.join(' ')).includes(normalized(sceneQuery));
+      const text = value => esc(value || '—');
+      const target = (row,assignment,direction) => {
+        const stagebox = row ? row.stagebox : assignment?.stagebox, port = row ? row.stageboxPort : assignment?.port;
+        return stagebox && box(stagebox) ? box(stagebox).name + ' · ' + (direction === 'inputs' ? 'IN ' : 'OUT ') + (port || '—') : stagebox ? 'Stagebox nicht verfügbar' : 'Noch nicht zugeordnet';
+      };
+      const status = entry => entry.enabled === false ? 'aus' : entry.enabled === true ? 'an' : 'nicht angegeben';
+      const level = entry => entry.level === '-oo' ? '−∞ dB' : entry.level !== null && entry.level !== undefined ? entry.level + ' dB' : 'Pegel nicht angegeben';
+      const sendDetails = (sends,label='Sends',incoming=false) => !sends.length ? '—' : '<details class="rw-scene-sends"><summary>' + sends.length + ' ' + esc(label) + '</summary><ul>' + sends.map(send => '<li>' + text(names.get(incoming ? send.sourceId : send.destinationId) || send.sourceLabel || send.destinationId) + ' · ' + esc(status(send) + ' · ' + level(send) + (send.tap ? ' · ' + send.tap : '')) + '</li>').join('') + '</ul></details>';
+      const table = (title,columns,rows,id) => '<section class="rw-scene-section" data-rw-scene-section="' + id + '"><h3>' + esc(title) + ' <span>' + rows.length + '</span></h3><div class="rw-scene-table-scroll" role="region" aria-label="' + esc(title) + '" tabindex="0"><table><thead><tr>' + columns.map(column => '<th scope="col">' + esc(column) + '</th>').join('') + '</tr></thead><tbody>' + (rows.length ? rows.join('') : '<tr><td colspan="' + columns.length + '">Keine passenden Einträge.</td></tr>') + '</tbody></table></div></section>';
+      const tr = (id,cells) => '<tr data-rw-scene-id="' + esc(id) + '">' + cells.map(cell => '<td>' + cell + '</td>').join('') + '</tr>';
+      const inputs = inventory.inputs.flatMap(entry => {
+        const row = inputRow(entry), assignment = (wizard.inputAssignments || []).find(item => item.inputId === entry.id), name = (row ? row.instrument : entry.name) || 'Ohne Namen', source = entry.sourceAddress?.label || 'Nicht aufgelöst';
+        if (!matches([entry.label,name,source,target(row,assignment,'inputs')])) return [];
+        return [tr(entry.id,[text((entry.kind === 'channel' ? 'CH ' : 'Aux ') + entry.number + (entry.kind === 'channel' && row?.number && row.number !== entry.number ? ' → CH ' + row.number + ' geplant' : '')),text(name),'<span class="rw-scene-resolution" data-resolved="' + String(entry.sourceAddress?.resolved === true) + '">' + text(source) + '</span>',text(entry.linkedWith ? 'Stereo mit ' + entry.linkedWith : 'Mono'),text(row ? target(row,assignment,'inputs') : 'Nicht übernommen'),sendDetails(entry.sends || [])])];
+      });
+      const buses = [...inventory.buses,...inventory.mains,...inventory.matrices].flatMap(entry => {
+        const assignment = (wizard.busRoles || []).find(item => item.bus === entry.number), role = entry.kind === 'bus' ? roleNames[assignment?.role] || (entry.roles || []).map(role => roleNames[role] || role).join(' / ') || 'Noch offen' : entry.kind === 'main' ? 'Hauptsumme' : 'Matrix';
+        const label = names.get(entry.id) || entry.label, destinations = [];
+        if (entry.mix?.mainStereo) destinations.push('Main L/R');
+        if (entry.mix?.mainMono) destinations.push('Main M/C');
+        if (entry.fxSlots?.length) destinations.push(...entry.fxSlots.map(number => 'FX ' + number));
+        const outputs = inventory.outputs.filter(output => output.source?.id === entry.id);
+        if (outputs.length) destinations.push(...outputs.map(output => output.label));
+        if (!matches([label,role,...destinations])) return [];
+        const incoming = entry.kind === 'matrix' ? [...inventory.buses,...inventory.mains].flatMap(source => source.sends.filter(send => send.destinationId === entry.id).map(send => ({...send,sourceId:source.id}))) : entry.sources || [];
+        const insert = entry.insert?.slot ? '<small class="rw-scene-extra">Insert FX ' + entry.insert.slot + esc(entry.insert.side) + ' · ' + esc(status(entry.insert)) + ' · ' + esc(entry.insert.position) + '</small>' : '';
+        return [tr(entry.id,[text(label),text(role) + insert,text(entry.linkedWith ? 'Stereo mit ' + entry.linkedWith : entry.id === 'main-st' ? 'Stereo' : 'Mono'),sendDetails(incoming,'Quellen',true),text(destinations.join(', ')) + (entry.sends?.length ? sendDetails(entry.sends,'Matrix-Sends') : '')])];
+      });
+      const effects = inventory.fx.flatMap(entry => {
+        const left = names.get(entry.left?.id) || entry.left?.label, right = names.get(entry.right?.id) || entry.right?.label, effectReturns = inventory.returns.filter(item => entry.returns.includes(item.id)), inserts = (entry.inserts || []).map(item => (names.get(item.targetId) || item.targetId) + ' · ' + item.side + ' · ' + status(item) + ' · ' + item.position);
+        if (!matches(['FX ' + entry.number,entry.type,left,right,...inserts,...effectReturns.map(item => item.label)])) return [];
+        const returns = effectReturns.map(item => '<div class="rw-scene-return"><strong>' + text('FX ' + entry.number + ' ' + item.side + (item.name ? ' · ' + item.name : '')) + '</strong><small>' + esc([item.mix.mainStereo ? 'Main L/R' : '',item.mix.mainMono ? 'Main M/C' : '',status(item.mix),level(item.mix)].filter(Boolean).join(' · ')) + '</small>' + sendDetails(item.sends) + '</div>').join('');
+        return [tr(entry.id,[text('FX ' + entry.number),text(entry.type),text('L: ' + (left || 'offen') + ' · R: ' + (right || 'offen')),returns || '—',text(inserts.join('; '))])];
+      });
+      const outputs = inventory.outputs.flatMap(entry => {
+        const row = outputRow(entry), assignment = (wizard.outputAssignments || []).find(item => item.outputId === entry.id), destination = row?.monitorReceiverName || row?.instrument || assignment?.destination || 'Noch offen', source = entry.source?.kind === 'main' ? entry.source.label : names.get(entry.source?.id) || entry.source?.label || 'Nicht aufgelöst';
+        if (!matches([entry.label,source,destination,target(row,assignment,'outputs'),entry.block])) return [];
+        return [tr(entry.id,[text(entry.label),'<span class="rw-scene-resolution" data-resolved="' + String(entry.resolved === true) + '">' + text(source) + '</span><small class="rw-scene-extra">' + text(inventory.outputSlots.find(slot => slot.id === entry.slotId)?.label || entry.block) + '</small>',text(entry.tap),text(entry.delay?.enabled ? entry.delay.ms + ' ms' : 'Aus'),text(destination),text(row || assignment ? target(row,assignment,'outputs') : 'Nicht übernommen')])];
+      });
+      const outputSlots = inventory.outputSlots.flatMap(entry => {
+        const source = entry.source?.kind === 'main' ? entry.source.label : names.get(entry.source?.id) || entry.source?.label || 'Nicht aufgelöst', connections = inventory.outputs.filter(output => output.slotId === entry.id).map(output => output.label);
+        if (!matches([entry.label,source,...connections])) return [];
+        return [tr('slot-' + entry.id,[text(entry.label),'<span class="rw-scene-resolution" data-resolved="' + String(entry.source?.resolved === true) + '">' + text(source) + '</span>',text(entry.tap),text(entry.delay?.enabled ? entry.delay.ms + ' ms' : 'Aus'),text(connections.join(', ') || 'Kein aufgelöster Anschluss')])];
+      });
+      return heading('I/O-Liste der X32-Szene',readonly() ? '' : button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true})) + '<p class="rw-scene-intro">' + text(inventory.scene.name || state.stage.x32Scene.filename) + ' · Die Liste zeigt auch nicht übernommene Kanäle und Anschlüsse. Pegel und Send-Zustände stammen aus der Szene.</p><label class="rw-scene-search"><span>In der Szene suchen</span><input type="search" data-rw-scene-search data-rw-focus="scene-search" value="' + esc(sceneQuery) + '" placeholder="Kanal, Bus, FX oder Ausgang …"></label>' + (inventory.warnings.length ? '<details class="rw-scene-warnings"><summary>' + inventory.warnings.length + ' Hinweise zur Zuordnung</summary><ul>' + inventory.warnings.map(warning => '<li>' + esc(warning) + '</li>').join('') + '</ul></details>' : '') + table('Inputs',['Kanal','Name','Quelle am X32','Format','Stageplot-Zuordnung','Sends'],inputs,'inputs') + table('Busse, Main & Matrizen',['Signal','Verwendung','Format','Quellen','Ziele'],buses,'buses') + table('Effekte & Returns',['Slot','Effekttyp','Eingänge','Returns & Sends','Inserts'],effects,'fx') + table('Interne Output-Slots',['Slot','Signalquelle','Abgriff','Verzögerung','Zugeordnete Anschlüsse'],outputSlots,'output-slots') + table('Physische Ausgänge & Transportkanäle',['Anschluss','Signalquelle','Abgriff','Verzögerung','Ziel','Stageplot-Zuordnung'],outputs,'outputs');
+    }
+
     function footer() {
       const saved = state.saveState || api.getSaveState?.();
       const label = readonly() ? 'Nur Ansicht' : typeof saved === 'string' ? saved : saved?.text || 'Lokaler Entwurf';
       const list = state.tab === 'outputs' ? monitors : sources, active = state.tab === 'outputs' ? activeMonitor : activeSource;
       const index = list.findIndex(item => item.id === active), next = list.length > 1 ? list[(index + 1) % list.length] : null;
-      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
+      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (sceneOpen || state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
     }
 
     function preserveFocus() {
@@ -434,13 +512,14 @@
       const focus = preserveFocus(), mainScroll = host.querySelector('.rw-main')?.scrollTop || 0, listScroll = host.querySelector('.rw-source-list')?.scrollTop || 0, outputScroll = host.querySelector('.rw-output-port-list')?.scrollTop || 0, flowScroll = host.querySelector('.rw-flow-scroll')?.scrollLeft || 0;
       state = api.getState() || {}; state.routing = state.routing || state.stage?.routing || {inputs:[],outputs:[]};
       if (!['inputs','outputs','stageboxes'].includes(state.tab)) state.tab = 'inputs';
-      if (state.tab !== lastTab) { query = ''; openCard = ''; diPickerRow = ''; lastTab = state.tab; error = ''; }
+      if (!state.stage?.x32Scene) sceneOpen = false;
+      if (state.tab !== lastTab) { sceneOpen = false; query = ''; openCard = ''; diPickerRow = ''; lastTab = state.tab; error = ''; }
       groups(); highlighted = [];
-      const content = state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
-      host.dataset.readonly = String(readonly()); host.dataset.tab = state.tab;
-      host.innerHTML = header() + '<div class="rw-layout">' + sidebar() + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
+      const content = sceneOpen ? sceneView() : state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
+      host.dataset.readonly = String(readonly()); host.dataset.tab = viewTab();
+      host.innerHTML = header() + '<div class="rw-layout">' + (sceneOpen ? '' : sidebar()) + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
       host.querySelector('.rw-main').scrollTop = mainScroll;
-      host.querySelector('.rw-source-list').scrollTop = listScroll;
+      if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
       if (host.querySelector('.rw-flow-scroll')) host.querySelector('.rw-flow-scroll').scrollLeft = flowScroll;
       host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]||0;});
@@ -463,7 +542,7 @@
       const target = event.target.closest('button'); if (!target || !host.contains(target) || target.disabled) return;
       const data = {...target.dataset};
       if (pendingField) {const input = pendingField;pendingField = null;const saved = onChange({target:input});if(saved === false || error)return;}
-      if (data.rwTab) {doAction({type:'selectTab',tab:data.rwTab});return;}
+      if (data.rwTab) {selectTab(data.rwTab);return;}
       if (data.rwTools) {toolsOpen = !toolsOpen;render();return;}
       if (data.rwBoxLayout) {stageboxLayout = data.rwBoxLayout;render();return;}
       if (data.rwTool) {if(readonly() && !['pdf','xlsx'].includes(data.rwTool))return;doAction({type:data.rwTool,direction:state.tab === 'outputs' ? 'outputs' : 'inputs'});return;}
@@ -514,6 +593,7 @@
     }
 
     function onInput(event) {
+      if (event.target.matches('[data-rw-scene-search]')) {sceneQuery = event.target.value;render();}
       if (event.target.matches('[data-rw-search]')) {query = event.target.value;render();}
       if (event.target.matches('[data-rw-mic-search]')) {micQuery = event.target.value;const row = route(event.target.dataset.rwRow);if(row){const panel = host.querySelector('[data-rw-mic-options]');if(panel)panel.innerHTML = microphoneChoices(row);}}
     }
@@ -562,8 +642,8 @@
         return;
       }
       if (event.target.matches('[data-rw-tab]') && ['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) {
-        const tabs = ['inputs','outputs','stageboxes'], current = tabs.indexOf(state.tab), next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (current + (event.key === 'ArrowRight' ? 1 : 2)) % 3;
-        event.preventDefault();doAction({type:'selectTab',tab:tabs[next]});host.querySelector('[data-rw-tab="' + tabs[next] + '"]')?.focus();return;
+        const choices = tabs().map(([tab]) => tab), current = choices.indexOf(viewTab()), next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : choices.length - 1)) % choices.length;
+        event.preventDefault();selectTab(choices[next]);host.querySelector('[data-rw-tab="' + choices[next] + '"]')?.focus();return;
       }
       if (event.key === 'Escape' && openCard) {const source = openCard.startsWith('source-outputs-') ? openCard.slice('source-outputs-'.length) : '';openCard = '';error = '';render();if(source)[...host.querySelectorAll('[data-rw-source-outputs]')].find(button => button.dataset.rwSourceOutputs === source)?.focus({preventScroll:true});event.stopPropagation();}
       if (event.key === 'Enter' && event.target.matches('input:not([type="search"])')) {event.preventDefault();event.target.blur();}
@@ -571,9 +651,10 @@
     host.addEventListener('click',onClick); host.addEventListener('pointerdown',onPointerDown); host.addEventListener('input',onInput); host.addEventListener('change',onChange); host.addEventListener('keydown',onKeydown);
     return {
       render,
-      openSourceOutputs(id) {activeSource = id;openCard = 'source-outputs-' + id;const flow = host.querySelector('.rw-flow-scroll');if(flow)flow.scrollLeft = 0;render();host.querySelector('.rw-source-output-editor')?.scrollIntoView({block:'nearest',inline:'nearest'});host.querySelector('[data-rw-source-output-count]')?.focus({preventScroll:true});},
-      selectSource(id) {if(state?.tab === 'outputs')activeMonitor = monitors.find(group => group.id === id || group.object?.id === id || group.rows.some(row => row.id === id || sourceId(row) === id))?.id || id;else activeSource = sources.find(group => group.id === id || group.rows.some(row => row.id === id))?.id || id;openCard = '';render();},
-      selectStagebox(id,direction,port) {activeBox = id;activePort = direction && port ? {boxId:id,direction,port:Number(port)} : null;openCard = '';render();},
+      selectX32() {sceneOpen = true;render();},
+      openSourceOutputs(id) {sceneOpen = false;activeSource = id;openCard = 'source-outputs-' + id;const flow = host.querySelector('.rw-flow-scroll');if(flow)flow.scrollLeft = 0;render();host.querySelector('.rw-source-output-editor')?.scrollIntoView({block:'nearest',inline:'nearest'});host.querySelector('[data-rw-source-output-count]')?.focus({preventScroll:true});},
+      selectSource(id) {sceneOpen = false;if(state?.tab === 'outputs')activeMonitor = monitors.find(group => group.id === id || group.object?.id === id || group.rows.some(row => row.id === id || sourceId(row) === id))?.id || id;else activeSource = sources.find(group => group.id === id || group.rows.some(row => row.id === id))?.id || id;openCard = '';render();},
+      selectStagebox(id,direction,port) {sceneOpen = false;activeBox = id;activePort = direction && port ? {boxId:id,direction,port:Number(port)} : null;openCard = '';render();},
       destroy() {destroyed = true;stageObserver?.disconnect();if(frame)cancelAnimationFrame(frame);host.removeEventListener('click',onClick);host.removeEventListener('pointerdown',onPointerDown);host.removeEventListener('input',onInput);host.removeEventListener('change',onChange);host.removeEventListener('keydown',onKeydown);host.replaceChildren();}
     };
   }

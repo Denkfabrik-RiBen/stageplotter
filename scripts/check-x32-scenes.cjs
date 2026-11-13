@@ -40,13 +40,19 @@ async function waitSaved(page) {
   await page.waitForFunction(() => document.querySelector('#sp-header-draft-status').textContent === 'Lokal gespeichert');
 }
 async function openScene(page) {
-  if (!(await page.locator('[data-rw-tool="x32Scene"]').isVisible())) await page.locator('[data-rw-tools]').click();
-  await page.locator('[data-rw-tool="x32Scene"]').click();
+  if (!(await page.locator('[data-rw-tool="x32Scene"]').first().isVisible())) await page.locator('[data-rw-tools]').click();
+  await page.locator('[data-rw-tool="x32Scene"]').first().click();
   await page.locator('#sp-x32-dialog').waitFor({state:'visible'});
 }
 async function routingTool(page, name) {
-  if (!(await page.locator('[data-rw-tool="' + name + '"]').isVisible())) await page.locator('[data-rw-tools]').click();
-  await page.locator('[data-rw-tool="' + name + '"]').click();
+  if (!(await page.locator('[data-rw-tool="' + name + '"]').first().isVisible())) await page.locator('[data-rw-tools]').click();
+  await page.locator('[data-rw-tool="' + name + '"]').first().click();
+}
+async function importSelectedScene(page) {
+  if (await page.locator('#sp-x32-mode').inputValue() === 'routing') {
+    for (let step = 0; step < 3; step++) await page.locator('#sp-x32-next').click();
+  }
+  await page.locator('#sp-x32-import').click();
 }
 async function downloadScene(page) {
   await page.locator('#sp-x32-export').click();
@@ -90,7 +96,7 @@ async function downloadScene(page) {
     assert.deepEqual(comparable(await storedDocument(page)), originalDocument, 'Malformed UTF-8 is rejected without inserting replacement characters or changing the project');
 
     await page.locator('#sp-x32-file').setInputFiles({name:filename,mimeType:'text/plain',buffer:Buffer.from(scene)});
-    await page.waitForFunction(() => !document.querySelector('#sp-x32-import').disabled);
+    await page.locator('#sp-x32-wizard').waitFor({state:'visible'});
     await page.locator('#sp-x32-mode').selectOption('routing');
     assert.deepEqual(comparable(await storedDocument(page)), originalDocument, 'Selecting and previewing a valid scene does not apply it');
     await page.locator('#sp-x32-close').click();
@@ -98,9 +104,9 @@ async function downloadScene(page) {
 
     await openScene(page);
     await page.locator('#sp-x32-file').setInputFiles({name:filename,mimeType:'text/plain',buffer:Buffer.from(scene)});
-    await page.waitForFunction(() => !document.querySelector('#sp-x32-import').disabled);
+    await page.locator('#sp-x32-wizard').waitFor({state:'visible'});
     await page.locator('#sp-x32-mode').selectOption('template');
-    await page.locator('#sp-x32-import').click();
+    await importSelectedScene(page);
     await page.waitForFunction(expected => JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.x32Scene?.text === expected, scene);
     await waitSaved(page);
     const withTemplate = comparable(await storedDocument(page));
@@ -114,9 +120,9 @@ async function downloadScene(page) {
 
     if (!(await page.locator('#sp-x32-dialog').isVisible())) await openScene(page);
     await page.locator('#sp-x32-file').setInputFiles({name:filename,mimeType:'text/plain',buffer:Buffer.from(scene)});
-    await page.waitForFunction(() => !document.querySelector('#sp-x32-import').disabled);
+    await page.locator('#sp-x32-wizard').waitFor({state:'visible'});
     await page.locator('#sp-x32-mode').selectOption('routing');
-    await page.locator('#sp-x32-import').click();
+    await importSelectedScene(page);
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.inputs.some(row => row.number === 1 && row.instrument === 'KICK'));
     await waitSaved(page);
     let imported = await storedDocument(page);
@@ -128,8 +134,8 @@ async function downloadScene(page) {
     assert.equal(inputs.find(row => row.number === 3).mode, 'Stereo L');
     assert.equal(inputs.find(row => row.number === 4).mode, 'Stereo R');
     assert.equal(inputs.find(row => row.number === 3).stereoGroup, inputs.find(row => row.number === 4).stereoGroup);
-    assert.deepEqual(outputs.map(row => row.number).sort((a,b) => a-b), [1,3,4]);
-    assert.equal(outputs.find(row => row.number === 3).stereoGroup, outputs.find(row => row.number === 4).stereoGroup);
+    assert.deepEqual(outputs, [], 'Without an XLR output-bank patch, buses remain in the scene inventory and no physical output is invented');
+    assert.equal(imported.stage.x32Scene.wizard.version, 1, 'The routed import retains its wizard selections');
     await page.locator('#sp-x32-close').click();
     await routingTool(page, 'undo');
     assert.deepEqual(comparable(await storedDocument(page)), withTemplate, 'Routing import is one undo step and preserves the prior template');
@@ -140,6 +146,7 @@ async function downloadScene(page) {
     assert.equal(await downloadScene(page), scene, 'Import followed by export preserves the original bytes, including BOM, CRLF, unknown records and an unnamed linked partner');
     await page.locator('#sp-x32-close').click();
 
+    await page.locator('[data-rw-tab="inputs"]').click();
     const kickId = inputs.find(row => row.number === 1).id;
     const kickField = page.locator('[data-rw-channel-field="instrument"][data-rw-row="' + kickId + '"]');
     if (!(await kickField.isVisible())) await page.locator('.rw-list-item').filter({hasText:'KICK'}).first().click();
@@ -290,9 +297,9 @@ async function downloadScene(page) {
     await page.locator('.sp-steps [data-view="routing"]').click();
     await openScene(page);
     await page.locator('#sp-x32-file').setInputFiles({name:'replacement-template.scn',mimeType:'text/plain',buffer:Buffer.from(scene)});
-    await page.waitForFunction(() => !document.querySelector('#sp-x32-import').disabled);
+    await page.locator('#sp-x32-wizard').waitFor({state:'visible'});
     await page.locator('#sp-x32-mode').selectOption('template');
-    await page.locator('#sp-x32-import').click();
+    await importSelectedScene(page);
     await page.waitForFunction(() => JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.x32Scene.filename === 'replacement-template.scn');
     const replaced = await storedDocument(page), merged = replaced.stage.routing.inputs.find(row => row.id === kickId);
     assert.equal(merged.linkedSources.length, 1);

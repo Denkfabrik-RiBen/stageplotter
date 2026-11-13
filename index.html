@@ -550,13 +550,13 @@
   <dialog id="sp-storage-dialog" class="sp-clear-dialog" aria-labelledby="sp-storage-title"><div class="sp-dialog-heading"><h2 id="sp-storage-title">Lokale Speicherung</h2><button type="button" class="sp-button" id="sp-storage-close" aria-label="Speicherhinweis schließen">×</button></div><p>Projekte werden in diesem Browserprofil gespeichert. Es gibt keine garantierte Aufbewahrungsdauer. Beim Löschen von Website-Daten oder des Browserprofils gehen lokale Projekte verloren. Im privaten Modus werden sie in der Regel beim Schließen gelöscht; auch automatische Browserbereinigung kann Daten entfernen. Regelmäßig eine Sicherungsdatei herunterladen.</p><p>Ein Account schützt ein Projekt nur, wenn dessen Abgleich erfolgreich abgeschlossen wurde. Eine heruntergeladene Sicherungsdatei lässt sich über „Import“ wieder öffnen.</p><button type="button" class="sp-button sp-primary" id="sp-storage-backup">Sicherung herunterladen</button></dialog>
   <dialog id="sp-x32-dialog" class="sp-clear-dialog sp-x32-dialog" aria-labelledby="sp-x32-title" aria-describedby="sp-x32-description">
     <div class="sp-dialog-heading"><h2 id="sp-x32-title">X32-Szene</h2><button class="sp-button" type="button" id="sp-x32-close" aria-label="X32-Szene schließen">×</button></div>
-    <p id="sp-x32-description">Eine Szene als Vorlage laden, Kanäle im Stageplotter planen und wieder für das X32 exportieren.</p>
-    <p class="sp-muted">EQ, Effekte, Pegel, 48 V, AUX-/USB-Kanäle und der physische Ausgangs-Patch bleiben aus der Vorlage erhalten. Die Vorlage wird mit dem Projekt gesichert; öffentliche Ansichtslinks enthalten sie nicht.</p>
+    <p id="sp-x32-description">Inputs, Busse und Ausgänge aus einer Szene lesen und Schritt für Schritt dem Bühnenaufbau zuordnen.</p>
+    <p class="sp-muted">Die Szene wird lokal gelesen. Erst beim Übernehmen werden die gewählten Zuordnungen im Projekt gespeichert.</p>
     <label>Szene auswählen (.scn)<input id="sp-x32-file" type="file" accept=".scn,text/plain"></label>
     <p id="sp-x32-error" role="alert" hidden></p>
     <section id="sp-x32-preview" hidden><h3 id="sp-x32-summary"></h3><div class="sp-x32-scroll"><table><thead><tr><th scope="col">Kanal</th><th scope="col">Name</th><th scope="col">Quelle</th><th scope="col">Format</th></tr></thead><tbody id="sp-x32-preview-body"></tbody></table></div><ul id="sp-x32-warnings" class="sp-x32-warnings" hidden></ul></section>
-    <section id="sp-x32-import-options" hidden><label>Wie soll die Szene übernommen werden?<select id="sp-x32-mode"><option value="template">Als Vorlage verwenden · vorhandenes Routing behalten</option><option value="routing">Kanal- und Buslisten aus der Szene übernehmen</option></select></label><p class="sp-muted">Beim Übernehmen der Listen wird das bisherige Routing ersetzt. Die Bühnenobjekte bleiben stehen. Mixbusse werden zunächst als Line-Wege geführt; Monitore und IEM lassen sich anschließend zuordnen. AUX-/USB-Kanäle werden nicht in die Kanalliste importiert.</p><button class="sp-button sp-primary" type="button" id="sp-x32-import" disabled>Szene übernehmen</button></section>
-    <section id="sp-x32-attached" hidden><h3>Vorlage im Projekt</h3><strong id="sp-x32-filename"></strong><details><summary>Stageboxen am X32 zuordnen</summary><p>Der erste Eingang bezeichnet die Buchse am X32-Anschluss, die Buchse 1 dieser Stagebox entspricht. Beispiel: eine zweite S16 an AES50 A beginnt bei Eingang 17. Die Eingangsblöcke werden aus der Vorlage verwendet.</p><p id="sp-x32-no-stageboxes" class="sp-muted">Im Plan sind keine Stageboxen angelegt. Die Kanalquellen bleiben aus der Vorlage erhalten.</p><div id="sp-x32-mappings"></div><button type="button" class="sp-button" id="sp-x32-save-mappings">Zuordnungen speichern</button></details><div class="sp-actions"><button class="sp-button sp-primary" type="button" id="sp-x32-export">Export vorbereiten</button><button class="sp-button" type="button" id="sp-x32-remove">Vorlage entfernen</button></div><div id="sp-x32-changes"></div><button class="sp-button sp-primary" type="button" id="sp-x32-download" hidden>Szene herunterladen (.scn)</button></section>
+    <section id="sp-x32-import-options" hidden><div id="sp-x32-wizard"><p id="sp-x32-step-progress" class="sp-muted" aria-hidden="true"></p><h3 id="sp-x32-step-title" tabindex="-1"></h3><label id="sp-x32-mode-field">Wie soll die Szene übernommen werden?<select id="sp-x32-mode"><option value="routing">Inputs und Ausgangsziele in die Routingliste übernehmen</option><option value="template">Als Vorlage verwenden · vorhandenes Routing behalten</option></select></label><div id="sp-x32-wizard-body"></div><ul id="sp-x32-wizard-warnings" class="sp-x32-warnings" hidden></ul><div class="sp-actions sp-x32-wizard-actions"><button class="sp-button" type="button" id="sp-x32-back">Zurück</button><button class="sp-button sp-primary" type="button" id="sp-x32-next">Weiter</button><button class="sp-button sp-primary" type="button" id="sp-x32-import" disabled hidden>I/O-Routing übernehmen</button></div></div></section>
+    <section id="sp-x32-attached" hidden><h3>Vorlage im Projekt</h3><strong id="sp-x32-filename"></strong><button class="sp-button" type="button" id="sp-x32-edit-wizard">Zuordnung im Wizard bearbeiten</button><details><summary>Stageboxen am X32 zuordnen</summary><p>Der erste Eingang bezeichnet die Buchse am X32-Anschluss, die Buchse 1 dieser Stagebox entspricht. Beispiel: eine zweite S16 an AES50 A beginnt bei Eingang 17. Die Eingangsblöcke werden aus der Vorlage verwendet.</p><p id="sp-x32-no-stageboxes" class="sp-muted">Im Plan sind keine Stageboxen angelegt. Die Kanalquellen bleiben aus der Vorlage erhalten.</p><div id="sp-x32-mappings"></div><button type="button" class="sp-button" id="sp-x32-save-mappings">Zuordnungen speichern</button></details><div class="sp-actions"><button class="sp-button sp-primary" type="button" id="sp-x32-export">Export vorbereiten</button><button class="sp-button" type="button" id="sp-x32-remove">Vorlage entfernen</button></div><div id="sp-x32-changes"></div><button class="sp-button sp-primary" type="button" id="sp-x32-download" hidden>Szene herunterladen (.scn)</button></section>
     <p id="sp-x32-status" role="status" aria-live="polite"></p>
   </dialog>
 
@@ -767,7 +767,7 @@
           <article class="sp-release-card">
             <header><div><strong>In Entwicklung</strong></div><time datetime="2026-11-13">13. November 2026</time></header>
             <h4>X32-Szenen im Routing</h4>
-            <ul><li>Eine X32-Szene als Vorlage laden oder ihre Kanal- und Buslisten übernehmen. Namen, Stereo-Paare und zugeordnete Eingänge lassen sich vor dem Szenen-Download prüfen. Klangbearbeitung und Ausgangs-Patch bleiben erhalten; die Originalszene wird im Projekt gesichert und nicht in öffentlichen Ansichtslinks geteilt.</li></ul>
+            <ul><li>Ein Wizard führt durch Inputauswahl, Stagebox-Anschlüsse, Busverwendung und Ausgangsziele. Die I/O-Liste zeigt Inputs, Busse, Matrizen, Effekte und aufgelöste Ausgangswege getrennt. Offene Zuordnungen bleiben sichtbar. Klangbearbeitung und Ausgangs-Patch bleiben erhalten; die Originalszene wird lokal mit dem Projekt gesichert.</li></ul>
           </article>
           <article class="sp-release-card" data-current="true">
             <header><div><strong>v0.1.0-beta.31</strong><span>Aktuell</span></div><time datetime="2026-10-07">7. Oktober 2026</time></header>
@@ -6927,6 +6927,23 @@ html,body { height:100%; overflow:hidden; }
   #sp-prototype .sp-x32-mapping strong { grid-column:1/-1; }
   #sp-prototype .sp-x32-dialog :is(th,td) { padding:6px; font-size:11px; }
 }
+#sp-prototype .sp-x32-dialog input[type=checkbox] { width:20px; min-height:20px; height:20px; accent-color:var(--sp-ink); }
+#sp-prototype .sp-x32-wizard-row { display:grid; grid-template-columns:minmax(180px,1.3fr) minmax(160px,1fr) 84px; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--sp-line); }
+#sp-prototype .sp-x32-wizard-row small { display:block; margin-top:4px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+#sp-prototype .sp-x32-bus-row { grid-template-columns:minmax(180px,1.5fr) minmax(160px,1fr); }
+#sp-prototype .sp-x32-output-bank { padding:12px 0; border-bottom:1px solid var(--sp-line); }
+#sp-prototype .sp-x32-output-bank summary { cursor:pointer; padding:8px 0; font-weight:700; }
+#sp-prototype .sp-x32-output-row { padding:12px; margin:8px 0; border:1px solid var(--sp-line); border-radius:10px; background:var(--sp-soft); }
+#sp-prototype .sp-x32-check { display:flex!important; align-items:center; gap:10px!important; }
+#sp-prototype .sp-x32-output-patch { display:grid; grid-template-columns:minmax(0,1fr) 90px; gap:12px; margin-top:10px; }
+#sp-prototype .sp-x32-wizard-actions { position:sticky; bottom:-22px; padding:12px 0; background:var(--sp-panel); border-top:1px solid var(--sp-line); }
+#sp-prototype #sp-x32-edit-wizard { margin:12px 0; }
+@media(max-width:600px){
+  #sp-prototype .sp-x32-wizard-row { grid-template-columns:minmax(0,1fr) 80px; }
+  #sp-prototype .sp-x32-wizard-row>div { grid-column:1/-1; }
+  #sp-prototype .sp-x32-bus-row { grid-template-columns:1fr; }
+  #sp-prototype .sp-x32-wizard-actions { bottom:-14px; }
+}
 /* build-inline:end stageplot-x32-v1.css */
 /* build-inline:start stageplot-routing-workspace-v2.css — generiert via scripts/build-inline.cjs, nicht hier editieren */
 /* Shared, local routing workspace. The host retains ownership of project data. */
@@ -7377,6 +7394,42 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .rw-di-instance .rw-button {font-size:10px;padding:7px;min-height:34px;}
 #sp-prototype .rw-di-instance-ports {display:grid;gap:5px;margin-top:auto;}
 #sp-prototype .rw-di-picker>.rw-add {margin-top:14px;}
+/* Scene inventory keeps console buses distinct from physical output connectors. */
+#sp-prototype .sp-routing-workspace-v2[data-tab="x32"] .rw-layout {grid-template-columns:minmax(0,1fr);}
+#sp-prototype .rw-navigation-row:has([data-rw-tab="x32"]) {margin-left:0;flex-wrap:wrap;}
+#sp-prototype .rw-native-source {justify-content:flex-start;}
+#sp-prototype .rw-native-source>strong,#sp-prototype .rw-native-label {font-size:14px;text-align:center;overflow-wrap:anywhere;}
+#sp-prototype .rw-native-source>span {text-align:center;color:var(--rw-muted);font-size:12px;}
+#sp-prototype .rw-scene-intro {max-width:850px;margin:-12px 0 20px;line-height:1.5;color:var(--rw-muted);}
+#sp-prototype .rw-scene-search {display:grid;gap:6px;max-width:480px;margin-bottom:20px;font-size:12px;}
+#sp-prototype .rw-scene-search input {width:100%;min-width:0;min-height:40px;padding:9px 12px;border:1px solid var(--rw-border);border-radius:6px;background:var(--rw-paper);}
+#sp-prototype .rw-scene-search input:focus-visible,#sp-prototype .rw-scene-table-scroll:focus-visible {outline:2px solid var(--rw-accent);outline-offset:3px;}
+#sp-prototype .rw-scene-section {margin:26px 0;min-width:0;}
+#sp-prototype .rw-scene-section h3 {display:flex;align-items:center;gap:9px;font-size:17px;margin:0 0 12px;}
+#sp-prototype .rw-scene-section h3>span {padding:2px 7px;border-radius:10px;background:var(--rw-highlight);color:var(--rw-accent);font-size:11px;}
+#sp-prototype .rw-scene-table-scroll {overflow-x:auto;border:1px solid var(--rw-border);border-radius:7px;background:var(--rw-paper);}
+#sp-prototype .rw-scene-table-scroll table {width:100%;min-width:680px;border-collapse:collapse;font-size:12px;line-height:1.45;}
+#sp-prototype .rw-scene-table-scroll th,#sp-prototype .rw-scene-table-scroll td {padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--rw-border);}
+#sp-prototype .rw-scene-table-scroll th {font-size:11px;background:var(--rw-soft);color:var(--rw-muted);font-weight:600;}
+#sp-prototype .rw-scene-table-scroll th:first-child {min-width:85px;}
+#sp-prototype .rw-scene-table-scroll tr:last-child td {border-bottom:0;}
+#sp-prototype .rw-scene-table-scroll td {max-width:340px;overflow-wrap:anywhere;}
+#sp-prototype .rw-scene-extra {display:block;margin-top:4px;color:var(--rw-muted);font-size:10px;}
+#sp-prototype .rw-scene-sends {min-width:90px;margin:3px 0;}
+#sp-prototype .rw-scene-sends summary,#sp-prototype .rw-scene-warnings summary {cursor:pointer;min-height:25px;color:var(--rw-accent);}
+#sp-prototype .rw-scene-sends ul {padding-left:16px;max-width:360px;min-width:220px;font-size:11px;}
+#sp-prototype .rw-scene-sends li {margin:6px 0;}
+#sp-prototype .rw-scene-return {min-width:190px;margin:0 0 12px;}
+#sp-prototype .rw-scene-return>small {display:block;margin-top:4px;color:var(--rw-muted);}
+#sp-prototype .rw-scene-resolution[data-resolved="false"] {color:light-dark(#895510,#e3bb6d);}
+#sp-prototype .rw-scene-warnings {padding:12px;border:1px solid var(--rw-border);border-radius:6px;background:var(--rw-soft);font-size:12px;line-height:1.5;}
+@media(max-width:760px) {
+  #sp-prototype .sp-routing-workspace-v2[data-tab="x32"] .rw-layout {display:flex;}
+  #sp-prototype .rw-scene-intro {font-size:12px;margin-top:-10px;}
+  #sp-prototype .rw-scene-section {margin:22px 0;}
+  #sp-prototype .rw-scene-section h3 {font-size:15px;}
+  #sp-prototype .rw-scene-table-scroll th,#sp-prototype .rw-scene-table-scroll td {padding:9px;}
+}
 /* build-inline:end stageplot-routing-workspace-v2.css */
 </style>
 <style>
@@ -9369,6 +9422,168 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     return {inputs:inRows,outputs:outRows,summary:{name:scene.name,inputCount:inRows.length,busCount:outRows.length,channelPairs:scene.channelLinks.filter(pair=>pair.every(number=>inRows.some(row=>row.number===number))).length,busPairs:scene.busLinks.filter(pair=>pair.every(number=>outRows.some(row=>row.number===number))).length,auxCount:scene.auxInputs.length},warnings};
   }
 
+  // A read-only inventory for the import wizard. Native output slots and
+  // connector/transport destinations are deliberately different objects.
+  // Unknown banks/selectors stay visible and never become guessed hardware.
+  function inspectRouting(text){
+    const data=read(text),scene=data.result,warnings=scene.warnings.slice();
+    const values=path=>(data.records.get(path)?.parts||[]).map(part=>part.value);
+    const on=value=>value==='ON'?true:value==='OFF'?false:null;
+    const numeric=value=>value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
+    const pairs=(path,count)=>{
+      const flags=values(path);
+      if(flags.length&& (flags.length!==count||flags.some(value=>!['ON','OFF'].includes(value)))){warnings.push('Stereo-Zuordnung '+path+' ist nicht auflösbar.');return [];}
+      return flags.flatMap((value,index)=>value==='ON'?[[index*2+1,index*2+2]]:[]);
+    };
+    const auxLinks=pairs('/config/auxlink',4),returnLinks=pairs('/config/fxlink',4),matrixLinks=pairs('/config/mtxlink',3);
+    const physical=(bank,port)=>({bank,port,label:(BANKS[bank]?.label||{aux:'Aux In',usb:'USB Playback'}[bank]||bank)+' '+port,resolved:true});
+    const unknownSource=source=>({bank:'unknown',port:null,label:source===0?'Aus':'X32-Quelle '+source+' (nicht aufgelöst)',resolved:source===0});
+    const inputAddress=source=>{
+      if(source>=1&&source<=32){const {source:slot,...address}=scene.routing.sources[source-1];return address;}
+      if(source>=33&&source<=38){
+        const port=source-32,remap=scene.routing.banks[4]||'';
+        if(remap==='AUX1-4')return physical('aux',port);
+        const match=/^(AN|A|B|CARD)1-([246])$/.exec(remap);
+        if(match)return port<=Number(match[2])?physical({AN:'local',A:'aes50-a',B:'aes50-b',CARD:'card'}[match[1]],port):physical('aux',port);
+        return {...unknownSource(source),label:'Aux '+port+(remap?' · '+remap:'')+' (nicht aufgelöst)'};
+      }
+      if(source===39||source===40)return physical('usb',source-38);
+      // Additional native selectors and User-In require their exact firmware
+      // table. Keeping them opaque is safer than inventing an input socket.
+      return unknownSource(source);
+    };
+    const mix=path=>{
+      const raw=values(path+'/mix');
+      const main=path.startsWith('/main/');
+      return {enabled:on(raw[0]),level:raw[1]??null,levelDb:numeric(raw[1]),mainStereo:main?null:on(raw[2]),pan:main?(path==='/main/st'?numeric(raw[2]):null):numeric(raw[3]),mainMono:main?null:on(raw[4]),monoLevel:main?null:raw[5]??null};
+    };
+    const sends=(path,destinationKind,count)=>{
+      const list=[];
+      for(let number=1;number<=count;number++){
+        const raw=values(path+'/mix/'+pad(number));if(!raw.length)continue;
+        const first=number%2?number:number-1,pair=values(path+'/mix/'+pad(first));
+        list.push({number,destinationKind,destinationId:destinationKind+'-'+number,enabled:on(raw[0]),level:raw[1]??null,levelDb:numeric(raw[1]),tap:pair[3]||'',pair:[first,first+1],pan:numeric(pair[2]),panFollow:numeric(pair[4])});
+      }
+      return list;
+    };
+    const insert=(path,id)=>{
+      const raw=values(path+'/insert');if(!raw.length)return null;
+      const match=/^FX([1-8])([LR])$/.exec(raw[2]||'');
+      return {targetId:id,enabled:on(raw[0]),position:raw[1]||'',source:raw[2]||'',slot:match?Number(match[1]):null,side:match?match[2]:null};
+    };
+    const strip=(kind,entry,path,links,destinationKind='bus',count=16)=>{
+      const id=kind+'-'+entry.number,pair=links.find(pair=>pair.includes(entry.number));
+      return {...entry,id,kind,label:({channel:'CH',aux:'Aux',bus:'Bus',matrix:'Matrix',return:'FX Return'}[kind]||kind)+' '+entry.number+(entry.name?' · '+entry.name:''),linkedWith:pair?pair.find(number=>number!==entry.number):null,mix:mix(path),sends:sends(path,destinationKind,count),insert:insert(path,id)};
+    };
+    const configEntries=(prefix,max)=>{
+      const entries=[];
+      for(let number=1;number<=max;number++){
+        const raw=values('/'+prefix+'/'+pad(number)+'/config');if(!raw.length)continue;
+        entries.push({number,name:raw[0],icon:raw[1]||'',color:raw[2]||''});
+      }
+      return entries;
+    };
+    const inputs=[...scene.channels.map(entry=>strip('channel',{...entry,sourceAddress:inputAddress(entry.source)},'/ch/'+pad(entry.number),scene.channelLinks)),...scene.auxInputs.map(entry=>strip('aux',{...entry,sourceAddress:inputAddress(entry.source)},'/auxin/'+pad(entry.number),auxLinks))];
+    const buses=scene.buses.map(entry=>strip('bus',entry,'/bus/'+pad(entry.number),scene.busLinks,'matrix',6));
+    const matrices=configEntries('mtx',6).map(entry=>strip('matrix',entry,'/mtx/'+pad(entry.number),matrixLinks,'matrix',0));
+    const returns=configEntries('fxrtn',8).map(entry=>({...strip('return',entry,'/fxrtn/'+pad(entry.number),returnLinks),slot:Math.ceil(entry.number/2),side:entry.number%2?'L':'R'}));
+    const mains=['st','m'].filter(key=>values('/main/'+key+'/config').length||values('/main/'+key+'/mix').length).map(key=>({id:'main-'+key,kind:'main',number:key==='st'?1:3,name:values('/main/'+key+'/config')[0]||'',label:key==='st'?'Main L/R':'Main M/C',mix:mix('/main/'+key),sends:sends('/main/'+key,'matrix',6),insert:insert('/main/'+key,'main-'+key)}));
+    const inserts=[...inputs,...buses,...matrices,...returns,...mains].flatMap(entry=>entry.insert?[entry.insert]:[]);
+    const fxSource=token=>{
+      const match=/^MIX(\d+)$/.exec(token||'');
+      if(match&&integer(match[1],1,16))return {kind:'bus',number:Number(match[1]),id:'bus-'+Number(match[1]),label:'Bus '+Number(match[1]),resolved:true};
+      if(token==='INS')return {kind:'insert',number:null,id:'',label:'Insert',resolved:true};
+      if(token==='M/C')return {kind:'main',number:3,id:'main-m',label:'Main M/C',resolved:true};
+      return {kind:'unknown',number:null,id:'',label:token||'Nicht angegeben',resolved:false};
+    };
+    const fx=[];
+    for(let number=1;number<=8;number++){
+      const raw=values('/fx/'+number),leaf=values('/fx/'+number+'/type'),sources=values('/fx/'+number+'/source');
+      if(!raw.length&&!leaf.length&&!sources.length)continue;
+      const assigned=inserts.filter(entry=>entry.slot===number);
+      fx.push({id:'fx-'+number,number,type:raw[0]||leaf[0]||'',left:fxSource(sources[0]||(number>4?'INS':'')),right:fxSource(sources[1]||(number>4?'INS':'')),returns:returns.filter(entry=>entry.slot===number).map(entry=>entry.id),inserts:assigned});
+    }
+    for(const bus of buses){
+      bus.fxSlots=fx.filter(slot=>[slot.left,slot.right].some(source=>source.kind==='bus'&&source.number===bus.number)).map(slot=>slot.number);
+      bus.roles=[];if(bus.fxSlots.length)bus.roles.push('fx-send');
+      bus.sources=[...inputs,...returns].flatMap(entry=>entry.sends.filter(send=>send.number===bus.number).map(send=>({...send,sourceId:entry.id,sourceLabel:entry.label})));
+      if(bus.sources.some(send=>send.enabled===true&&send.tap==='GRP'))bus.roles.push('subgroup');
+      bus.main={stereo:bus.mix.mainStereo,mono:bus.mix.mainMono};
+    }
+    const sourceRef=code=>{
+      const base={code,kind:'unknown',number:null,channel:null,id:'',label:'X32-Ausgangsquelle '+code+' (nicht aufgelöst)',resolved:false};
+      if(!integer(code,0,65535))return base;
+      if(code===0)return {...base,kind:'off',label:'Aus',resolved:true};
+      let kind,number,entry,label;
+      if(code>=1&&code<=3){kind='main';number=code;label=['','Main L','Main R','Main M/C'][code];}
+      else if(code<=19){kind='bus';number=code-3;entry=buses.find(item=>item.number===number);label='Bus '+number;}
+      else if(code<=25){kind='matrix';number=code-19;entry=matrices.find(item=>item.number===number);label='Matrix '+number;}
+      else if(code<=57){kind='channel';number=code-25;entry=inputs.find(item=>item.kind==='channel'&&item.number===number);label='CH '+number;}
+      else if(code<=65){kind='aux';number=code-57;entry=inputs.find(item=>item.kind==='aux'&&item.number===number);label='Aux '+number;}
+      else if(code<=73){kind='return';number=code-65;entry=returns.find(item=>item.number===number);label='FX '+Math.ceil(number/2)+(number%2?' L':' R');}
+      else if(code<=75){kind='monitor';number=code-73;label='Monitor '+(number===1?'L':'R');}
+      else if(code===76){kind='talkback';number=1;label='Talkback';}
+      else return base;
+      return {...base,kind,number,channel:number,id:kind==='main'?(number===3?'main-m':'main-st'):kind+'-'+number,label:label+(entry?.name?' · '+entry.name:''),resolved:true};
+    };
+    const outputSlots=[];
+    for(const [kind,count] of [['main',16],['aux',6],['p16',16],['aes',2],['rec',2]])for(let number=1;number<=count;number++){
+      const path='/outputs/'+kind+'/'+pad(number),raw=values(path);if(!raw.length)continue;
+      const delay=values(path+'/delay');
+      outputSlots.push({id:'output-'+kind+'-'+number,kind,number,label:({main:'Out',aux:'Aux Out',p16:'Ultranet',aes:'AES/EBU',rec:'USB Recorder'}[kind])+' '+(['aes','rec'].includes(kind)?number===1?'L':'R':number),source:sourceRef(numeric(raw[0])),tap:raw[1]||'',polarity:on(raw[2]),delay:delay.length?{enabled:on(delay[0]),ms:numeric(delay[1])}:null});
+    }
+    const unknownOutput=block=>({slotId:null,source:{kind:'unknown',number:null,channel:null,id:'',label:(block||'Nicht angegeben')+' (nicht aufgelöst)',resolved:false},tap:'',delay:null,resolved:false});
+    const resolveBlock=(block,index,size)=>{
+      const match=/^(OUT|P16|AN|A|B|CARD)(\d+)-(\d+)$/.exec(block||'');
+      if(!match||Number(match[3])-Number(match[2])+1!==size)return unknownOutput(block);
+      const number=Number(match[2])+index,kind=match[1];
+      if(kind==='OUT'||kind==='P16'){
+        const slot=outputSlots.find(slot=>slot.kind===(kind==='OUT'?'main':'p16')&&slot.number===number);
+        return slot?{slotId:slot.id,source:{...slot.source},tap:slot.tap,delay:slot.delay,polarity:slot.polarity,resolved:slot.source.resolved}:unknownOutput(block);
+      }
+      const bank={AN:'local',A:'aes50-a',B:'aes50-b',CARD:'card'}[kind];
+      if(number<1||number>BANKS[bank].limit)return unknownOutput(block);
+      return {slotId:null,source:{kind:'input-port',number,channel:number,id:'input-'+bank+'-'+number,bank,port:number,label:BANKS[bank].label+' '+number,resolved:true},tap:'',delay:null,resolved:true};
+    };
+    const outputs=[];
+    for(const [bank,path,size,label] of [['local','OUT',4,'XLR'],['aes50-a','AES50A',8,'AES50 A'],['aes50-b','AES50B',8,'AES50 B'],['card','CARD',8,'Card']]){
+      const blocks=values('/config/routing/'+path),max=bank==='local'?4:bank==='card'?4:6;
+      for(let group=0;group<Math.min(blocks.length,max);group++)for(let index=0;index<size;index++){
+        const port=group*size+index+1;outputs.push({id:'output-'+bank+'-'+port,bank,port,label:label+' '+port,block:blocks[group],...resolveBlock(blocks[group],index,size)});
+      }
+    }
+    for(const slot of outputSlots.filter(slot=>slot.kind!=='main'))outputs.push({id:slot.id,bank:slot.kind,port:slot.number,label:slot.label,block:'',slotId:slot.id,source:{...slot.source},tap:slot.tap,delay:slot.delay,polarity:slot.polarity,resolved:slot.source.resolved});
+    if(!values('/config/routing/OUT').length)warnings.push('Die Zuordnung der lokalen XLR-Ausgänge fehlt; Out 1–16 werden nicht mit XLR-Buchsen gleichgesetzt.');
+    if(outputs.some(output=>!output.resolved))warnings.push('Einige Ausgangsblöcke oder Signalquellen sind nicht auflösbar. Diese Zuordnungen bleiben als offen gekennzeichnet.');
+    if(inputs.some(input=>!input.sourceAddress.resolved))warnings.push('Einige Eingangsquellen sind nicht auflösbar. Die ursprünglichen Quellnummern bleiben erhalten.');
+    return {scene,inputs,buses,matrices,mains,fx,returns,inserts,outputSlots,outputs,warnings:[...new Set(warnings)]};
+  }
+
+  function normalizeWizard(value){
+    if(value==null)return null;
+    if(!object(value)||value.version!==1)fail('Ungültige X32-Importzuordnungen.');
+    const bounded=(value,max,label)=>{
+      if(typeof value!=='string'||value.length>max||/[\u0000-\u001f\u007f]/.test(value))fail('Ungültige '+label+' im X32-Import.');
+      return value.trim();
+    };
+    const list=(value,max,label)=>{if(value==null)return [];if(!Array.isArray(value)||value.length>max)fail('Ungültige '+label+' im X32-Import.');return value;};
+    const unique=(items,key,label)=>{const ids=new Set();for(const item of items){const id=key(item);if(ids.has(id))fail('Doppelte '+label+' im X32-Import.');ids.add(id);}return items;};
+    const inputIds=unique(list(value.inputIds,40,'Eingangsauswahl').map(id=>{const result=bounded(id,40,'Eingangskennung');if(!/^(?:channel-(?:[1-9]|[12]\d|3[0-2])|aux-[1-8])$/.test(result))fail('Ungültige Eingangskennung im X32-Import.');return result;}),id=>id,'Eingangskennung');
+    const roles=new Set(['unspecified','monitor','iem','subgroup','fx','line']);
+    const busRoles=unique(list(value.busRoles,16,'Buszuordnungen').map(item=>{if(!object(item)||!integer(item.bus,1,16)||!roles.has(item.role))fail('Ungültige Buszuordnung im X32-Import.');return {bus:Number(item.bus),role:item.role};}),item=>item.bus,'Buszuordnung');
+    const assignments=(raw,direction)=>unique(list(raw,direction==='input'?40:170,'Anschlusszuordnungen').map(item=>{
+      const key=direction+'Id';if(!object(item))fail('Ungültige Anschlusszuordnung im X32-Import.');
+      const id=bounded(item[key],64,'Anschlusskennung');
+      const outputMatch=/^output-(local|aes50-a|aes50-b|card|aux|p16|aes|rec)-([1-9]\d?)$/.exec(id),limits={local:16,'aes50-a':48,'aes50-b':48,card:32,aux:6,p16:16,aes:2,rec:2};
+      if(direction==='input'?!/^(?:channel-(?:[1-9]|[12]\d|3[0-2])|aux-[1-8])$/.test(id):!outputMatch||Number(outputMatch[2])>limits[outputMatch[1]])fail('Ungültige Anschlusskennung im X32-Import.');
+      const stagebox=bounded(item.stagebox??'',100,'Stageboxkennung');
+      if(item.port!=null&&!integer(item.port,1,64))fail('Ungültige Anschlussnummer im X32-Import.');
+      if(!stagebox&&item.port!=null)fail('Eine X32-Anschlussnummer benötigt eine Stagebox-Zuordnung.');
+      return {[key]:id,...(direction==='output'?{destination:bounded(item.destination??'',100,'Zielbezeichnung')}:{}),stagebox,port:item.port==null?null:Number(item.port)};
+    }),item=>item[direction+'Id'],'Anschlusszuordnung');
+    return {version:1,inputIds,busRoles,outputAssignments:assignments(value.outputAssignments,'output'),inputAssignments:assignments(value.inputAssignments,'input')};
+  }
+
   function normalizeMappings(value){
     if(value==null)return [];
     if(!Array.isArray(value)||value.length>128)fail('Ungültige X32-Stagebox-Zuordnungen.');
@@ -9388,7 +9603,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if(validationCache.size>2)validationCache.delete(validationCache.keys().next().value);
     }
     const filename=cleanText(value.filename).split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,120)||'X32-Vorlage.scn';
-    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings)};
+    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings),...(value.wizard!=null?{wizard:normalizeWizard(value.wizard)}:{})};
   }
 
   function label(value,current,path,warnings){
@@ -9484,7 +9699,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     return {text:data.lines.map(line=>line.body+line.ending).join(''),changes,warnings};
   }
 
-  return {parse,importRouting,exportScene,normalizeAttachment,normalizeMappings,MAX_TEXT,BANKS};
+  return {parse,inspectRouting,importRouting,exportScene,normalizeAttachment,normalizeMappings,normalizeWizard,MAX_TEXT,BANKS};
 });
 /* build-inline:end stageplot-x32-v1.js */
 /* build-inline:start stageplot-routing-model-v2.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
@@ -9675,6 +9890,23 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     let state, sources = [], monitors = [], activeSource = '', activeMonitor = '', activeBox = '', activePort = null;
     let query = '', micQuery = '', openCard = '', pickerBox = '', error = '', destroyed = false, frame = 0, lastTab = '', toolsOpen = false, stageboxLayout = 'grid', pendingField = null;
     let stageObserver = null, resizeTarget = null, highlighted = [], diPickerRow = '', diPickerFocus = null, diPickerDevices = false, diPickerNew = false;
+    let sceneOpen = false, sceneText = null, sceneData = null, sceneError = '', sceneQuery = '';
+    const nativeOutput = row => row?.x32?.kind === 'output';
+    const nativeAux = row => row?.x32?.kind === 'aux';
+    const tabs = () => [['inputs','Quellen'],['outputs',state.routing.outputs.some(nativeOutput) ? 'Ausgänge' : 'Monitoring'],['stageboxes','Stagebox'],...(state.stage?.x32Scene ? [['x32','I/O-Liste']] : [])];
+    const viewTab = () => sceneOpen && state.stage?.x32Scene ? 'x32' : state.tab;
+    function sceneInventory() {
+      const text = state.stage?.x32Scene?.text;
+      if (text !== sceneText) {
+        sceneText = text; sceneData = null; sceneError = '';
+        if (text) try { sceneData = global.StageplotX32.inspectRouting(text); } catch (exception) { sceneError = exception.message || 'Die Szene konnte nicht gelesen werden.'; }
+      }
+      return sceneData;
+    }
+    function selectTab(tab) {
+      if (tab === 'x32' && state.stage?.x32Scene) { sceneOpen = true; toolsOpen = false; render(); return; }
+      sceneOpen = false; doAction({type:'selectTab',tab});
+    }
     host.classList.add('sp-routing-workspace-v2');
 
     const object = id => (state.objects || []).find(item => item.id === id);
@@ -9731,7 +9963,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const monitorMap = new Map();
       for (const row of outputs) {
         const source = object(sourceId(row)), kind = monitorKind(row, source), id = row.stereoGroup || row.iemGroup || row.id;
-        if (!monitorMap.has(id)) monitorMap.set(id, {id, name:row.iemName || baseName(row.instrument) || 'Monitorweg', object:source, kind, rows:[]});
+        if (!monitorMap.has(id)) monitorMap.set(id, {id, name:row.iemName || baseName(row.instrument) || (nativeOutput(row) ? row.x32.label || row.x32.sourceLabel || 'X32-Ausgang' : 'Monitorweg'), object:source, kind, rows:[]});
         monitorMap.get(id).rows.push(row);
       }
       monitors = [...monitorMap.values()];
@@ -9759,20 +9991,20 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
 
     function header() {
       const inputs = state.routing.inputs || [], outputs = state.routing.outputs || [], selectedRows = state.tab === 'outputs' ? outputs : inputs;
-      const boxCount = (state.boxes || []).length, total = selectedRows.length, patched = connected(selectedRows), summary = state.tab === 'stageboxes' ? boxCount + (boxCount === 1 ? ' Stagebox · ' : ' Stageboxen · ') + connected([...inputs,...outputs]) + ' Verbindungen' : state.tab === 'outputs' ? monitors.length + ' Monitorwege · ' + outputs.length + ' Ausgänge' : total + ' Signale · ' + patched + ' verbunden' + (total > patched ? ' · ' + (total - patched) + ' offen' : '');
-      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + [['inputs','Quellen'],['outputs','Monitoring'],['stageboxes','Stagebox']].map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(state.tab === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren'],['x32Scene','X32-Szene']].map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
+      const boxCount = (state.boxes || []).length, total = selectedRows.length, patched = connected(selectedRows), summary = sceneOpen ? 'Inputs · Busse & FX · Outputs' : state.tab === 'stageboxes' ? boxCount + (boxCount === 1 ? ' Stagebox · ' : ' Stageboxen · ') + connected([...inputs,...outputs]) + ' Verbindungen' : state.tab === 'outputs' ? monitors.length + (outputs.some(nativeOutput) ? ' Ausgangswege · ' : ' Monitorwege · ') + outputs.length + ' Ausgänge' : total + ' Signale · ' + patched + ' verbunden' + (total > patched ? ' · ' + (total - patched) + ' offen' : '');
+      return '<header class="rw-header"><div class="rw-title-row"><h1>Routing</h1>' + button('Werkzeuge',{'data-rw-tools':'true','aria-expanded':String(toolsOpen)},{className:'rw-tools-button'}) + '</div><div class="rw-navigation-row"><nav class="rw-tabs" role="tablist" aria-label="Routing-Bereiche">' + tabs().map(([tab,label]) => '<button type="button" role="tab" data-rw-tab="' + tab + '" aria-selected="' + String(viewTab() === tab) + '" aria-controls="sp-routing-detail-v2">' + label + '</button>').join('') + '</nav><span class="rw-summary">' + esc(summary) + '</span></div>' + (toolsOpen ? '<div class="rw-tools" role="group" aria-label="Routing-Werkzeuge">' + (!readonly() ? (sceneOpen ? [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['x32Scene','Zuordnung bearbeiten']] : [['undo','↶ Rückgängig'],['redo','↷ Wiederholen'],['number','Freie Kanalnummern'],['autoPatch','Automatisch verbinden'],['csvImport','CSV importieren'],['x32Scene','X32-Szene']]).map(([action,label]) => button(label,{'data-rw-tool':action},{mutation:true})).join('') : '') + [['pdf','PDF / Drucken'],['xlsx','XLSX']].map(([action,label]) => button(label,{'data-rw-tool':action})).join('') + button('CSV exportieren',{'data-rw-export':sceneOpen || state.tab === 'stageboxes' ? 'all' : state.tab}) + '</div>' : '') + '</header>';
     }
 
     function sidebar() {
       const tab = state.tab, stageboxTab = tab === 'stageboxes', monitoring = tab === 'outputs';
       const items = stageboxTab ? state.boxes || [] : monitoring ? monitors : sources;
-      const title = stageboxTab ? 'Stageboxen' : monitoring ? 'Monitorwege' : 'Instrumente';
+      const title = stageboxTab ? 'Stageboxen' : monitoring ? state.routing.outputs.some(nativeOutput) ? 'Ausgangswege' : 'Monitorwege' : 'Instrumente';
       const filtered = items.filter(item => normalized([item.name, ...(item.rows || []).map(row => row.instrument)].join(' ')).includes(normalized(query)));
       const rows = filtered.map(item => {
         const selected = item.id === (stageboxTab ? activeBox : monitoring ? activeMonitor : activeSource);
         const related = stageboxTab ? [...(state.routing.inputs || []), ...(state.routing.outputs || [])].filter(row => row.stagebox === item.id && row.stageboxPort) : item.rows;
         const total = related.length, linked = stageboxTab ? total : connected(related), complete = stageboxTab || total > 0 && linked === total;
-        const subtitle = stageboxTab ? (state.routing.inputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.inputs + ' In · ' + (state.routing.outputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.outputs + ' Out' : monitoring ? kindName(item.kind) + ' · ' + (item.rows.length > 1 && item.rows[0].stereoGroup ? 'Stereo' : 'Mono') : total ? total + (total === 1 ? ' Signal' : ' Signale') + (monoLabel(item.rows) === 'Stereo' ? ' · Stereo' : '') : 'Noch keine Abnahme';
+        const subtitle = stageboxTab ? (state.routing.inputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.inputs + ' In · ' + (state.routing.outputs || []).filter(row => row.stagebox === item.id && row.stageboxPort).length + '/' + item.outputs + ' Out' : monitoring ? (nativeOutput(item.rows[0]) ? item.rows[0].x32.label : kindName(item.kind)) + ' · ' + (item.rows.length > 1 && item.rows[0].stereoGroup ? 'Stereo' : 'Mono') : total ? total + (total === 1 ? ' Signal' : ' Signale') + (monoLabel(item.rows) === 'Stereo' ? ' · Stereo' : '') : 'Noch keine Abnahme';
         return '<button type="button" class="rw-list-item"' + attrs({'data-rw-select':item.id,'aria-pressed':String(selected)}) + '><span class="rw-list-art">' + icon(stageboxTab ? item.type : item.object || (monitoring ? item.kind === 'monitor' ? 'wedge' : 'rack' : 'mic')) + '</span><span class="rw-list-copy"><strong>' + esc(item.name) + '</strong><small>' + esc(subtitle) + '</small></span><span class="rw-state-dot" data-complete="' + complete + '" aria-label="' + (complete ? 'Verbunden' : linked + ' von ' + total + ' verbunden') + '">' + (complete ? '✓' : '•') + '</span></button>';
       }).join('');
       let add = '';
@@ -9810,6 +10042,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
 
     function patchCard(rows, direction, suffix = '') {
       const key = 'patch-' + direction + '-' + idsOf(rows) + suffix, first = rows[0], assignedBox = box(first?.stagebox), linked = rows.length > 1;
+      if (direction === 'outputs' && rows.some(nativeOutput)) {
+        return '<article class="rw-card rw-patch-card">' + cardHead('Ausgang',null,art(icon(assignedBox?.type || 'mixer-wing-compact'))) + rows.map(row => '<strong class="rw-native-label">' + esc(row.x32.label || 'X32-Ausgang') + '</strong><p class="rw-card-meta">' + esc(row.stagebox && box(row.stagebox) ? box(row.stagebox).name + ' · OUT ' + row.stageboxPort : 'Zuordnung am Pult') + '</p>').join('') + (!readonly() ? button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true}) : '') + '</article>';
+      }
       if (direction === 'inputs' && first?.connector === 'Dante') {
         const source = object(sourceId(first));
         return '<article class="rw-card rw-patch-card">' + cardHead('Anschluss',null,art(icon(source || 'laptop'))) + '<strong class="rw-network-label">Dante · Netzwerk</strong><p class="rw-card-meta">RJ45 · CAT5e / CAT6</p><p class="rw-card-meta">' + esc(source?.playback?.target || 'Ziel noch offen') + '</p>' + (source?.type === 'laptop' && !readonly() ? button('Playback-Setup',{'data-rw-playback':source.id},{mutation:true}) : '') + '</article>';
@@ -9941,6 +10176,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     }
 
     function channelCard(row, direction = 'inputs') {
+      if (nativeAux(row)) return '<article class="rw-card rw-channel-card">' + cardHead('Aux-Kanal', null, '<div class="rw-channel-emblem" aria-hidden="true"><small>AUX</small><strong>' + esc(row.x32.channel) + '</strong></div>') + field('Kanalname',row.instrument,{'data-rw-channel-field':'instrument','data-rw-row':row.id,'data-rw-direction':direction}) + '<p class="rw-card-meta">Aux-/USB-Kanal aus der Szene</p></article>';
       return '<article class="rw-card rw-channel-card">' + cardHead('Kanal', null, '<div class="rw-channel-emblem" aria-hidden="true"><small>' + (direction === 'inputs' ? 'CH' : 'BUS') + '</small><strong>' + esc(row.number ? String(row.number).padStart(2,'0') : '—') + '</strong></div>') + field('Kanalnummer',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':direction},{type:'number',min:1,max:999,placeholder:'—',className:'rw-number-field'}) + field('Kanalname',row.instrument,{'data-rw-channel-field':'instrument','data-rw-row':row.id,'data-rw-direction':direction}) + '<p class="rw-card-meta">' + esc(row.stereoGroup ? row.mode === 'Stereo R' ? 'Stereo · R' : 'Stereo · L' : 'Mono') + '</p></article>';
     }
 
@@ -10013,8 +10249,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (!group) return '<div class="rw-empty"><strong>Noch keine Monitorwege</strong><p>Lege links einen IEM-, Wedge- oder Line-Weg an.</p></div>';
       const rows = group.rows, first = rows[0], stereo = rows.length > 1 && !!first.stereoGroup, ids = idsOf(rows), kind = group.kind, transport = first.iemTransport || 'wireless';
       if (!embedded) highlighted = [...new Set([group.object?.id,...rows.map(row => row.stagebox)].filter(Boolean))];
-      const mode = '<span class="rw-format-badge">' + kindName(kind) + '</span><div class="rw-choice-row rw-heading-choices" role="group" aria-label="Monitorformat">' + ['mono','stereo'].map(format => button(format === 'mono' ? 'Mono' : 'Stereo',{'data-rw-monitor-format':format,'data-rw-rows':ids},{pressed:stereo === (format === 'stereo'),mutation:true})).join('') + '</div>';
-      const mix = '<article class="rw-card rw-mix-card">' + cardHead('Mix',null,art(icon('mixer-wing-compact'))) + field('Mixname',group.name,{'data-rw-monitor-field':'name','data-rw-rows':ids}) + '<div class="rw-bus-fields">' + rows.map((row,index) => field(stereo ? index === 0 ? 'Bus · L' : 'Bus · R' : 'Bus',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':'outputs'},{type:'number',min:1,max:999,placeholder:'—'})).join('') + '</div><p class="rw-card-meta">' + (stereo ? 'L / R' : 'Mono') + '</p></article>';
+      const native = rows.some(nativeOutput);
+      const mode = '<span class="rw-format-badge">' + kindName(kind) + '</span>' + (native ? '<span class="rw-card-meta">Format aus der Szene</span>' : '<div class="rw-choice-row rw-heading-choices" role="group" aria-label="Monitorformat">' + ['mono','stereo'].map(format => button(format === 'mono' ? 'Mono' : 'Stereo',{'data-rw-monitor-format':format,'data-rw-rows':ids},{pressed:stereo === (format === 'stereo'),mutation:true})).join('') + '</div>');
+      const mix = native ? '<article class="rw-card rw-mix-card rw-native-source">' + cardHead('Signalquelle',null,art(icon('mixer-wing-compact'))) + rows.map(row => '<strong>' + esc(row.x32.sourceLabel || 'Quelle nicht aufgelöst') + '</strong><span>' + esc(row.x32.label || row.x32.endpoint) + '</span>').join('') + '<p class="rw-card-meta">Ausgangs-Patch aus der Szene</p></article>' : '<article class="rw-card rw-mix-card">' + cardHead('Mix',null,art(icon('mixer-wing-compact'))) + field('Mixname',group.name,{'data-rw-monitor-field':'name','data-rw-rows':ids}) + '<div class="rw-bus-fields">' + rows.map((row,index) => field(stereo ? index === 0 ? 'Bus · L' : 'Bus · R' : 'Bus',row.number,{'data-rw-channel-field':'number','data-rw-row':row.id,'data-rw-direction':'outputs'},{type:'number',min:1,max:999,placeholder:'—'})).join('') + '</div><p class="rw-card-meta">' + (stereo ? 'L / R' : 'Mono') + '</p></article>';
       const equipment = '<article class="rw-card rw-monitor-device">' + cardHead('Gerät',null,art(icon(kind === 'monitor' ? 'wedge' : kind === 'iem' ? 'rack' : group.object || 'rack'))) + '<div class="rw-choice-row" role="group" aria-label="Monitorgerät">' + ['iem','monitor','line'].map(value => button(kindName(value),{'data-rw-monitor-kind':value,'data-rw-rows':ids},{pressed:kind === value,mutation:true})).join('') + '</div>' + field(kind === 'iem' ? transport === 'wireless' ? 'IEM-Sender' : 'Kopfhörerverstärker' : 'Modell',first.monitorDeviceName || '',{'data-rw-monitor-field':'monitorDeviceName','data-rw-rows':ids},{placeholder:'Gerätename'}) + (kind === 'iem' ? '<div class="rw-choice-row" role="group" aria-label="IEM-Übertragung">' + [['wireless','Funk'],['cable','Kabel']].map(([value,label]) => button(label,{'data-rw-monitor-value':'iemTransport','data-rw-value':value,'data-rw-rows':ids},{pressed:transport === value,mutation:true})).join('') + '</div>' + (transport === 'wireless' ? field('Frequenz',first.frequencyBand,{'data-rw-monitor-field':'frequencyBand','data-rw-rows':ids},{placeholder:'MHz'}) : '') : kind === 'monitor' ? '<div class="rw-choice-row" role="group" aria-label="Wedge-Bauart">' + [true,false].map(active => button(active ? 'Aktiv' : 'Passiv',{'data-rw-monitor-value':'monitorActive','data-rw-value':String(active),'data-rw-rows':ids},{pressed:(first.monitorActive !== false) === active,mutation:true})).join('') + '</div>' + (first.monitorActive === false ? field('Endstufe',first.monitorAmplifierName,{'data-rw-monitor-field':'monitorAmplifierName','data-rw-rows':ids},{placeholder:'Endstufenmodell'}) : '') : '') + '<p class="rw-card-meta">' + (stereo ? 'Stereo' : 'Mono') + '</p></article>';
       const recipient = '<article class="rw-card rw-monitor-recipient">' + cardHead(kind === 'iem' ? 'Empfänger' : 'Musiker',null,art(icon(kind === 'iem' ? 'iem-earphones' : group.object || 'wedge'))) + field('Musiker',first.monitorReceiverName || first.iemName || group.name,{'data-rw-monitor-field':'monitorReceiverName','data-rw-rows':ids}) + '<p class="rw-card-meta">' + (kind === 'iem' ? transport === 'wireless' ? 'Bodypack · ' : 'Kabel · ' : '') + (stereo ? 'Stereo' : 'Mono') + '</p></article>';
       const chosenBox = box(first.stagebox), compactPorts = chosenBox ? '<section class="rw-monitor-ports"><h3>' + esc(chosenBox.name) + ' · Ausgänge</h3>' + ports('outputs', chosenBox,rows) + '</section>' : '';
@@ -10045,7 +10282,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
           content += direction === 'inputs' && source ? sourceFlow(source,occupied) : monitor ? monitorView(monitor,true) : channelCard(occupied,direction);
           if (!readonly()) content += button('Verbindung lösen',{'data-rw-unpatch':occupied.id,'data-rw-direction':direction},{className:'rw-quiet-danger',mutation:true});
         } else {
-          content += '<div class="rw-open-port"><strong>Freie Buchse</strong>' + (readonly() ? '' : '<div class="rw-route-choices">' + (state.routing[direction] || []).filter(row => (!row.stagebox || !row.stageboxPort) && row.connector !== 'Dante' && (!row.stereoGroup || row.mode !== 'Stereo R')).map(row => {
+          content += '<div class="rw-open-port"><strong>Freie Buchse</strong>' + (readonly() ? '' : '<div class="rw-route-choices">' + (state.routing[direction] || []).filter(row => !nativeOutput(row) && (!row.stagebox || !row.stageboxPort) && row.connector !== 'Dante' && (!row.stereoGroup || row.mode !== 'Stereo R')).map(row => {
             const members = stereoRows([row],direction), pair = members.length > 1, invalid = members.some((member,index) => activePort.port + index > selectedBox[direction] || (state.routing[direction] || []).some(occupant => !members.some(item => item.id === occupant.id) && occupant.stagebox === selectedBox.id && Number(occupant.stageboxPort) === activePort.port + index));
             return button('<strong>' + esc(pair ? baseName(row.instrument) : row.instrument) + '</strong><small>' + (pair ? 'Stereo · L / R · ' : '') + esc(direction === 'inputs' ? row.microphone || pickupName(pickupKind(row)) : kindName(monitorKind(row,object(sourceId(row))))) + '</small>',{'data-rw-patch':activePort.port,'data-rw-box':selectedBox.id,'data-rw-direction':direction,'data-rw-rows':idsOf(members)},{className:'rw-route-choice',disabled:invalid,mutation:true});
           }).join('') + '</div>') + '</div>';
@@ -10055,12 +10292,68 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       return content;
     }
 
+    function sceneView() {
+      const inventory = sceneInventory();
+      if (!inventory) return '<p class="rw-error" role="alert">' + esc(sceneError || 'Keine X32-Szene vorhanden.') + '</p>';
+      const wizard = state.stage.x32Scene.wizard || {}, roleNames = {unspecified:'Noch offen',monitor:'Monitor',iem:'IEM',subgroup:'Subgruppe',fx:'Effektweg',line:'Line', 'fx-send':'Effektweg'};
+      const inputRow = entry => state.routing.inputs.find(row => row.x32?.kind === entry.kind && row.x32.channel === entry.number);
+      const outputRow = entry => state.routing.outputs.find(row => nativeOutput(row) && row.x32.endpoint === entry.id);
+      const busRow = entry => state.routing.outputs.find(row => row.x32?.kind === 'bus' && row.x32.channel === entry.number);
+      const names = new Map([...inventory.inputs,...inventory.buses,...inventory.matrices,...inventory.mains,...inventory.returns].map(entry => [entry.id, (entry.kind === 'channel' || entry.kind === 'aux') && inputRow(entry)?.instrument ? (entry.kind === 'channel' ? 'CH ' : 'Aux ') + entry.number + (inputRow(entry).number && inputRow(entry).number !== entry.number ? ' → CH ' + inputRow(entry).number + ' geplant' : '') + ' · ' + inputRow(entry).instrument : entry.kind === 'bus' && busRow(entry)?.instrument ? 'Bus ' + entry.number + ' · ' + busRow(entry).instrument : entry.label]));
+      const matches = values => !sceneQuery || normalized(values.join(' ')).includes(normalized(sceneQuery));
+      const text = value => esc(value || '—');
+      const target = (row,assignment,direction) => {
+        const stagebox = row ? row.stagebox : assignment?.stagebox, port = row ? row.stageboxPort : assignment?.port;
+        return stagebox && box(stagebox) ? box(stagebox).name + ' · ' + (direction === 'inputs' ? 'IN ' : 'OUT ') + (port || '—') : stagebox ? 'Stagebox nicht verfügbar' : 'Noch nicht zugeordnet';
+      };
+      const status = entry => entry.enabled === false ? 'aus' : entry.enabled === true ? 'an' : 'nicht angegeben';
+      const level = entry => entry.level === '-oo' ? '−∞ dB' : entry.level !== null && entry.level !== undefined ? entry.level + ' dB' : 'Pegel nicht angegeben';
+      const sendDetails = (sends,label='Sends',incoming=false) => !sends.length ? '—' : '<details class="rw-scene-sends"><summary>' + sends.length + ' ' + esc(label) + '</summary><ul>' + sends.map(send => '<li>' + text(names.get(incoming ? send.sourceId : send.destinationId) || send.sourceLabel || send.destinationId) + ' · ' + esc(status(send) + ' · ' + level(send) + (send.tap ? ' · ' + send.tap : '')) + '</li>').join('') + '</ul></details>';
+      const table = (title,columns,rows,id) => '<section class="rw-scene-section" data-rw-scene-section="' + id + '"><h3>' + esc(title) + ' <span>' + rows.length + '</span></h3><div class="rw-scene-table-scroll" role="region" aria-label="' + esc(title) + '" tabindex="0"><table><thead><tr>' + columns.map(column => '<th scope="col">' + esc(column) + '</th>').join('') + '</tr></thead><tbody>' + (rows.length ? rows.join('') : '<tr><td colspan="' + columns.length + '">Keine passenden Einträge.</td></tr>') + '</tbody></table></div></section>';
+      const tr = (id,cells) => '<tr data-rw-scene-id="' + esc(id) + '">' + cells.map(cell => '<td>' + cell + '</td>').join('') + '</tr>';
+      const inputs = inventory.inputs.flatMap(entry => {
+        const row = inputRow(entry), assignment = (wizard.inputAssignments || []).find(item => item.inputId === entry.id), name = (row ? row.instrument : entry.name) || 'Ohne Namen', source = entry.sourceAddress?.label || 'Nicht aufgelöst';
+        if (!matches([entry.label,name,source,target(row,assignment,'inputs')])) return [];
+        return [tr(entry.id,[text((entry.kind === 'channel' ? 'CH ' : 'Aux ') + entry.number + (entry.kind === 'channel' && row?.number && row.number !== entry.number ? ' → CH ' + row.number + ' geplant' : '')),text(name),'<span class="rw-scene-resolution" data-resolved="' + String(entry.sourceAddress?.resolved === true) + '">' + text(source) + '</span>',text(entry.linkedWith ? 'Stereo mit ' + entry.linkedWith : 'Mono'),text(row ? target(row,assignment,'inputs') : 'Nicht übernommen'),sendDetails(entry.sends || [])])];
+      });
+      const buses = [...inventory.buses,...inventory.mains,...inventory.matrices].flatMap(entry => {
+        const assignment = (wizard.busRoles || []).find(item => item.bus === entry.number), role = entry.kind === 'bus' ? roleNames[assignment?.role] || (entry.roles || []).map(role => roleNames[role] || role).join(' / ') || 'Noch offen' : entry.kind === 'main' ? 'Hauptsumme' : 'Matrix';
+        const label = names.get(entry.id) || entry.label, destinations = [];
+        if (entry.mix?.mainStereo) destinations.push('Main L/R');
+        if (entry.mix?.mainMono) destinations.push('Main M/C');
+        if (entry.fxSlots?.length) destinations.push(...entry.fxSlots.map(number => 'FX ' + number));
+        const outputs = inventory.outputs.filter(output => output.source?.id === entry.id);
+        if (outputs.length) destinations.push(...outputs.map(output => output.label));
+        if (!matches([label,role,...destinations])) return [];
+        const incoming = entry.kind === 'matrix' ? [...inventory.buses,...inventory.mains].flatMap(source => source.sends.filter(send => send.destinationId === entry.id).map(send => ({...send,sourceId:source.id}))) : entry.sources || [];
+        const insert = entry.insert?.slot ? '<small class="rw-scene-extra">Insert FX ' + entry.insert.slot + esc(entry.insert.side) + ' · ' + esc(status(entry.insert)) + ' · ' + esc(entry.insert.position) + '</small>' : '';
+        return [tr(entry.id,[text(label),text(role) + insert,text(entry.linkedWith ? 'Stereo mit ' + entry.linkedWith : entry.id === 'main-st' ? 'Stereo' : 'Mono'),sendDetails(incoming,'Quellen',true),text(destinations.join(', ')) + (entry.sends?.length ? sendDetails(entry.sends,'Matrix-Sends') : '')])];
+      });
+      const effects = inventory.fx.flatMap(entry => {
+        const left = names.get(entry.left?.id) || entry.left?.label, right = names.get(entry.right?.id) || entry.right?.label, effectReturns = inventory.returns.filter(item => entry.returns.includes(item.id)), inserts = (entry.inserts || []).map(item => (names.get(item.targetId) || item.targetId) + ' · ' + item.side + ' · ' + status(item) + ' · ' + item.position);
+        if (!matches(['FX ' + entry.number,entry.type,left,right,...inserts,...effectReturns.map(item => item.label)])) return [];
+        const returns = effectReturns.map(item => '<div class="rw-scene-return"><strong>' + text('FX ' + entry.number + ' ' + item.side + (item.name ? ' · ' + item.name : '')) + '</strong><small>' + esc([item.mix.mainStereo ? 'Main L/R' : '',item.mix.mainMono ? 'Main M/C' : '',status(item.mix),level(item.mix)].filter(Boolean).join(' · ')) + '</small>' + sendDetails(item.sends) + '</div>').join('');
+        return [tr(entry.id,[text('FX ' + entry.number),text(entry.type),text('L: ' + (left || 'offen') + ' · R: ' + (right || 'offen')),returns || '—',text(inserts.join('; '))])];
+      });
+      const outputs = inventory.outputs.flatMap(entry => {
+        const row = outputRow(entry), assignment = (wizard.outputAssignments || []).find(item => item.outputId === entry.id), destination = row?.monitorReceiverName || row?.instrument || assignment?.destination || 'Noch offen', source = entry.source?.kind === 'main' ? entry.source.label : names.get(entry.source?.id) || entry.source?.label || 'Nicht aufgelöst';
+        if (!matches([entry.label,source,destination,target(row,assignment,'outputs'),entry.block])) return [];
+        return [tr(entry.id,[text(entry.label),'<span class="rw-scene-resolution" data-resolved="' + String(entry.resolved === true) + '">' + text(source) + '</span><small class="rw-scene-extra">' + text(inventory.outputSlots.find(slot => slot.id === entry.slotId)?.label || entry.block) + '</small>',text(entry.tap),text(entry.delay?.enabled ? entry.delay.ms + ' ms' : 'Aus'),text(destination),text(row || assignment ? target(row,assignment,'outputs') : 'Nicht übernommen')])];
+      });
+      const outputSlots = inventory.outputSlots.flatMap(entry => {
+        const source = entry.source?.kind === 'main' ? entry.source.label : names.get(entry.source?.id) || entry.source?.label || 'Nicht aufgelöst', connections = inventory.outputs.filter(output => output.slotId === entry.id).map(output => output.label);
+        if (!matches([entry.label,source,...connections])) return [];
+        return [tr('slot-' + entry.id,[text(entry.label),'<span class="rw-scene-resolution" data-resolved="' + String(entry.source?.resolved === true) + '">' + text(source) + '</span>',text(entry.tap),text(entry.delay?.enabled ? entry.delay.ms + ' ms' : 'Aus'),text(connections.join(', ') || 'Kein aufgelöster Anschluss')])];
+      });
+      return heading('I/O-Liste der X32-Szene',readonly() ? '' : button('Zuordnung bearbeiten',{'data-rw-tool':'x32Scene'},{mutation:true})) + '<p class="rw-scene-intro">' + text(inventory.scene.name || state.stage.x32Scene.filename) + ' · Die Liste zeigt auch nicht übernommene Kanäle und Anschlüsse. Pegel und Send-Zustände stammen aus der Szene.</p><label class="rw-scene-search"><span>In der Szene suchen</span><input type="search" data-rw-scene-search data-rw-focus="scene-search" value="' + esc(sceneQuery) + '" placeholder="Kanal, Bus, FX oder Ausgang …"></label>' + (inventory.warnings.length ? '<details class="rw-scene-warnings"><summary>' + inventory.warnings.length + ' Hinweise zur Zuordnung</summary><ul>' + inventory.warnings.map(warning => '<li>' + esc(warning) + '</li>').join('') + '</ul></details>' : '') + table('Inputs',['Kanal','Name','Quelle am X32','Format','Stageplot-Zuordnung','Sends'],inputs,'inputs') + table('Busse, Main & Matrizen',['Signal','Verwendung','Format','Quellen','Ziele'],buses,'buses') + table('Effekte & Returns',['Slot','Effekttyp','Eingänge','Returns & Sends','Inserts'],effects,'fx') + table('Interne Output-Slots',['Slot','Signalquelle','Abgriff','Verzögerung','Zugeordnete Anschlüsse'],outputSlots,'output-slots') + table('Physische Ausgänge & Transportkanäle',['Anschluss','Signalquelle','Abgriff','Verzögerung','Ziel','Stageplot-Zuordnung'],outputs,'outputs');
+    }
+
     function footer() {
       const saved = state.saveState || api.getSaveState?.();
       const label = readonly() ? 'Nur Ansicht' : typeof saved === 'string' ? saved : saved?.text || 'Lokaler Entwurf';
       const list = state.tab === 'outputs' ? monitors : sources, active = state.tab === 'outputs' ? activeMonitor : activeSource;
       const index = list.findIndex(item => item.id === active), next = list.length > 1 ? list[(index + 1) % list.length] : null;
-      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
+      return '<footer class="rw-footer"><span class="rw-save-state"><span aria-hidden="true">' + (readonly() ? '◉' : '✓') + '</span>' + esc(label) + '</span>' + (sceneOpen || state.tab === 'stageboxes' ? button('Patchliste exportieren',{'data-rw-export':'all'},{className:'rw-export'}) : next ? button((state.tab === 'outputs' ? 'Nächster Monitorweg' : 'Nächste Quelle') + ' <span aria-hidden="true">→</span>',{'data-rw-select':next.id},{className:'rw-primary'}) : '') + '</footer>';
     }
 
     function preserveFocus() {
@@ -10091,13 +10384,14 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const focus = preserveFocus(), mainScroll = host.querySelector('.rw-main')?.scrollTop || 0, listScroll = host.querySelector('.rw-source-list')?.scrollTop || 0, outputScroll = host.querySelector('.rw-output-port-list')?.scrollTop || 0, flowScroll = host.querySelector('.rw-flow-scroll')?.scrollLeft || 0;
       state = api.getState() || {}; state.routing = state.routing || state.stage?.routing || {inputs:[],outputs:[]};
       if (!['inputs','outputs','stageboxes'].includes(state.tab)) state.tab = 'inputs';
-      if (state.tab !== lastTab) { query = ''; openCard = ''; diPickerRow = ''; lastTab = state.tab; error = ''; }
+      if (!state.stage?.x32Scene) sceneOpen = false;
+      if (state.tab !== lastTab) { sceneOpen = false; query = ''; openCard = ''; diPickerRow = ''; lastTab = state.tab; error = ''; }
       groups(); highlighted = [];
-      const content = state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
-      host.dataset.readonly = String(readonly()); host.dataset.tab = state.tab;
-      host.innerHTML = header() + '<div class="rw-layout">' + sidebar() + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
+      const content = sceneOpen ? sceneView() : state.tab === 'stageboxes' ? stageboxView() : state.tab === 'outputs' ? monitorView() : sourcesView();
+      host.dataset.readonly = String(readonly()); host.dataset.tab = viewTab();
+      host.innerHTML = header() + '<div class="rw-layout">' + (sceneOpen ? '' : sidebar()) + '<div class="rw-detail" id="sp-routing-detail-v2" role="tabpanel"><main class="rw-main">' + (error && !diPickerRow ? '<p class="rw-error" role="alert">' + esc(error) + '</p>' : '') + content + '</main>' + footer() + '</div></div>' + (diPickerRow ? diPicker() : '');
       host.querySelector('.rw-main').scrollTop = mainScroll;
-      host.querySelector('.rw-source-list').scrollTop = listScroll;
+      if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
       if (host.querySelector('.rw-flow-scroll')) host.querySelector('.rw-flow-scroll').scrollLeft = flowScroll;
       host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]||0;});
@@ -10120,7 +10414,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const target = event.target.closest('button'); if (!target || !host.contains(target) || target.disabled) return;
       const data = {...target.dataset};
       if (pendingField) {const input = pendingField;pendingField = null;const saved = onChange({target:input});if(saved === false || error)return;}
-      if (data.rwTab) {doAction({type:'selectTab',tab:data.rwTab});return;}
+      if (data.rwTab) {selectTab(data.rwTab);return;}
       if (data.rwTools) {toolsOpen = !toolsOpen;render();return;}
       if (data.rwBoxLayout) {stageboxLayout = data.rwBoxLayout;render();return;}
       if (data.rwTool) {if(readonly() && !['pdf','xlsx'].includes(data.rwTool))return;doAction({type:data.rwTool,direction:state.tab === 'outputs' ? 'outputs' : 'inputs'});return;}
@@ -10171,6 +10465,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     }
 
     function onInput(event) {
+      if (event.target.matches('[data-rw-scene-search]')) {sceneQuery = event.target.value;render();}
       if (event.target.matches('[data-rw-search]')) {query = event.target.value;render();}
       if (event.target.matches('[data-rw-mic-search]')) {micQuery = event.target.value;const row = route(event.target.dataset.rwRow);if(row){const panel = host.querySelector('[data-rw-mic-options]');if(panel)panel.innerHTML = microphoneChoices(row);}}
     }
@@ -10219,8 +10514,8 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         return;
       }
       if (event.target.matches('[data-rw-tab]') && ['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) {
-        const tabs = ['inputs','outputs','stageboxes'], current = tabs.indexOf(state.tab), next = event.key === 'Home' ? 0 : event.key === 'End' ? 2 : (current + (event.key === 'ArrowRight' ? 1 : 2)) % 3;
-        event.preventDefault();doAction({type:'selectTab',tab:tabs[next]});host.querySelector('[data-rw-tab="' + tabs[next] + '"]')?.focus();return;
+        const choices = tabs().map(([tab]) => tab), current = choices.indexOf(viewTab()), next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : choices.length - 1)) % choices.length;
+        event.preventDefault();selectTab(choices[next]);host.querySelector('[data-rw-tab="' + choices[next] + '"]')?.focus();return;
       }
       if (event.key === 'Escape' && openCard) {const source = openCard.startsWith('source-outputs-') ? openCard.slice('source-outputs-'.length) : '';openCard = '';error = '';render();if(source)[...host.querySelectorAll('[data-rw-source-outputs]')].find(button => button.dataset.rwSourceOutputs === source)?.focus({preventScroll:true});event.stopPropagation();}
       if (event.key === 'Enter' && event.target.matches('input:not([type="search"])')) {event.preventDefault();event.target.blur();}
@@ -10228,9 +10523,10 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     host.addEventListener('click',onClick); host.addEventListener('pointerdown',onPointerDown); host.addEventListener('input',onInput); host.addEventListener('change',onChange); host.addEventListener('keydown',onKeydown);
     return {
       render,
-      openSourceOutputs(id) {activeSource = id;openCard = 'source-outputs-' + id;const flow = host.querySelector('.rw-flow-scroll');if(flow)flow.scrollLeft = 0;render();host.querySelector('.rw-source-output-editor')?.scrollIntoView({block:'nearest',inline:'nearest'});host.querySelector('[data-rw-source-output-count]')?.focus({preventScroll:true});},
-      selectSource(id) {if(state?.tab === 'outputs')activeMonitor = monitors.find(group => group.id === id || group.object?.id === id || group.rows.some(row => row.id === id || sourceId(row) === id))?.id || id;else activeSource = sources.find(group => group.id === id || group.rows.some(row => row.id === id))?.id || id;openCard = '';render();},
-      selectStagebox(id,direction,port) {activeBox = id;activePort = direction && port ? {boxId:id,direction,port:Number(port)} : null;openCard = '';render();},
+      selectX32() {sceneOpen = true;render();},
+      openSourceOutputs(id) {sceneOpen = false;activeSource = id;openCard = 'source-outputs-' + id;const flow = host.querySelector('.rw-flow-scroll');if(flow)flow.scrollLeft = 0;render();host.querySelector('.rw-source-output-editor')?.scrollIntoView({block:'nearest',inline:'nearest'});host.querySelector('[data-rw-source-output-count]')?.focus({preventScroll:true});},
+      selectSource(id) {sceneOpen = false;if(state?.tab === 'outputs')activeMonitor = monitors.find(group => group.id === id || group.object?.id === id || group.rows.some(row => row.id === id || sourceId(row) === id))?.id || id;else activeSource = sources.find(group => group.id === id || group.rows.some(row => row.id === id))?.id || id;openCard = '';render();},
+      selectStagebox(id,direction,port) {sceneOpen = false;activeBox = id;activePort = direction && port ? {boxId:id,direction,port:Number(port)} : null;openCard = '';render();},
       destroy() {destroyed = true;stageObserver?.disconnect();if(frame)cancelAnimationFrame(frame);host.removeEventListener('click',onClick);host.removeEventListener('pointerdown',onPointerDown);host.removeEventListener('input',onInput);host.removeEventListener('change',onChange);host.removeEventListener('keydown',onKeydown);host.replaceChildren();}
     };
   }
@@ -12655,9 +12951,10 @@ if(typeof module==='object'&&module.exports)module.exports=createStageplotOrches
   }
   function normalizeX32RouteBinding(value,direction){
     if(!value||typeof value!=='object')return {};
-    const kind=direction==='outputs'?'bus':'channel',max=kind==='bus'?16:32;
+    if(direction==='outputs'&&value.kind==='output'&&/^output-(?:local|aes50-a|aes50-b|card|aux|p16|aes|rec)-[1-9]\d?$/.test(value.endpoint||''))return {x32:{kind:'output',endpoint:value.endpoint,label:projectText(value.label,80),sourceLabel:projectText(value.sourceLabel,140),sourceKind:projectText(value.sourceKind,30),sourceNumber:Number.isInteger(value.sourceNumber)&&value.sourceNumber>=0&&value.sourceNumber<=128?value.sourceNumber:null}};
+    const kind=direction==='outputs'?'bus':value.kind==='aux'?'aux':'channel',max=kind==='bus'?16:kind==='aux'?8:32;
     if(value.kind!==kind||!Number.isInteger(value.channel)||value.channel<1||value.channel>max)return {};
-    return {x32:{kind,channel:value.channel,...(kind==='channel'&&Number.isInteger(value.source)&&value.source>=0&&value.source<=65535?{source:value.source}:{})}};
+    return {x32:{kind,channel:value.channel,...(kind!=='bus'&&Number.isInteger(value.source)&&value.source>=0&&value.source<=65535?{source:value.source}:{})}};
   }
   const routeModes=new Set(['Mono','Stereo L','Stereo R','Mic','DI','Direct']);
   const routeSignals=new Set(['Mic','Line','Instrument','Digital']);
@@ -15284,6 +15581,7 @@ function createStageplotSymbolV3(type, options = {}) {
       if(typeof StageplotX32==='undefined')throw Error('Diese X32-Vorlage benötigt eine neuere App-Version.');
       s.x32Scene=StageplotX32.normalizeAttachment(source.x32Scene);
       s.x32Scene.mappings=s.x32Scene.mappings.map(mapping=>({...mapping,stagebox:idMap.get(mapping.stagebox)||mapping.stagebox}));
+      if(s.x32Scene.wizard)for(const key of ['inputAssignments','outputAssignments'])s.x32Scene.wizard[key]=s.x32Scene.wizard[key].map(assignment=>({...assignment,stagebox:idMap.get(assignment.stagebox)||assignment.stagebox}));
     }
     const legacyCajons=new Set(value.objects.filter(o=>o.type==='cajon').map(o=>idMap.get(o.id)));const migrateCajonKey=key=>{if(typeof key!=='string')return key;const [id,port]=key.split(':');return legacyCajons.has(id)&&['front','rear'].includes(port)?id+':perc-p1-'+(port==='front'?1:2):key;};for(const direction of ['inputs','outputs'])for(const row of s.routing[direction]||[]){row.sourceKey=migrateCajonKey(row.sourceKey);for(const member of row.linkedSources||[])member.sourceKey=migrateCajonKey(member.sourceKey);}if(legacyCajons.size)s.routing.disabledSources=(s.routing.disabledSources||[]).map(migrateCajonKey);
     const identity=projectIdentity(source.projectId);if(identity)s.projectId=identity;
@@ -15880,7 +16178,7 @@ function createStageplotSymbolV3(type, options = {}) {
     for(const direction of ['inputs','outputs']){
       const rows=stage.routing[direction],seen=new Set();
       for(const row of rows){
-        if(seen.has(row.id))continue;const group=audioOrderedGroup(rows,row);group.forEach(member=>seen.add(member.id));
+        if(seen.has(row.id)||row.x32)continue;const group=audioOrderedGroup(rows,row);group.forEach(member=>seen.add(member.id));
         const pending=group.filter(member=>!member.stagebox||!member.stageboxPort);if(!pending.length)continue;
         const partner=group.find(member=>member.stagebox&&member.stageboxPort),source=routeSourceObject(row),boxes=routingStageboxes(direction).slice().sort((a,b)=>Number(b.id===partner?.stagebox)-Number(a.id===partner?.stagebox)||(source?Math.hypot(a.x-source.x,a.y-source.y)-Math.hypot(b.x-source.x,b.y-source.y):0));
         for(const box of boxes){try{
@@ -16323,10 +16621,10 @@ function dispatchRoutingWorkspace(action){
       case 'assignDi':{const device=routing.devices.find(device=>device.id===action.deviceId);if(!device)throw Error('DI-Box nicht gefunden.');routingAssertDiEditable(device);const rows=action.autoPair&&device.channels>=2?routingDiSelectionRows(action):routingPickupRows(action),start=Number(action.channel||1);StageplotRoutingModel.assignDevice(routing,rows.map(row=>row.id),device.id,rows.map((_,index)=>start+index));rows.forEach(writeRoutingPickup);break;}
       case 'connectStereoDi':if(connectRoutingStereoDi(action)===false)return;break;
       case 'updateDi':{const device=routing.devices.find(device=>device.id===action.deviceId);routingAssertDiEditable(device);const occupants=routing.inputs.filter(row=>row.diDeviceId===action.deviceId);occupants.forEach(row=>routingEditableRow('inputs',row.id));StageplotRoutingModel.updateDevice(routing,action.deviceId,action.fields);const physical=routingDiObject(device);if(physical&&action.fields?.name)physical.label=action.fields.name.slice(0,42);occupants.forEach(writeRoutingPickup);break;}
-      case 'patch':{const rows=routing[direction],members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true),box=routingStageboxes(direction).find(box=>box.id===action.boxId);if(!box)throw Error('Stagebox nicht gefunden.');applyAudioPatchPlan(rows,planAudioPatch(rows,members,box,direction,{startPort:Number(action.port)}));break;}
-      case 'unpatch':for(const row of routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true))Object.assign(row,{stagebox:'',stageboxPort:null});break;
+      case 'patch':{const rows=routing[direction],members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true);if(members.some(row=>row.x32?.kind==='output'))throw Error('X32-Ausgänge bitte im X32-Assistenten zuordnen.');const box=routingStageboxes(direction).find(box=>box.id===action.boxId);if(!box)throw Error('Stagebox nicht gefunden.');applyAudioPatchPlan(rows,planAudioPatch(rows,members,box,direction,{startPort:Number(action.port)}));break;}
+      case 'unpatch':{const members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true);if(members.some(row=>row.x32?.kind==='output'))throw Error('X32-Ausgänge bitte im X32-Assistenten zuordnen.');for(const row of members)Object.assign(row,{stagebox:'',stageboxPort:null});break;}
       case 'editChannel':{const row=routingEditableRow(direction,action.rowId),fields=action.fields||{};
-        if(Object.hasOwn(fields,'number')){const number=fields.number===''||fields.number===null?null:Number(fields.number);if(number!==null&&(!Number.isInteger(number)||number<1||number>999))throw Error('Kanalnummer muss zwischen 1 und 999 liegen.');if(number&&routing[direction].some(other=>other.id!==row.id&&other.number===number))throw Error('Kanal '+number+' ist bereits belegt.');row.number=number;}
+        if(Object.hasOwn(fields,'number')){if(['aux','output'].includes(row.x32?.kind))throw Error('Die X32-Anschlusskennung stammt aus der Szene und kann hier nicht geändert werden.');const number=fields.number===''||fields.number===null?null:Number(fields.number);if(number!==null&&(!Number.isInteger(number)||number<1||number>999))throw Error('Kanalnummer muss zwischen 1 und 999 liegen.');if(number&&routing[direction].some(other=>other.id!==row.id&&other.number===number))throw Error('Kanal '+number+' ist bereits belegt.');row.number=number;}
         for(const key of ['instrument','notes','frequencyBand','connector','microphone'])if(Object.hasOwn(fields,key))row[key]=projectText(fields[key],key==='notes'?240:100);
         if(Object.hasOwn(fields,'connector')){const box=routingStageboxes(direction).find(box=>box.id===row.stagebox);if(box&&!routeStageboxCompatible(row,direction,box)){row.stagebox='';row.stageboxPort=null;}}
         if(Object.hasOwn(fields,'notes')&&Array.isArray(action.rowIds))for(const id of action.rowIds)routingEditableRow(direction,id).notes=projectText(fields.notes,240);
@@ -16334,13 +16632,13 @@ function dispatchRoutingWorkspace(action){
       case 'linkStereo':{const rows=action.rowIds.map(id=>routingEditableRow('inputs',id));if(rows.length!==2||rows[0].id===rows[1].id)throw Error('Für Stereo zwei unterschiedliche Abnahmen auswählen.');if(rows.some(row=>row.stereoGroup))throw Error('Diese Abnahme ist bereits mit einem Stereokanal verbunden.');const pair=routingNativeOutputPair(rows);if(pair){setRoutingSourceOutputs({type:'setSourceOutputStereo',sourceId:pair.source.id,start:pair.start,linked:true});break;}const group='stereo-'+routeToken();rows.forEach((row,i)=>Object.assign(row,{stereoGroup:group,mode:i?'Stereo R':'Stereo L',edited:true}));break;}
       case 'unlinkStereo':{const ids=new Set(action.rowIds),groups=new Set(routing.inputs.filter(row=>ids.has(row.id)).map(row=>row.stereoGroup).filter(Boolean)),rows=routing.inputs.filter(row=>ids.has(row.id)||groups.has(row.stereoGroup));for(const members of [rows,...[...groups].map(group=>rows.filter(row=>row.stereoGroup===group))]){const pair=routingNativeOutputPair(members);if(pair){const io=objectIo(pair.source);pair.source.io={...io,stereoPairs:io.stereoPairs.filter(start=>start!==pair.start)};}}for(const row of rows){routingEditableRow('inputs',row.id);Object.assign(row,{stereoGroup:'',mode:'Mono',edited:true});}break;}
       case 'editMonitor':routingMonitorFields(action.rowIds.map(id=>routingEditableRow('outputs',id)),action.fields||{});break;
-      case 'setMonitorFormat':setRoutingMonitorFormat(action.rowIds.map(id=>routingEditableRow('outputs',id)),action.format);break;
+      case 'setMonitorFormat':{const rows=action.rowIds.map(id=>routingEditableRow('outputs',id));if(rows.some(row=>row.x32?.kind==='output'))throw Error('Das Format dieses X32-Ausgangs stammt aus der Szene. Die Zuordnung kann im X32-Assistenten geändert werden.');setRoutingMonitorFormat(rows,action.format);break;}
       case 'addMonitor':{const kind=['iem','monitor','line'].includes(action.kind)?action.kind:'iem';
         if(kind==='line')routing.outputs.push(normalizeRouteChannel({id:'route-'+routeToken(),manual:true,instrument:'Line Out',outputKind:'line',pickup:'Direct',signalType:'Line',connector:'XLR',edited:true},routing.outputs.length,'outputs'));
         else {const type=kind==='iem'?'rack':'wedge';if(!isObjectUnlocked(type))throw Error('Dieses Gerät gehört zu einem noch gesperrten Paket.');const o=makeObject(type,{x:stage.w/2,y:Math.max(.5,stage.d-1)},'station-'+nextId++);objects.push(o);}routingTab='outputs';break;}
       case 'editStagebox':{const o=objects.find(o=>o.id===action.boxId&&stageboxCapacity[o.type]);if(!o||o.locked)throw Error('Die Stagebox kann nicht geändert werden.');if(Object.hasOwn(action.fields,'name')){const name=projectText(action.fields.name,42).trim();if(!name)throw Error('Bitte einen Namen eingeben.');o.label=name;}if(Object.hasOwn(action.fields,'comboJacks')){if(stageboxCapacity[o.type].comboJacks!==undefined)throw Error('Die Buchsenart ist bei diesem Modell festgelegt.');if(!action.fields.comboJacks&&routing.inputs.some(row=>row.stagebox===o.id&&row.connector==='Klinke'))throw Error('Die Klinkensignale zuerst auf DI umstellen oder abstecken.');o.comboJacks=action.fields.comboJacks===true;}break;}
       case 'addStagebox':{if(!stageboxCapacity[action.objectType])throw Error('Ungültige Stagebox.');if(!isObjectUnlocked(action.objectType))throw Error('Diese Stagebox gehört zu einem noch gesperrten Paket.');const o=makeObject(action.objectType,{x:Math.max(.5,stage.w-1),y:Math.max(.5,stage.d-1)},'station-'+nextId++);objects.push(o);activeStageboxId=o.id;routingTab='stageboxes';break;}
-      case 'number':{const used=new Set(routing[direction].map(row=>row.number).filter(Boolean));let number=1;for(const row of routing[direction])if(!row.number){while(used.has(number))number++;if(number>999)throw Error('Keine freie Kanalnummer verfügbar.');row.number=number;used.add(number);}break;}
+      case 'number':{const used=new Set(routing[direction].map(row=>row.number).filter(Boolean));let number=1;for(const row of routing[direction])if(!row.number&&!['aux','output'].includes(row.x32?.kind)){while(used.has(number))number++;if(number>999)throw Error('Keine freie Kanalnummer verfügbar.');row.number=number;used.add(number);}break;}
       default:throw Error('Diese Routing-Aktion ist nicht verfügbar.');
     }
     syncRoutingFromStage(false,false);reconcileCablesWithRouting();keepHistory(before);
@@ -16351,7 +16649,7 @@ function exportRoutingWorkspace(direction='all'){
   const headers=['Richtung','Kanal','Signal','Format','Abnahme','DI-Eingang','48V','Stagebox','Buchse','Gerät','Empfänger','Übertragung','Frequenz','Notizen'];
   const directions=direction==='all'?['inputs','outputs']:[direction==='outputs'?'outputs':'inputs'];
   const boxes=new Map(allRoutingStageboxes().map(box=>[box.id,box.name]));
-  const data=directions.flatMap(key=>stage.routing[key].map(row=>{const device=stage.routing.devices?.find(d=>d.id===row.diDeviceId);return [key==='inputs'?'Input':'Output',row.number||'',row.instrument,row.stereoGroup?row.mode:'Mono',device?.name||row.microphone||row.pickup,device?row.diChannel||'':'',row.phantom?'48V':'',boxes.get(row.stagebox)||'',row.stageboxPort||'',row.monitorDeviceName||'',row.monitorReceiverName||row.iemName||'',row.iemTransport==='wireless'?'Funk':row.iemTransport==='cable'?'Kabel':'',routeFrequency(row),row.notes];}));
+  const data=directions.flatMap(key=>stage.routing[key].map(row=>{const device=stage.routing.devices?.find(d=>d.id===row.diDeviceId);return [key==='inputs'?'Input':'Output',row.x32?.kind==='output'?row.x32.label:row.x32?.kind==='aux'?'Aux '+row.x32.channel:row.number||'',row.instrument,row.stereoGroup?row.mode:'Mono',device?.name||row.microphone||row.pickup,device?row.diChannel||'':'',row.phantom?'48V':'',boxes.get(row.stagebox)||'',row.stageboxPort||'',row.monitorDeviceName||'',row.monitorReceiverName||row.iemName||'',row.iemTransport==='wireless'?'Funk':row.iemTransport==='cable'?'Kabel':'',routeFrequency(row),row.notes];}));
   const csv='\ufeff'+[headers,...data].map(row=>row.map(csvCell).join(';')).join('\r\n')+'\r\n';downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),exportModel.safeFilename(stage.title+'-Patch',{extension:'csv'}));say('Patchliste exportiert');
 }
 /* build-inline:end stageplot-routing-host-v2.js */
@@ -16365,37 +16663,25 @@ function x32InvalidateExport(){
   x32Prepared=null;$('sp-x32-download').hidden=true;$('sp-x32-changes').replaceChildren();
 }
 function x32ClearBindings(rows){
-  for(const row of rows){delete row.x32;if(Array.isArray(row.linkedSources))x32ClearBindings(row.linkedSources);}
+  for(const row of rows){
+    if(row.x32?.kind==='output'){if(!row.instrument)row.instrument=row.x32.label||'Ausgang';if(!row.notes)row.notes=[row.x32.label,row.x32.sourceLabel].filter(Boolean).join(' ← ');}
+    if(row.x32?.kind==='aux'&&!row.notes)row.notes='X32 Aux '+row.x32.channel;
+    delete row.x32;if(Array.isArray(row.linkedSources))x32ClearBindings(row.linkedSources);
+  }
 }
 function x32Warnings(messages,host){
   host.replaceChildren();
   for(const message of messages||[]){const item=document.createElement('li');item.textContent=message;host.append(item);}
   host.hidden=!host.children.length;
 }
-function x32SceneSummary(text){
-  const parsed=StageplotX32.parse(text),imported=StageplotX32.importRouting(text);
-  return {parsed,imported};
-}
 function x32RenderPreview(text){
-  const {parsed,imported}=x32SceneSummary(text);
-  $('sp-x32-summary').textContent=imported.inputs.length+' Eingangskanäle · '+imported.outputs.length+' benannte Mixbusse · '+(parsed.name||'X32-Szene');
+  const inventory=StageplotX32.inspectRouting(text);
+  $('sp-x32-summary').textContent=inventory.inputs.length+' Inputs · '+inventory.buses.length+' Mixbusse · '+inventory.outputs.length+' Ausgangsadressen';
   const body=$('sp-x32-preview-body');body.replaceChildren();
-  for(const row of imported.inputs){
-    const channel=parsed.channels.find(item=>item.number===row.number),tr=document.createElement('tr');
-    for(const value of ['CH '+row.number,row.instrument||'Ohne Namen',channel?.sourceAddress?.label||'Zuordnung aus Vorlage',row.stereoGroup?row.mode:'Mono']){
-      const td=document.createElement('td');td.textContent=value;tr.append(td);
-    }
-    body.append(tr);
+  for(const [label,name,source,format] of [...inventory.inputs.map(input=>[input.kind==='channel'?'CH '+input.number:'Aux '+input.number,input.name,input.sourceAddress.label,input.linkedWith?'Stereo':'Mono']),...inventory.buses.map(bus=>['Bus '+bus.number,bus.name,bus.fxSlots.length?'→ FX '+bus.fxSlots.join(', '):'Interner Mixbus',bus.linkedWith?'Stereo':'Mono']),...inventory.outputs.filter(output=>output.bank==='local').map(output=>[output.label,'',output.source.label,output.tap])]){
+    const tr=document.createElement('tr');for(const value of [label,name,source,format]){const td=document.createElement('td');td.textContent=value;tr.append(td);}body.append(tr);
   }
-  for(const row of imported.outputs){
-    const tr=document.createElement('tr');
-    for(const value of ['Bus '+row.number,row.instrument||'Ohne Namen','Mixbus · Ausgangs-Patch bleibt erhalten',row.stereoGroup?row.mode:'Mono']){
-      const td=document.createElement('td');td.textContent=value;tr.append(td);
-    }
-    body.append(tr);
-  }
-  x32Warnings(imported.warnings,$('sp-x32-warnings'));
-  $('sp-x32-preview').hidden=false;
+  x32Warnings(inventory.warnings,$('sp-x32-warnings'));$('sp-x32-preview').hidden=false;
 }
 function x32RenderMappings(){
   const host=$('sp-x32-mappings'),mappings=stage.x32Scene?.mappings||[];host.replaceChildren();
@@ -16453,6 +16739,150 @@ function x32Commit(fn,message){
   if(sharedReadOnly)throw Error('Diese Freigabe ist schreibgeschützt.');
   const before=snapshot();fn();keepHistory(before);renderRouting();say(message);$('sp-x32-status').textContent=message;
 }
+const x32BusRoles=[['unspecified','Noch offen'],['monitor','Bühnenmonitor'],['iem','In-Ear'],['subgroup','Subgruppe'],['fx','Effekt-Send'],['line','Weiterer Mix']];
+function x32WizardDefaults(inventory){
+  const named=new Set(inventory.inputs.filter(input=>input.name&&!/^(?:Aux|USB|Input|Ch)\s*\d+$/i.test(input.name)).map(input=>input.id));
+  for(const input of inventory.inputs)if(named.has(input.id)&&input.linkedWith)named.add(input.kind+'-'+input.linkedWith);
+  return {version:1,inputIds:[...named],inputAssignments:[],busRoles:inventory.buses.map(bus=>({bus:bus.number,role:bus.roles.includes('fx-send')?'fx':bus.roles.includes('subgroup')?'subgroup':'unspecified'})),outputAssignments:inventory.outputs.filter(output=>['local','aux'].includes(output.bank)&&output.resolved&&output.source.kind!=='off').map(output=>({outputId:output.id,destination:'',stagebox:'',port:null}))};
+}
+function x32BeginWizard(attachment,editing=false){
+  const inventory=StageplotX32.inspectRouting(attachment.text),wizard=attachment.wizard?clone(attachment.wizard):x32WizardDefaults(inventory);
+  if(editing){
+    for(const input of inventory.inputs){
+      const row=stage.routing.inputs.find(row=>row.x32?.kind===input.kind&&row.x32.channel===input.number),mapping=attachment.mappings.find(mapping=>mapping.stagebox===row?.stagebox);
+      if(mapping&&row?.stageboxPort&&StageplotX32.BANKS[mapping.bank])input.sourceAddress={bank:mapping.bank,port:row.stageboxPort+mapping.offset,label:'Geplant: '+StageplotX32.BANKS[mapping.bank].label+' '+(row.stageboxPort+mapping.offset),resolved:true};
+    }
+    const existingInputs=stage.routing.inputs.filter(row=>['channel','aux'].includes(row.x32?.kind));
+    if(attachment.wizard||existingInputs.length){
+    wizard.inputIds=stage.routing.inputs.filter(row=>['channel','aux'].includes(row.x32?.kind)).map(row=>row.x32.kind+'-'+row.x32.channel);
+    wizard.inputAssignments=stage.routing.inputs.filter(row=>['channel','aux'].includes(row.x32?.kind)).map(row=>({inputId:row.x32.kind+'-'+row.x32.channel,stagebox:row.stagebox||'',port:row.stageboxPort||null}));
+    }
+    if(attachment.wizard)wizard.outputAssignments=stage.routing.outputs.filter(row=>row.x32?.kind==='output').map(row=>({outputId:row.x32.endpoint,destination:row.instrument||'',stagebox:row.stagebox||'',port:row.stageboxPort||null}));
+  }
+  x32Pending={attachment,inventory,wizard,owner:stage,step:0,editing};
+  $('sp-x32-mode').value=editing||!stage.routing.inputs.length&&!stage.routing.outputs.length?'routing':'template';
+  $('sp-x32-mode').disabled=editing;
+  $('sp-x32-import-options').hidden=false;$('sp-x32-attached').hidden=true;$('sp-x32-preview').hidden=true;
+  x32RenderWizard();
+}
+function x32WizardPatchFields(id,direction,assignment){
+  const boxes=allRoutingStageboxes().filter(box=>box[direction==='input'?'inputs':'outputs']>0),selected=assignment?.stagebox||'';
+  return '<label>Stagebox<select data-x32-'+direction+'-box="'+esc(id)+'"><option value="">Zuordnung offen / direkt am Pult</option>'+boxes.map(box=>'<option value="'+esc(box.id)+'"'+(box.id===selected?' selected':'')+'>'+esc(box.name)+'</option>').join('')+'</select></label><label>Buchse<input type="number" min="1" max="64" step="1" data-x32-'+direction+'-port="'+esc(id)+'" value="'+esc(assignment?.port||'')+'" placeholder="—"'+(!selected?' disabled':'')+'></label>';
+}
+function x32ReadWizardStep(){
+  const pending=x32Pending;if(!pending)return;const {wizard,inventory,step}=pending,host=$('sp-x32-wizard-body');
+  if(step===0){
+    const ids=new Set([...host.querySelectorAll('[data-x32-input-id]:checked')].map(input=>input.dataset.x32InputId));
+    for(const input of inventory.inputs)if(ids.has(input.id)&&input.linkedWith)ids.add(input.kind+'-'+input.linkedWith);
+    wizard.inputIds=[...ids];
+  }
+  if(step===1)wizard.inputAssignments=[...host.querySelectorAll('[data-x32-input-box]')].map(select=>({inputId:select.dataset.x32InputBox,stagebox:select.value,port:select.value?Number(host.querySelector('[data-x32-input-port="'+select.dataset.x32InputBox+'"]').value)||null:null}));
+  if(step===2)wizard.busRoles=[...host.querySelectorAll('[data-x32-bus-role]')].map(select=>({bus:Number(select.dataset.x32BusRole),role:select.value}));
+  if(step===3)wizard.outputAssignments=[...host.querySelectorAll('[data-x32-output-id]:checked')].map(input=>{
+    const id=input.dataset.x32OutputId,stagebox=host.querySelector('[data-x32-output-box="'+id+'"]').value;
+    return {outputId:id,destination:host.querySelector('[data-x32-output-destination="'+id+'"]').value.trim(),stagebox,port:stagebox?Number(host.querySelector('[data-x32-output-port="'+id+'"]').value)||null:null};
+  });
+}
+function x32ValidateWizardAssignments(wizard,inventory,direction){
+  const assignments=wizard[direction+'Assignments'],boxes=allRoutingStageboxes(),used=new Map(),inputIds=new Set(wizard.inputIds);
+  for(const assignment of assignments){
+    if(direction==='input'&&!inputIds.has(assignment.inputId)||!assignment.stagebox)continue;
+    const box=boxes.find(box=>box.id===assignment.stagebox),port=assignment.port;
+    if(direction==='input'){const input=inventory.inputs.find(input=>input.id===assignment.inputId);if(!input?.sourceAddress.resolved||!StageplotX32.BANKS[input.sourceAddress.bank])throw Error((input?.label||'Dieser Eingang')+': Die Quelle kann keiner Stagebox zugeordnet werden. Bitte die Zuordnung offen lassen.');}
+    if(direction==='output'){const output=inventory.outputs.find(output=>output.id===assignment.outputId);if(['card','p16','aes','rec'].includes(output?.bank))throw Error(output.label+': Bitte das digitale Ziel benennen und die analoge Stagebox-Zuordnung offen lassen.');}
+    if(!box)throw Error('Die zugeordnete Stagebox ist nicht mehr vorhanden.');
+    if(!Number.isInteger(port)||port<1||port>box[direction==='input'?'inputs':'outputs'])throw Error(box.name+': Bitte eine gültige '+(direction==='input'?'Eingangs':'Ausgangs')+'buchse zwischen 1 und '+box[direction==='input'?'inputs':'outputs']+' wählen.');
+    const key=box.id+':'+port,previous=used.get(key),id=assignment[direction+'Id'];
+    if(previous){
+      const a=inventory.inputs.find(input=>input.id===previous)?.sourceAddress,b=inventory.inputs.find(input=>input.id===id)?.sourceAddress;
+      if(direction!=='input'||!a?.resolved||!b?.resolved||a.bank!==b.bank||a.port!==b.port)throw Error(box.name+' · Buchse '+port+' wurde mehrfach für unterschiedliche Signale gewählt.');
+    }
+    used.set(key,id);
+  }
+}
+function x32RenderWizard(){
+  if(!x32Pending)return;
+  const {inventory,wizard,step}=x32Pending,selected=new Set(wizard.inputIds),host=$('sp-x32-wizard-body');
+  const titles=['Szene prüfen und Inputs auswählen','Wo sind die Eingänge angeschlossen?','Wofür werden die Busse verwendet?','Wohin führen die Ausgänge?'];
+  $('sp-x32-step-title').textContent=(step+1)+' / 4 · '+titles[step];
+  $('sp-x32-step-title').focus({preventScroll:true});
+  $('sp-x32-step-progress').textContent=['Inputs','Anschlüsse','Busse','Outputs'].map((name,index)=>(index===step?'● ':'○ ')+name).join('  ›  ');
+  $('sp-x32-back').hidden=step===0;
+  const template=$('sp-x32-mode').value==='template';
+  $('sp-x32-next').hidden=step===3||template;$('sp-x32-import').hidden=step!==3&&!template;$('sp-x32-import').disabled=false;
+  $('sp-x32-mode-field').hidden=step!==0;
+  $('sp-x32-import').textContent=template?'Vorlage speichern':x32Pending.editing?'Zuordnungen übernehmen':'I/O-Routing übernehmen';
+  if(step===0){
+    host.innerHTML='<p><strong>'+esc(inventory.scene.name||'X32-Szene')+'</strong> · '+inventory.inputs.length+' Inputs · '+inventory.buses.length+' Mixbusse · '+inventory.outputs.length+' Ausgangsadressen</p><p>Welche Inputs brauchst du in der Routingliste? Stereo-Partner bleiben zusammen. Die vollständige Szene bleibt erhalten.</p><div class="sp-actions"><button type="button" class="sp-button" data-x32-input-selection="all">Alle auswählen</button><button type="button" class="sp-button" data-x32-input-selection="named">Benannte Inputs</button></div><div class="sp-x32-scroll"><table><thead><tr><th>Übernehmen</th><th>Input</th><th>Quelle aus Szene</th><th>Format</th></tr></thead><tbody>'+inventory.inputs.map(input=>'<tr><td><input type="checkbox" data-x32-input-id="'+input.id+'" aria-label="'+esc(input.label)+' übernehmen"'+(selected.has(input.id)?' checked':'')+'></td><td>'+esc(input.label)+'</td><td>'+esc(input.sourceAddress.label)+'</td><td>'+(input.linkedWith?'Stereo mit '+input.linkedWith:'Mono')+'</td></tr>').join('')+'</tbody></table></div><p class="sp-muted">„I/O-Routing übernehmen“ ersetzt die bisherigen Routinglisten. Bühnenobjekte bleiben erhalten. Die gesamte Übernahme lässt sich rückgängig machen.</p>';
+  }else if(step===1){
+    host.innerHTML='<p>Die Szene kennt Pultanschlüsse, aber keine Gerätenamen oder Bühnenpositionen. Ordne vorhandene Stageboxen zu oder lasse die Zuordnung offen. Mehrere Kanäle dürfen dieselbe Eingangsquelle verwenden.</p>'+(!allRoutingStageboxes().length?'<p class="sp-muted">Noch keine Stagebox im Plan. Du kannst sie später auf der Bühne anlegen und diesen Wizard erneut öffnen.</p>':'')+inventory.inputs.filter(input=>selected.has(input.id)).map(input=>'<article class="sp-x32-wizard-row"><div><strong>'+esc(input.label)+'</strong><small>'+esc(input.sourceAddress.label)+'</small></div>'+x32WizardPatchFields(input.id,'input',wizard.inputAssignments.find(item=>item.inputId===input.id))+'</article>').join('');
+  }else if(step===2){
+    host.innerHTML='<p>Bestätige die Verwendung der Mixbusse. Erkannte Effekt- und Subgruppenwege sind vorbelegt. Monitor oder In-Ear legst du selbst fest; Busnummer und Ausgangsbuchse sind unabhängig.</p>'+inventory.buses.map(bus=>'<article class="sp-x32-wizard-row sp-x32-bus-row"><div><strong>'+esc(bus.label)+'</strong><small>'+esc([bus.linkedWith?'Stereo mit Bus '+bus.linkedWith:'Mono',bus.fxSlots.length?'speist FX '+bus.fxSlots.join(', '):'',bus.main.stereo?'→ Main L/R':'',bus.insert?.enabled?'Insert '+bus.insert.source:''].filter(Boolean).join(' · '))+'</small></div><label>Verwendung<select data-x32-bus-role="'+bus.number+'">'+x32BusRoles.map(([value,label])=>'<option value="'+value+'"'+(wizard.busRoles.find(item=>item.bus===bus.number)?.role===value?' selected':'')+'>'+label+'</option>').join('')+'</select></label></article>').join('')+'<p class="sp-muted">Diese Angaben beschreiben den Aufbau. Sie ändern weder Sends noch Effekte in der Szenendatei.</p>';
+  }else{
+    const banks=[...new Set(inventory.outputs.map(output=>output.bank))];
+    host.innerHTML='<p>Welche Ausgangsadressen werden tatsächlich verwendet? Gib das Ziel an, zum Beispiel „PA links“ oder „IEM Drums“. Bei AES50 legst du zusätzlich fest, an welcher Stagebox-Buchse das Signal anliegt.</p>'+banks.map(bank=>{
+      const outputs=inventory.outputs.filter(output=>output.bank===bank),chosen=outputs.filter(output=>wizard.outputAssignments.some(item=>item.outputId===output.id)).length;
+      return '<details class="sp-x32-output-bank"'+(chosen||bank==='local'?' open':'')+'><summary>'+esc(({local:'Lokale XLR-Ausgänge','aes50-a':'AES50 A','aes50-b':'AES50 B',card:'Card / USB',aux:'Aux Out',p16:'Ultranet',aes:'AES/EBU',rec:'USB Recorder'})[bank]||bank)+' · '+outputs.length+' Adressen</summary>'+outputs.map(output=>{
+        const assignment=wizard.outputAssignments.find(item=>item.outputId===output.id);
+        return '<article class="sp-x32-output-row"><label class="sp-x32-check"><input type="checkbox" data-x32-output-id="'+output.id+'"'+(assignment?' checked':'')+'><strong>'+esc(output.label)+'</strong></label><p>'+esc(output.source.label)+(output.tap?' · '+esc(output.tap):'')+(output.delay?.enabled?' · Delay '+output.delay.ms+' ms':'')+'</p><label>Ziel / Gerät<input maxlength="100" data-x32-output-destination="'+output.id+'" value="'+esc(assignment?.destination||'')+'" placeholder="Zuordnung noch offen"></label><div class="sp-x32-output-patch">'+x32WizardPatchFields(output.id,'output',assignment)+'</div></article>';
+      }).join('')+'</details>';
+    }).join('')+(!banks.length?'<p>In dieser Datei wurden keine physischen Ausgangszuordnungen gefunden. Interne Out-Slots bleiben in der I/O-Liste sichtbar.</p>':'')+'<p class="sp-muted">Die Zuordnungen werden lokal im Projekt gespeichert. Der Ausgangs-Patch der X32-Datei bleibt erhalten.</p>';
+  }
+  x32Warnings(inventory.warnings,$('sp-x32-wizard-warnings'));
+}
+function x32WizardPlan(){
+  x32ReadWizardStep();const {inventory,wizard,attachment,editing}=x32Pending;
+  x32ValidateWizardAssignments(wizard,inventory,'input');x32ValidateWizardAssignments(wizard,inventory,'output');
+  const mappings=new Map((attachment.mappings||[]).map(mapping=>[mapping.stagebox,mapping]));
+  const inputAssignments=wizard.inputAssignments.filter(item=>wizard.inputIds.includes(item.inputId));
+  for(const assignment of inputAssignments)if(assignment.stagebox)mappings.delete(assignment.stagebox);
+  for(const assignment of inputAssignments){
+    if(!assignment.stagebox)continue;
+    const input=inventory.inputs.find(input=>input.id===assignment.inputId),address=input?.sourceAddress;
+    if(!address?.resolved||!StageplotX32.BANKS[address.bank])continue;
+    const offset=address.port-assignment.port,previous=mappings.get(assignment.stagebox);
+    if(offset<0||previous&&(previous.bank!==address.bank||previous.offset!==offset))throw Error('Die Eingangszuordnungen dieser Stagebox passen nicht zu einem gemeinsamen X32-Anschluss. Bitte die Buchsen prüfen.');
+    mappings.set(assignment.stagebox,{stagebox:assignment.stagebox,bank:address.bank,offset});
+  }
+  const baseRows=StageplotX32.importRouting(attachment.text,{includeUnnamed:true}).inputs;
+  const inputs=inventory.inputs.filter(input=>wizard.inputIds.includes(input.id)).map(input=>{
+    const previous=editing?stage.routing.inputs.find(row=>row.x32?.kind===input.kind&&row.x32.channel===input.number):null;
+    const base=input.kind==='channel'?baseRows.find(row=>row.x32.channel===input.number):{id:'route-x32-aux-'+input.number,manual:true,edited:true,number:null,instrument:input.name,mode:input.linkedWith?'Stereo '+(input.number<input.linkedWith?'L':'R'):'Mono',stereoGroup:input.linkedWith?'x32-aux-'+Math.min(input.number,input.linkedWith)+'-'+Math.max(input.number,input.linkedWith):'',pickup:'Direct',signalType:'Line',connector:'Klinke',x32:{kind:'aux',channel:input.number,source:input.source}};
+    const assignment=inputAssignments.find(item=>item.inputId===input.id);
+    return {...base,...previous,stagebox:assignment?.stagebox||'',stageboxPort:assignment?.port||null};
+  });
+  const outputs=wizard.outputAssignments.map(assignment=>{
+    const output=inventory.outputs.find(output=>output.id===assignment.outputId);if(!output)throw Error('Ein gewählter Ausgang ist nicht mehr in der Szene vorhanden.');
+    const role=output.source.kind==='bus'?wizard.busRoles.find(item=>item.bus===output.source.number)?.role:'line',previous=editing?stage.routing.outputs.find(row=>row.x32?.kind==='output'&&row.x32.endpoint===output.id):null;
+    return {...previous,id:'route-x32-'+output.id,manual:true,edited:true,sourceKey:'',number:null,instrument:assignment.destination,mode:'Mono',stereoGroup:'',pickup:'Direct',signalType:'Line',connector:output.bank==='aux'?'Klinke':['card','p16','aes','rec'].includes(output.bank)?'Digital':'XLR',outputKind:['monitor','iem'].includes(role)?role:'line',stagebox:assignment.stagebox,stageboxPort:assignment.port,x32:{kind:'output',endpoint:output.id,label:output.label,sourceLabel:output.source.label,sourceKind:output.source.kind,sourceNumber:output.source.number}};
+  });
+  const nextAttachment=StageplotX32.normalizeAttachment({...attachment,wizard:{...wizard,inputAssignments},mappings:[...mappings.values()]});
+  const routing=normalizeRouting({...stage.routing,inputs,outputs,disabledSources:[...new Set([...stage.routing.disabledSources,...generatedInputSpecs().map(row=>row.sourceKey),...generatedOutputSpecs().map(row=>row.sourceKey)])]});
+  return {attachment:nextAttachment,routing};
+}
+$('sp-x32-wizard-body').addEventListener('change',event=>{
+  const input=event.target;
+  if(input.dataset.x32InputId){
+    const entry=x32Pending?.inventory.inputs.find(item=>item.id===input.dataset.x32InputId);
+    if(entry?.linkedWith){const partner=$('sp-x32-wizard-body').querySelector('[data-x32-input-id="'+entry.kind+'-'+entry.linkedWith+'"]');if(partner)partner.checked=input.checked;}
+  }
+  if(input.dataset.x32BusRole){const bus=x32Pending?.inventory.buses.find(bus=>bus.number===Number(input.dataset.x32BusRole));if(bus?.linkedWith){const partner=$('sp-x32-wizard-body').querySelector('[data-x32-bus-role="'+bus.linkedWith+'"]');if(partner)partner.value=input.value;}}
+  for(const direction of ['input','output'])if(input.hasAttribute('data-x32-'+direction+'-box')){
+    const id=input.getAttribute('data-x32-'+direction+'-box'),port=$('sp-x32-wizard-body').querySelector('[data-x32-'+direction+'-port="'+id+'"]');
+    port.disabled=!input.value;if(!input.value)port.value='';
+  }
+});
+$('sp-x32-wizard-body').addEventListener('click',event=>{
+  const selection=event.target.closest('[data-x32-input-selection]');if(!selection||!x32Pending)return;
+  x32Pending.wizard.inputIds=selection.dataset.x32InputSelection==='all'?x32Pending.inventory.inputs.map(input=>input.id):x32WizardDefaults(x32Pending.inventory).inputIds;x32RenderWizard();
+});
+$('sp-x32-mode').addEventListener('change',()=>{x32ReadWizardStep();x32RenderWizard();});
+$('sp-x32-back').addEventListener('click',()=>{x32ReadWizardStep();x32Error();if(x32Pending.step>0)x32Pending.step--;x32RenderWizard();});
+$('sp-x32-next').addEventListener('click',()=>{
+  try{x32ReadWizardStep();x32Error();if(x32Pending.step===1)x32ValidateWizardAssignments(x32Pending.wizard,x32Pending.inventory,'input');if(x32Pending.step<3)x32Pending.step++;x32RenderWizard();}catch(error){x32Error(error.message);}
+});
+$('sp-x32-edit-wizard').addEventListener('click',()=>{if(stage.x32Scene){x32Error();x32InvalidateExport();x32BeginWizard(stage.x32Scene,true);}});
+
 $('sp-x32-close').addEventListener('click',()=>$('sp-x32-dialog').close());
 $('sp-x32-dialog').addEventListener('close',()=>{x32ReadGeneration++;x32Pending=null;x32InvalidateExport();});
 $('sp-x32-file').addEventListener('change',async()=>{
@@ -16465,24 +16895,24 @@ $('sp-x32-file').addEventListener('change',async()=>{
     catch{throw Error('Die Szene ist nicht als UTF-8 lesbar. Bitte erneut aus X32-Edit exportieren.');}
     if(generation!==x32ReadGeneration||owner!==stage||!$('sp-x32-dialog').open||sharedReadOnly)return;
     const attachment=StageplotX32.normalizeAttachment({version:1,text,filename:file.name,mappings:[]});
-    x32RenderPreview(text);x32Pending={attachment,owner,imported:StageplotX32.importRouting(text)};
-    $('sp-x32-mode').value=stage.routing.inputs.length||stage.routing.outputs.length?'template':'routing';
-    $('sp-x32-import-options').hidden=false;$('sp-x32-import').disabled=false;
+    x32BeginWizard(attachment);
     $('sp-x32-status').textContent='Vorschau geladen. Das Projekt wurde noch nicht geändert.';
   }catch(error){if(generation===x32ReadGeneration){$('sp-x32-preview').hidden=true;x32Error('Szene nicht geladen: '+error.message);}}
 });
 $('sp-x32-import').addEventListener('click',()=>{
   try{
     x32Error();if(!x32Pending||x32Pending.owner!==stage)throw Error('Bitte die Szene für dieses Projekt erneut auswählen.');
-    const {attachment,imported}=x32Pending,replace=$('sp-x32-mode').value==='routing';
-    const routing=replace?normalizeRouting({...stage.routing,inputs:imported.inputs,outputs:imported.outputs,disabledSources:[...new Set([...stage.routing.disabledSources,...generatedInputSpecs().map(row=>row.sourceKey),...generatedOutputSpecs().map(row=>row.sourceKey)])]}):null;
+    const replace=$('sp-x32-mode').value==='routing';
+    if(replace&&x32Pending.step!==3)throw Error('Bitte zuerst die Zuordnungsschritte abschließen.');
+    const plan=replace?x32WizardPlan():{attachment:x32Pending.attachment,routing:null};
     x32Commit(()=>{
-      stage.x32Scene=attachment;
-      if(routing)stage.routing=routing;
+      stage.x32Scene=plan.attachment;
+      if(plan.routing)stage.routing=plan.routing;
       else for(const direction of ['inputs','outputs'])x32ClearBindings(stage.routing[direction]);
       reconcileCablesWithRouting();
-    },replace?'X32-Kanäle und Mixbusse übernommen.':'X32-Vorlage im Projekt gespeichert.');
-    x32Pending=null;$('sp-x32-import-options').hidden=true;$('sp-x32-file').value='';x32InvalidateExport();x32RenderAttached();
+    },replace?'Inputs, Busse und Ausgänge übernommen. Offene Zuordnungen bleiben sichtbar.':'X32-Vorlage im Projekt gespeichert.');
+    x32Pending=null;$('sp-x32-import-options').hidden=true;$('sp-x32-file').value='';x32InvalidateExport();x32RenderAttached();x32RenderPreview(stage.x32Scene.text);
+    if(replace)routingWorkspaceV2?.selectX32?.();
   }catch(error){x32Error(error.message);}
 });
 $('sp-x32-save-mappings').addEventListener('click',()=>{
@@ -16499,7 +16929,9 @@ $('sp-x32-export').addEventListener('click',()=>{
     x32Error();x32InvalidateExport();
     if(!stage.x32Scene)throw Error('Bitte zuerst eine Szene als Vorlage laden.');
     if(x32Pending)throw Error('Bitte die neue Vorlage erst übernehmen oder den Dialog erneut öffnen.');
-    const mappings=x32CurrentMappings(),result=StageplotX32.exportScene(stage.x32Scene.text,{inputs:stage.routing.inputs,outputs:stage.routing.outputs,mappings});
+    const mappings=x32CurrentMappings(),result=StageplotX32.exportScene(stage.x32Scene.text,{inputs:stage.routing.inputs.filter(row=>row.x32?.kind!=='aux'),outputs:stage.routing.outputs.filter(row=>row.x32?.kind!=='output'),mappings});
+    const aux=StageplotX32.parse(stage.x32Scene.text).auxInputs;
+    if(stage.routing.inputs.some(row=>row.x32?.kind==='aux'&&row.instrument!==aux.find(input=>input.number===row.x32.channel)?.name))result.warnings.push('Geänderte Aux-/USB-Namen bleiben nur im Stageplot-Projekt; die Szene behält die ursprünglichen Aux-Namen.');
     const host=$('sp-x32-changes'),heading=document.createElement('h3');heading.textContent=result.changes.length+' Änderungen gegenüber der Vorlage';host.append(heading);
     const explanation=document.createElement('p');explanation.textContent='Nur die aufgeführten Beschriftungen, Kanalquellen und Stereo-Verknüpfungen werden geändert. Nicht aufgeführte Kanäle und alle Klang- und Ausgangseinstellungen bleiben aus der Vorlage.';host.append(explanation);
     const list=document.createElement('ul');list.className='sp-x32-change-list';
