@@ -17038,10 +17038,9 @@ function createStageplotSymbolV3(type, options = {}) {
       if(type==='foh'){const f=o.foh||{};Object.assign(item,{width:finite(o.width,.3,30)?o.width:3,depth:finite(o.depth,.3,20)?o.depth:2,foh:{table:f.table===true,barrier:f.barrier===true,sun:f.sun===true,rain:f.rain===true}});}
       if(type==='stage-stairs')item.steps=Math.max(1,Math.min(24,Math.round(Number(o.steps)||5)));
       if(byId[type].stageAccess)Object.assign(item,{width:finite(o.width,.3,30)?o.width:byId[type].w,depth:finite(o.depth,.3,20)?o.depth:byId[type].d});
-      if(type==='riser'){
-        if(!finite(o.width,.25,30)||!finite(o.depth,.25,20)||!finite(o.height,5,240))throw new Error('Ungültige Riser-Maße.');
-        Object.assign(item,{width:o.width,depth:o.depth,height:o.height});
-      }
+      // Like FOH and stage access, a riser with missing or out-of-range sizes falls back
+      // to its catalog footprint and standard height, so one field never rejects the whole plan.
+      if(type==='riser')Object.assign(item,{width:finite(o.width,.25,30)?o.width:byId[type].w,depth:finite(o.depth,.25,20)?o.depth:byId[type].d,height:finite(o.height,5,240)?o.height:40});
       return item;
     });
     s.extraStairs=normalizeExtraStairs(source.extraStairs,s);s.cables=normalizeCables(source.cables,idMap,list);s.project=cleanProject(source.project,s.title);s.project.name=s.title;

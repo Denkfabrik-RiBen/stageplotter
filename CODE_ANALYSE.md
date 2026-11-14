@@ -24,7 +24,7 @@ Belegarten im Text:
 
 ### 1.1 Ein ungültiges Objekt blendet alle Projekte aus (hoch, reproduziert, behoben)
 
-**Behoben auf diesem Branch:** `readDraftLibrary` lädt jeden Eintrag einzeln. Unlesbare Einträge bleiben unverändert im Speicher, auch nach weiteren Speichervorgängen. Das Dashboard meldet sie und bietet „Rohdaten sichern“ an. Im Browser gegengeprüft und per Test in `stageplot-project-identity.test.cjs` abgesichert. Offen bleibt der Rückfall auf Standardmaße für Podeste.
+**Behoben auf diesem Branch:** `readDraftLibrary` lädt jeden Eintrag einzeln. Unlesbare Einträge bleiben unverändert im Speicher, auch nach weiteren Speichervorgängen. Das Dashboard meldet sie und bietet „Rohdaten sichern“ an. Im Browser gegengeprüft und per Test in `stageplot-project-identity.test.cjs` abgesichert. Podeste mit fehlenden oder ungültigen Maßen erhalten jetzt wie FOH und Zugänge Standardwerte (Katalogfläche, 40 cm Höhe) und brechen das Laden nicht mehr ab.
 
 `readDraftLibrary` (`stageplot-studio.html:22437`) normalisiert jeden gespeicherten Entwurf in einer gemeinsamen `map`. Wirft `normalizeSetupDocument` für einen einzigen Eintrag, ist die ganze Bibliothek unlesbar.
 
