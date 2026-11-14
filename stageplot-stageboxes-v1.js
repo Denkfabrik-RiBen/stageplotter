@@ -1480,15 +1480,45 @@
 ];
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const byType=new Map(models.map(model=>[model.type,model]));
+  // The local console is a routing surface, outside the stagebox catalog.
+  const x32Inputs=[1924,1863,1803,1743,1682,1622,1561,1500,1393,1332,1272,1211,1151,1090,1029,968];
+  const x32Outputs=[860,799,739,678,618,557,496,436];
+  byType.set('x32-local',{
+    type:'x32-local',brand:'Behringer',name:'X32 lokal',file:'x32-rear-v1.jpg',
+    frame:[2170,725],viewBox:[40,65,2090,520],diameter:54,
+    ports:{
+      inputs:[296,386].flatMap(y=>x32Inputs.map(x=>[x,y])),
+      outputs:[296,386].flatMap(y=>x32Outputs.map(x=>[x,y]))
+    }
+  });
+  const mixerPanels=/* mixer-panel-data */ [];
+  for(const panel of mixerPanels){
+    byType.set(panel.id,{...panel,type:panel.id,assetDirectory:'mixers'});
+  }
+  const mixers=[byType.get('x32-local'),...mixerPanels].map(panel=>({
+    id:panel.id||panel.type,brand:panel.brand,name:panel.name.replace(/ lokal$/,''),
+    inputs:panel.ports.inputs.length
+  }));
   const get=type=>byType.get(type)||null;
   const capacities=Object.fromEntries(models.map(({type,inputs,outputs,comboJacks})=>[type,{inputs,outputs,comboJacks}]));
   function picture(type,className='sp-stagebox-picture'){
     const m=get(type);if(!m)return '';
-    return '<svg class="'+esc(className)+'" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><image href="stageplot-assets/stageboxes/'+m.file+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/></svg>';
+    return '<svg class="'+esc(className)+'" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><image href="stageplot-assets/'+(m.assetDirectory||'stageboxes')+'/'+m.file+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/></svg>';
   }
   function artwork(type){
     const m=get(type);if(!m)return '';
-    return '<g data-equipment="'+m.type+'" data-generated-stagebox="true"><rect width="'+m.width+'" height="'+m.depth+'" fill="none" stroke="none" pointer-events="none" data-metric-frame="true"/><svg width="'+m.width+'" height="'+m.depth+'" viewBox="'+m.viewBox.join(' ')+'" preserveAspectRatio="xMidYMid meet"><image href="stageplot-assets/stageboxes/'+m.file+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none" data-rendered-stagebox-asset="'+m.type+'"/></svg></g>';
+    return '<g data-equipment="'+m.type+'" data-generated-stagebox="true"><rect width="'+m.width+'" height="'+m.depth+'" fill="none" stroke="none" pointer-events="none" data-metric-frame="true"/><svg width="'+m.width+'" height="'+m.depth+'" viewBox="'+m.viewBox.join(' ')+'" preserveAspectRatio="xMidYMid meet"><image href="stageplot-assets/'+(m.assetDirectory||'stageboxes')+'/'+m.file+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none" data-rendered-stagebox-asset="'+m.type+'"/></svg></g>';
+  }
+  let surfaceSerial=0;
+  function routingPicture(m){
+    // The reference photographs show powered LEDs. Neutralize only the input
+    // socket area, so live red lamps can represent the saved preamp state.
+    const id='sp-preamp-photo-'+(++surfaceSerial);
+    const diameter=m.diameter;
+    const masks=m.ports.inputs.map(([x,y])=>'<rect x="'+(x-diameter*.62)+'" y="'+(y-diameter*.72)+'" width="'+diameter*1.24+'" height="'+diameter*1.48+'"/>').join('');
+    const href='stageplot-assets/'+(m.assetDirectory||'stageboxes')+'/'+m.file;
+    const photo='<image href="'+href+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/>';
+    return '<svg class="sp-stagebox-picture" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><defs><clipPath id="'+id+'">'+masks+'</clipPath><filter id="'+id+'-off" color-interpolation-filters="sRGB"><feColorMatrix values="0 .8 .2 0 0  0 .8 .2 0 0  0 .8 .2 0 0  0 0 0 1 0"/></filter></defs>'+photo+'<g clip-path="url(#'+id+')"><g filter="url(#'+id+'-off)">'+photo+'</g></g></svg>';
   }
   function surface(type,renderPort,directions=['inputs','outputs']){
     const m=get(type);if(!m)return '';
@@ -1496,9 +1526,9 @@
     const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
     // Min width preserves a 44px target even on the densest 16-column rack.
     const minWidth=Math.ceil(w/m.diameter*44);
-    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';min-width:'+minWidth+'px">'+picture(type)+sockets+'</div></div>';
+    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
   }
-  const api=Object.freeze({models,get,capacities,picture,artwork,surface});
+  const api=Object.freeze({models,mixers,get,capacities,picture,artwork,surface});
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   global.StageplotStageboxes=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

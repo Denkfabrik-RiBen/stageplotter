@@ -1,0 +1,88 @@
+{
+  "id": "x32-rack",
+  "name": "X32 Rack",
+  "brand": "Behringer",
+  "file": "x32-rack.jpg",
+  "frame": [
+    2170,
+    725
+  ],
+  "viewBox": [
+    8,
+    30,
+    2155,
+    660
+  ],
+  "diameter": 99,
+  "ports": {
+    "inputs": [
+      [
+        2060,
+        177
+      ],
+      [
+        1937,
+        177
+      ],
+      [
+        1815,
+        177
+      ],
+      [
+        1693,
+        177
+      ],
+      [
+        1570,
+        177
+      ],
+      [
+        1448,
+        177
+      ],
+      [
+        1325,
+        177
+      ],
+      [
+        1202,
+        177
+      ],
+      [
+        2060,
+        361
+      ],
+      [
+        1937,
+        361
+      ],
+      [
+        1815,
+        361
+      ],
+      [
+        1693,
+        361
+      ],
+      [
+        1570,
+        361
+      ],
+      [
+        1448,
+        361
+      ],
+      [
+        1325,
+        361
+      ],
+      [
+        1202,
+        361
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://warehousesound.com/r/behringerX32RACK.pdf#page=28",
+  "prompt": "Retouch the original straight-on X32 Rack rear, preserve the sixteen inputs, eight outputs, other connector positions, chassis and legends. Pale gray studio background."
+}

@@ -2,7 +2,7 @@
 let routingWorkspaceV2=null;
 function routingWorkspaceState(){
   const specs=generatedInputSpecs();
-  return {tab:routingTab,readonly:sharedReadOnly,saveState:{text:$('sp-header-draft-status').textContent,state:draftState},stage,objects,routing:stage.routing,boxes:allRoutingStageboxes(),catalog:byId,microphones:StageplotMics.catalog,diModels:StageplotRoutingModel.diModels,diStereoSources:Object.fromEntries(objects.map(o=>[o.id,routingDiStereoSource(o)])),diStereoPairs:Object.fromEntries(objects.map(o=>[o.id,routingDiStereoPairs(o)])),sourceOutputs:Object.fromEntries(objects.filter(o=>byId[o.type]?.instrument||byId[o.type]?.category==='amps'&&o.io).map(o=>[o.id,routingSourceOutputs(o,specs)]))};
+  return {projectId:activeDraftId,tab:routingTab,readonly:sharedReadOnly,saveState:{text:$('sp-header-draft-status').textContent,state:draftState},stage,objects,routing:stage.routing,boxes:allRoutingStageboxes(),catalog:byId,microphones:StageplotMics.catalog,diModels:StageplotRoutingModel.diModels,diStereoSources:Object.fromEntries(objects.map(o=>[o.id,routingDiStereoSource(o)])),diStereoPairs:Object.fromEntries(objects.map(o=>[o.id,routingDiStereoPairs(o)])),sourceOutputs:Object.fromEntries(objects.filter(o=>byId[o.type]?.instrument||byId[o.type]?.category==='amps'&&o.io).map(o=>[o.id,routingSourceOutputs(o,specs)]))};
 }
 // A physical DI has one routing device and one movable stage object.
 function routingDiObject(device){return objects.find(o=>o.id===device?.objectId&&o.type==='di');}
@@ -350,6 +350,303 @@ function setRoutingMonitorFormat(rows,format){
   if(!right){right=normalizeRouteChannel({...left,id:'route-'+routeToken(),sourceKey:o?o.id+':monitor-'+routeToken():'',manual:true,number:null,stagebox:'',stageboxPort:null},stage.routing.outputs.length,'outputs');stage.routing.outputs.splice(stage.routing.outputs.indexOf(left)+1,0,right);}
   [left,right].forEach((row,index)=>Object.assign(row,{mode:'Stereo '+(index?'R':'L'),stereoGroup:group,iemGroup:audioKind(row)==='iem'?group:'',iemMode:audioKind(row)==='iem'?'stereo':'',edited:true,instrument:base+' · '+(index?'R':'L')}));
 }
+// Mixer rows carry source identity. A vacant row retains the physical patch of an
+// empty strip so a label-only edit never changes the signal or sends at that slot.
+function mixerStereoTransfer(action){
+  const rows=stage.routing.inputs,source=routingEditableRow('inputs',action.rowId);
+  if(action.stereo==='pair'&&(!Number.isInteger(action.channel)||action.channel<1||action.channel>31||action.channel%2===0))throw Error('Bitte einen ungeraden Startkanal für das Stereo-Paar wählen.');
+  const {first,members,targets,stamp}=StageplotRoutingModel.mixerStereoPlan(rows,source,action.channel);
+  const target=targets[action.channel-first];
+  if(JSON.stringify(stamp)!==JSON.stringify(action.stereoStamp))throw Error('Die Kanalbelegung hat sich geändert. Bitte erneut wählen.');
+  if(action.stereo==='split'){
+    for(const group of new Set([source.stereoGroup,target?.stereoGroup].filter(Boolean))){
+      const pair=rows.filter(row=>row.stereoGroup===group);
+      pair.forEach(row=>routingEditableRow('inputs',row.id));
+      const native=routingNativeOutputPair(pair);
+      if(native){const io=objectIo(native.source);native.source.io={...io,stereoPairs:io.stereoPairs.filter(n=>n!==native.start)};}
+      pair.forEach(row=>Object.assign(row,{mode:'Mono',stereoGroup:'',edited:true}));
+    }
+    transferMixerSignal(action);
+    return;
+  }
+  if(action.stereo!=='pair'||members.length!==2||members[0].mode!=='Stereo L'||members[1].mode!=='Stereo R')throw Error('Bitte ein vollständiges L/R-Paar wählen.');
+  // A mono source converted to stereo can already occupy its correct half.
+  const completing=action.operation==='assign'&&members.some((row,i)=>row===targets[i])&&members.every((row,i)=>!row.number||row===targets[i]);
+  if(!completing&&targets.some(row=>members.includes(row)))throw Error('Dieses Paar liegt bereits auf den gewählten Kanälen.');
+  if(targets.some(row=>row?.stereoGroup&&!members.includes(row)&&audioOrderedGroup(rows,row).some(partner=>!targets.includes(partner))))throw Error('Am Ziel liegt ein überlappendes Stereo-Paar. Bitte zuerst den Ziel-Link aufheben.');
+  if(!completing&&members.some(row=>!!row.number!==!!source.number))throw Error('Dieses Paar ist nur teilweise zugeordnet. Bitte zuerst den Link aufheben.');
+  const targetLinked=targets.some(row=>row?.stereoGroup);
+  if(targetLinked&&action.operation==='switch'&&(!(members[0].number%2)||members[1].number!==members[0].number+1))throw Error('Für den Rücktausch benötigt das Zielpaar ebenfalls ein ungerades/gerades Kanalpaar.');
+  const group=action.operation==='duplicate'?'stereo-'+routeToken():source.stereoGroup;
+  members.forEach((row,i)=>{
+    if(completing&&row===targets[i])return;
+    const incoming=transferMixerSignal({...action,rowId:row.id,channel:first+i,previous:row.number,targetId:targets[i]?.id||''},true);
+    Object.assign(incoming,{stereoGroup:group,mode:i?'Stereo R':'Stereo L',edited:true});
+  });
+}
+function completeMixerStereo(action){
+  const routing=stage.routing,rows=routing.inputs;
+  const right=routingEditableRow('inputs',action.rowId);
+  const {members,targets,stamp}=StageplotRoutingModel.mixerStereoPlan(rows,right,action.first);
+  const [left]=members;
+  if(!Number.isInteger(action.first)||action.first<1||action.first>31||action.first%2!==1||
+     members.length!==2||members[1]!==right||left.mode!=='Stereo L'||right.mode!=='Stereo R'||
+     right.number||!left.number||left.number!==action.previous||
+     JSON.stringify(action.stamp)!==JSON.stringify(stamp))throw Error('Die Kanalbelegung hat sich geändert.');
+  const relocating=left.number!==action.first;
+  const even=left.number%2===0;
+  if(even&&Math.abs(action.first-left.number)!==1)throw Error('Bitte ein benachbartes Kanalpaar wählen.');
+  if(!even&&relocating&&targets.some(row=>row&&!row.mixerVacant)||targets.some(row=>row?.stereoGroup&&row!==left))throw Error('Bitte ein freies Kanalpaar wählen.');
+  const at=n=>rows.find(row=>row.number===n&&row.x32?.kind!=='aux');
+  for(const [from,destination] of Object.entries(action.moves||{})){
+    if(!destination)continue;
+    const source=at(Number(from)),target=at(destination);
+    if(!source||source===left||source.mixerVacant||!targets.includes(source)||
+       !Number.isInteger(destination)||destination<1||destination>32||
+       destination===action.first||destination===action.first+1||
+       (target&&(!target.mixerVacant||target.stereoGroup)))throw Error('Der gewählte Mixerkanal ist nicht mehr frei.');
+    transferMixerSignal({rowId:source.id,previous:source.number,targetId:target?.id||'',channel:destination,
+      operation:'move'});
+  }
+  if(relocating)transferMixerSignal({rowId:left.id,previous:left.number,channel:action.first,targetId:at(action.first)?.id||'',operation:'move'},true);
+  transferMixerSignal({rowId:right.id,previous:right.number,channel:action.first+1,targetId:rows.find(r=>r.x32?.kind!=='aux'&&r.number===action.first+1)?.id||'',operation:'assign'},true);
+}
+function mixerSlotSettings(row){return {
+    stagebox:row?.stagebox||'',stageboxPort:row?.stageboxPort??null,localPort:row?.localPort,
+    x32:row?.x32?{...row.x32}:undefined,notes:row?.notes||'',microphone:row?.microphone||'',
+    phantom:row?.phantom===true,pickup:row?.pickup||'Direct',connector:row?.connector||'XLR',
+    signalType:row?.signalType||'Line'
+};}
+
+function insertMixerSignal(action){
+  const routing=stage.routing,rows=routing.inputs,source=routingEditableRow('inputs',action.rowId);
+  if(source.number!==action.previous||source.mixerVacant)throw Error('Bitte die Kanalbelegung erneut wählen.');
+  const slots=Array.from({length:32},(_,i)=>rows.find(row=>row.x32?.kind!=='aux'&&row.number===i+1));
+  if(JSON.stringify(slots.map(row=>row?.id||''))!==JSON.stringify(action.slotIds))throw Error('Die Kanalbelegung hat sich geändert.');
+  if(action.stereo==='split'){
+    const groups=new Set([source.stereoGroup,slots[action.channel-1]?.stereoGroup].filter(Boolean));
+    for(const group of groups){
+      const members=rows.filter(row=>row.stereoGroup===group);
+      const native=routingNativeOutputPair(members);
+      if(native){const io=objectIo(native.source);native.source.io={...io,stereoPairs:io.stereoPairs.filter(n=>n!==native.start)};}
+      for(const row of members){routingEditableRow('inputs',row.id);Object.assign(row,{mode:'Mono',stereoGroup:'',edited:true});}
+    }
+  }
+  const origins=StageplotRoutingModel.mixerInsertPlan(rows,source,action.channel,action.stereo==='pair');
+  const settings=slots.map(mixerSlotSettings);
+  for(const [index,origin] of origins.entries()){
+    if(origin===index+1)continue;
+    let row=slots[origin-1];
+    if(row){
+      routingEditableRow('inputs',row.id);
+      if(row.stereoGroup){
+        const left=rows.find(r=>r.stereoGroup===row.stereoGroup&&r.mode==='Stereo L');
+        const right=rows.find(r=>r.stereoGroup===row.stereoGroup&&r.mode==='Stereo R');
+        const l=origins.indexOf(slots.indexOf(left)+1)+1,r=origins.indexOf(slots.indexOf(right)+1)+1;
+        if(l%2!==1||r!==l+1)throw Error('Das Einschieben würde ein Stereo-Paar trennen. Bitte eine andere Lücke wählen oder den Link aufheben.');
+      }
+    }else{
+      row=normalizeRouteChannel({id:'route-'+routeToken(),manual:true,mixerVacant:true},rows.length,'inputs');
+      rows.push(row);
+    }
+    row.number=index+1;row.edited=true;
+    Object.assign(row,settings[index]);
+  }
+
+}
+function transferMixerSignal(action,paired=false){
+  const rows=stage.routing.inputs, source=routingEditableRow('inputs',action.rowId);
+  const channel=action.channel, previous=source.number, mode=action.operation;
+  if(!Number.isInteger(channel)||channel<1||channel>32||source.x32?.kind==='aux'||source.mixerVacant)throw Error('Bitte einen Mixerkanal und eine Quelle wählen.');
+  const target=rows.find(row=>row.x32?.kind!=='aux'&&row.number===channel);
+  if(action.previous!==previous||action.targetId!==(target?.id||''))throw Error('Die Kanalbelegung hat sich geändert. Bitte erneut wählen.');
+  if(target===source)return;
+  if(target)routingEditableRow('inputs',target.id);
+  if(!paired&&(source.stereoGroup||target?.stereoGroup))throw Error('Bitte den Umgang mit dem Stereo-Link wählen.');
+  if(!['assign','move','duplicate','switch'].includes(mode))throw Error('Routing-Aktion wählen.');
+  if((mode==='assign')!==!previous)throw Error('Die Kanalbelegung hat sich geändert. Bitte erneut wählen.');
+  const makeRow=fields=>{
+    const row=normalizeRouteChannel({...fields,id:'route-'+routeToken(),manual:true,edited:true,sourceKey:'',linkedSources:[],stereoGroup:'',mode:'Mono'},rows.length,'inputs');
+    rows.push(row);return row;
+  };
+  const vacancy=()=>makeRow({instrument:'',mixerVacant:true});
+  // Snapshot both slots before changing either one. The source object and
+  // acquisition IDs stay with the signal; these settings belong to the slot.
+  const fromPatch=mixerSlotSettings(source),toPatch=mixerSlotSettings(target);
+  const group=StageplotRoutingModel.mixerInventory(stage.routing,allRoutingStageboxes()).groups.get(StageplotRoutingModel.mixerSourceId(source));
+  const splitPatch=(mode==='duplicate'||group?.rows.filter(row=>row.number).length>1)?group?.patch:null;
+  const incoming=mode==='duplicate'?makeRow({instrument:source.instrument,mixerCopyOrigin:source.mixerCopyOrigin||source.sourceKey||source.id,mixerCopySide:source.mixerCopySide||(/^Stereo ([LR])$/.exec(source.mode)?.[1]),mixerSourceId:StageplotRoutingModel.mixerSourceId(source)}):source;
+  if(mode==='switch'&&target){
+    target.number=previous;target.edited=true;
+    Object.assign(target,fromPatch);
+  }else{
+    if(target){
+      if(target.mixerVacant)rows.splice(rows.indexOf(target),1);
+      else {target.number=null;target.mixerDisplaced=true;target.edited=true;}
+    }
+    if(previous&&(mode==='move'||mode==='switch')){
+      const vacant=vacancy();Object.assign(vacant,fromPatch,{number:previous});
+    }
+  }
+  delete incoming.mixerDisplaced;incoming.number=channel;incoming.edited=true;
+  if(previous)Object.assign(incoming,toPatch);
+  else if(target?.mixerVacant)Object.assign(incoming,toPatch);
+  else if(target)StageplotRoutingModel.writeMixerSocket(incoming,StageplotRoutingModel.explicitSocket(target));
+  if(splitPatch){
+    StageplotRoutingModel.writeMixerSocket(source,splitPatch);
+    StageplotRoutingModel.writeMixerSocket(incoming,splitPatch);
+  }
+  if(target?.mixerDisplaced&&StageplotRoutingModel.mixerSourceId(target)!==StageplotRoutingModel.mixerSourceId(incoming)){
+    const old=StageplotRoutingModel.explicitSocket(target),now=StageplotRoutingModel.explicitSocket(incoming);
+    if(old&&old.id===now?.id&&old.port===now.port)StageplotRoutingModel.writeMixerSocket(target,null);
+  }
+  if(stage.routing.userInputs){
+    const follow=(n,row)=>{
+      if(stage.routing.mixerBanks[Math.floor((n-1)/8)]?.id==='@user'&&row){
+        const patch=StageplotRoutingModel.explicitSocket(row);
+        if(patch)stage.routing.userInputs[n-1]=patch;
+      }
+    };
+    if(splitPatch)follow(channel,incoming);
+  }
+  return incoming;
+}
+function initializeMixerPatch(routing){
+  if(routing.userInputs)return;
+  const inventory=StageplotRoutingModel.mixerInventory(routing,allRoutingStageboxes());
+  routing.userInputs=Array.from({length:32},(_,i)=>inventory.bankSocket(i+1));
+  routing.mixerBanks=inventory.banks.map(({id,first})=>({id,first}));
+}
+function setUserMixerInput(routing,channel,patch){
+  if(!Number.isInteger(channel)||channel<1||channel>32||routing.mixerBanks[Math.floor((channel-1)/8)]?.id!=='@user')throw Error('Für Einzelzuweisungen oben User In wählen.');
+  const device=patch.id==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(box=>box.id===patch.id);
+  if(!device||!Number.isInteger(patch.port)||patch.port<1||patch.port>device.inputs)throw Error('Diese Buchse ist nicht verfügbar.');
+  routing.userInputs[channel-1]=patch;
+}
+function applyMixerChannelPatches(routing){
+  const model=StageplotRoutingModel,inventory=model.mixerInventory(routing,allRoutingStageboxes());
+  const owners=new Map();
+  for(const row of routing.inputs){
+    if(!row.number||row.number>32||row.x32?.kind==='aux'||row.mixerVacant)continue;
+    const patch=inventory.bankSocket(row.number),key=patch&&patch.id+':'+patch.port;
+    const owner=owners.get(key);
+    const sourceId=model.mixerSourceId(row);
+    const origin=row.mixerCopyOrigin||row.sourceKey||row.id;
+    if(owner && owner.sourceId!==sourceId && owner.origin!==origin){
+      const device=patch.id==='@local'?model.localMixer(routing):allRoutingStageboxes().find(box=>box.id===patch.id);
+      throw Error((device?.name||patch.id)+' · IN '+patch.port+' kann nur ein Signal führen. '+owner.row.instrument+' (CH '+owner.row.number+') und '+row.instrument+' (CH '+row.number+') benötigen unterschiedliche Buchsen.');
+    }
+    if(owner)row.mixerSourceId=owner.row.id;
+    else {if(key)owners.set(key,{row,sourceId,origin});delete row.mixerSourceId;}
+    const old=model.explicitSocket(row);
+    if(old?.id!==patch?.id||old?.port!==patch?.port)model.writeMixerSocket(row,patch);
+  }
+}
+function moveMixerSocket(action,routing){
+  const box=action.boxId==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(item=>item.id===action.boxId);
+  const inventory=StageplotRoutingModel.mixerInventory(routing,allRoutingStageboxes());
+  const source=inventory.at(action.boxId,action.from),target=inventory.at(action.boxId,action.to);
+  if(!box||!source||source.id!==action.sourceId||(target?.id||'')!==action.targetId)throw Error('Die Buchsenbelegung hat sich geändert. Bitte erneut ziehen.');
+  if(action.from===action.to)return;
+  initializeMixerPatch(routing);
+  // A fixed bank follows the physical jack. Exchange its channel assignments
+  // while User In channels can follow their source to the new jack.
+  const fixedChannels=port=>Array.from({length:32},(_,i)=>i+1).filter(channel=>{
+    const patch=inventory.bankSocket(channel);
+    return inventory.banks[Math.floor((channel-1)/8)].id!=='@user' && patch?.id===box.id && patch.port===port;
+  });
+  const fromChannels=fixedChannels(action.from),toChannels=fixedChannels(action.to);
+  const channelMoves=new Map();
+  if(source.rows.some(row=>fromChannels.includes(row.number)) || target?.rows.some(row=>toChannels.includes(row.number))){
+    if(fromChannels.length!==toChannels.length)throw Error('Die Buchsen sind unterschiedlich im Block-Patch belegt. Für diese Verschiebung bitte User In wählen.');
+    for(const [index,from] of fromChannels.entries()){
+      const to=toChannels[index];
+      channelMoves.set(from,to);
+      channelMoves.set(to,from);
+    }
+    for(const row of routing.inputs){
+      if(row.x32?.kind==='aux'||!channelMoves.has(row.number))continue;
+      if(row.stereoGroup)throw Error('Dieses Stereopaar ist fest gepatcht. Zum einzelnen Umstecken bitte User In wählen.');
+      routingEditableRow('inputs',row.id);
+      row.number=channelMoves.get(row.number);
+      row.edited=true;
+    }
+  }
+  for(const [group,port] of [[source,action.to],[target,action.from]]){
+    for(const row of group?.rows||[]){
+      routingEditableRow('inputs',row.id);
+      planAudioPatch([], [row],box,'inputs',{startPort:port});
+      if(row.number && !channelMoves.has(row.number))setUserMixerInput(routing,row.number,{id:box.id,port});
+      StageplotRoutingModel.writeMixerSocket(row,{id:box.id,port});
+    }
+  }
+}
+function assignMixerInput(action,routing){
+  const members=routingWorkspaceMembers('inputs',[action.rowId]),channel=action.channel,port=action.port;
+  const offset=members.findIndex(row=>row.id===action.rowId);
+  const start=channel-offset;
+  const others=routing.inputs.filter(row=>!members.includes(row)&&row.x32?.kind!=='aux');
+  if(!Number.isInteger(start)||start<1||start+members.length-1>32)throw Error('Bitte freie, benachbarte Mixerkanäle wählen.');
+  if(others.some(row=>row.number>=start&&row.number<start+members.length))throw Error('Der Mixerkanal ist bereits belegt.');
+  const local=action.boxId==='@local', device=local?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(item=>item.id===action.boxId);
+  const firstPort=port-offset;
+  const inventory=StageplotRoutingModel.mixerInventory(routing,allRoutingStageboxes());
+  initializeMixerPatch(routing);
+  const ids=members.map(StageplotRoutingModel.mixerSourceId);
+  const plan=planAudioPatch([],members,device,'inputs',{startPort:firstPort});
+  members.forEach((row,index)=>{
+    const port=plan.assignments[index].stageboxPort;
+    const n=start+index,patch=inventory.bankSocket(n);
+    if(routing.mixerBanks[Math.floor((n-1)/8)].id==='@user')setUserMixerInput(routing,n,{id:device.id,port});
+    else if(patch?.id!==device.id||patch.port!==port)throw Error('Dieser Kanal folgt dem festen Block-Patch. Für eine andere Buchse oben User In wählen.');
+    const owner=inventory.at(device.id,port);
+    if(owner&&!ids.includes(owner.id))throw Error(device.name+' · IN '+port+' ist bereits belegt.');
+    if(ids.indexOf(ids[index])!==index)throw Error('Ein Split hat nur eine physische Buchse.');
+    const group=inventory.groups.get(ids[index]);
+    for(const sibling of group?.rows||[row]){
+      planAudioPatch([], [sibling],device,'inputs',{startPort:port});
+      routingEditableRow('inputs',sibling.id);
+      if(sibling!==row&&sibling.number){
+        const previous=inventory.bankSocket(sibling.number);
+        if(previous?.id!==device.id||previous.port!==port)setUserMixerInput(routing,sibling.number,{id:device.id,port});
+      }
+      StageplotRoutingModel.writeMixerSocket(sibling,{id:device.id,port});
+    }
+    row.number=start+index;
+  });
+}
+function transferToMixerSocket(action,routing){
+  const {channel,boxId,port}=action;
+  const channelAt=n=>routing.inputs.find(row=>row.number===n&&row.x32?.kind!=='aux');
+  const source=routingEditableRow('inputs',action.rowId);
+  const offset=action.stereo==='pair'&&source.mode==='Stereo R'?1:0;
+  const targets=action.stereo==='pair'?[channelAt(channel),channelAt(channel+1)]:[channelAt(channel)];
+  const oldSources=action.stereo==='pair'?audioOrderedGroup(routing.inputs,source):[source];
+  const previousPatches=oldSources.map(mixerSlotSettings);
+  if(action.stereo)mixerStereoTransfer(action);else transferMixerSignal(action);
+  const selected=channelAt(channel+offset);
+  const members=audioOrderedGroup(routing.inputs,selected);
+  // The destination socket is explicitly selected. Release it on displaced
+  // rows, or give the exchanged row the incoming signal's former patch.
+  targets.forEach((row,i)=>{
+    if(!row||members.includes(row))return;
+    if(row.stagebox!==boxId||row.stageboxPort!==port-offset+i)return;
+    const patch=action.operation==='switch'?previousPatches[i]:null;
+    row.stagebox=patch?.stagebox||'';row.stageboxPort=patch?.stageboxPort??null;
+    row.localPort=patch?.localPort;
+    if(action.operation==='switch'&&routing.mixerBanks?.[Math.floor((row.number-1)/8)]?.id==='@user'){
+      const local=patch?.localPort||patch?.x32?.directPort;
+      routing.userInputs[row.number-1]=patch?.stagebox?{id:patch.stagebox,port:patch.stageboxPort}:local?{id:'@local',port:local}:null;
+    }
+    if(row.x32){delete row.x32.directPort;if(patch?.x32?.directPort)row.x32.directPort=patch.x32.directPort;}
+  });
+  for(const row of routing.inputs){
+    if(row.mixerVacant&&row.stagebox===boxId&&row.stageboxPort>=port-offset&&row.stageboxPort<port-offset+members.length){
+      row.stagebox='';row.stageboxPort=null;
+    }
+  }
+  assignMixerInput({rowId:selected.id,channel:selected.number,boxId,port},routing);
+}
 function dispatchRoutingWorkspace(action){
   if(action.type==='selectTab'){routingTab=['inputs','outputs','stageboxes'].includes(action.tab)?action.tab:'inputs';renderRouting();return;}
   if(action.type==='exportPatch'){exportRoutingWorkspace(action.direction);return;}
@@ -364,7 +661,19 @@ function dispatchRoutingWorkspace(action){
   if(action.type==='csvImport'){if(routingTab==='stageboxes')routingTab='inputs';$('sp-routing-csv-file').click();return;}
   const before=snapshot(),transactionHistory=history.slice(),transactionFuture=future.slice(),transactionNextId=nextId,direction=action.direction==='outputs'?'outputs':'inputs',routing=stage.routing;
   try{
+    if(['completeMixerStereo','insertMixerSignal','transferMixerSignal','transferToMixerSocket'].includes(action.type))initializeMixerPatch(routing);
     switch(action.type){
+      case 'setPreampPower':{
+        const device=action.device==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(box=>box.id===action.device);
+        if(!device||device.type!==action.model||!Number.isInteger(action.port)||action.port<1||action.port>device.inputs)
+          throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
+        if(objects.find(o=>o.id===device.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
+        const key=StageplotRoutingModel.preampKey(device);
+        const active=(routing.preampPower||[]).filter(entry=>entry.device!==key||entry.port!==action.port);
+        if(action.enabled===true)active.push({device:key,port:action.port});
+        routing.preampPower=active;
+        break;
+      }
       case 'setSourceOutputs':case 'setSourceOutputStereo':case 'setSourceOutputUsed':case 'setSourceOutputAlias':if(setRoutingSourceOutputs(action)===false)return;break;
       case 'editSource':{const o=objects.find(o=>o.id===action.sourceId),name=projectText(action.fields?.label,42).trim();if(o?.locked)throw Error('Die Quelle kann nicht geändert werden.');if(!name)throw Error('Bitte einen Namen eingeben.');if(o)o.label=name;else {const rows=routing.inputs.filter(row=>row.id===action.sourceId||row.sourceKey.startsWith(action.sourceId+':'));if(!rows.length)throw Error('Die Quelle ist nicht mehr verfügbar.');for(const row of rows)row.instrument=name;}break;}
       case 'addPickup':{const o=objects.find(o=>o.id===action.sourceId);if(o?.locked)throw Error('Das Bühnenobjekt ist gesperrt.');const seed=routing.inputs.find(row=>row.id===action.sourceId&&!row.sourceKey),added=StageplotRoutingModel.additionalPickup(routing,action.sourceId,action.kind,routeToken);if(seed){added.instrument=audioBaseName(seed);added.sourceConnector=seed.sourceConnector||seed.connector;added.sourceSignalType=seed.sourceSignalType||seed.signalType;}else if(o&&!routing.inputs.some(row=>row.id!==added.id&&row.sourceKey.startsWith(o.id+':')))added.instrument=o.label||byId[o.type]?.name||'Abnahme';break;}
@@ -379,8 +688,41 @@ function dispatchRoutingWorkspace(action){
       case 'assignDi':{const device=routing.devices.find(device=>device.id===action.deviceId);if(!device)throw Error('DI-Box nicht gefunden.');routingAssertDiEditable(device);const rows=action.autoPair&&device.channels>=2?routingDiSelectionRows(action):routingPickupRows(action),start=Number(action.channel||1);StageplotRoutingModel.assignDevice(routing,rows.map(row=>row.id),device.id,rows.map((_,index)=>start+index));rows.forEach(writeRoutingPickup);break;}
       case 'connectStereoDi':if(connectRoutingStereoDi(action)===false)return;break;
       case 'updateDi':{const device=routing.devices.find(device=>device.id===action.deviceId);routingAssertDiEditable(device);const occupants=routing.inputs.filter(row=>row.diDeviceId===action.deviceId);occupants.forEach(row=>routingEditableRow('inputs',row.id));StageplotRoutingModel.updateDevice(routing,action.deviceId,action.fields);const physical=routingDiObject(device);if(physical&&action.fields?.name)physical.label=action.fields.name.slice(0,42);occupants.forEach(writeRoutingPickup);break;}
+      case 'completeMixerStereo':completeMixerStereo(action);break;
+      case 'insertMixerSignal':insertMixerSignal(action);break;
+      case 'transferMixerSignal':if(action.stereo)mixerStereoTransfer(action);else transferMixerSignal(action);break;
+      case 'setMixerModel':{
+        if(!StageplotStageboxes.mixers.some(model=>model.id===action.model))throw Error('Mischpult nicht verfügbar.');
+        initializeMixerPatch(routing);
+        routing.mixerModel=action.model;
+        applyMixerChannelPatches(routing);
+        break;
+      }
+      case 'setMixerBank':{
+        initializeMixerPatch(routing);
+        const device=action.boxId==='@local'?StageplotRoutingModel.localMixer(routing):action.boxId==='@user'?{inputs:32}:allRoutingStageboxes().find(box=>box.id===action.boxId);
+        if(!device||!Number.isInteger(action.index)||action.index<0||action.index>3||!Number.isInteger(action.first)||action.first<1||action.first>device.inputs||(action.first-1)%8)throw Error('Ungültige Kanalbank.');
+        (routing.mixerBanks ||= [null,null,null,null])[action.index]={id:action.boxId,first:action.first};
+        break;
+      }
+      case 'setUserMixerInput':{
+        initializeMixerPatch(routing);
+        const patch={id:action.boxId,port:action.port};
+        const inventory=StageplotRoutingModel.mixerInventory(routing,allRoutingStageboxes());
+        const source=inventory.at(patch.id,patch.port)?.rows.find(row=>row.number);
+        const target=routing.inputs.find(row=>row.number===action.channel&&row.x32?.kind!=='aux');
+        setUserMixerInput(routing,action.channel,patch);
+        if(source&&source!==target&&(!target||StageplotRoutingModel.mixerSourceId(source)!==StageplotRoutingModel.mixerSourceId(target))){
+          const incoming=transferMixerSignal({rowId:source.id,channel:action.channel,previous:source.number,targetId:target?.id||'',operation:'duplicate'},true);
+          if(target?.stereoGroup){incoming.mode=target.mode;incoming.stereoGroup=target.stereoGroup;target.mode='Mono';target.stereoGroup='';}
+        }
+        break;
+      }
+      case 'moveMixerSocket':moveMixerSocket(action,routing);break;
+      case 'transferToMixerSocket':transferToMixerSocket(action,routing);break;
+      case 'assignMixerInput':assignMixerInput(action,routing);break;
       case 'patch':{const rows=routing[direction],members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true);if(members.some(row=>row.x32?.kind==='output'))throw Error('X32-Ausgänge bitte im X32-Assistenten zuordnen.');const box=routingStageboxes(direction).find(box=>box.id===action.boxId);if(!box)throw Error('Stagebox nicht gefunden.');applyAudioPatchPlan(rows,planAudioPatch(rows,members,box,direction,{startPort:Number(action.port)}));break;}
-      case 'unpatch':{const members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true);if(members.some(row=>row.x32?.kind==='output'))throw Error('X32-Ausgänge bitte im X32-Assistenten zuordnen.');for(const row of members)Object.assign(row,{stagebox:'',stageboxPort:null});break;}
+      case 'unpatch':{const members=routingWorkspaceMembers(direction,action.rowIds,action.exactRows===true);if(members.some(row=>row.x32?.kind==='output'))throw Error('X32-Ausgänge bitte im X32-Assistenten zuordnen.');for(const row of members){Object.assign(row,{stagebox:'',stageboxPort:null});delete row.localPort;if(row.x32)delete row.x32.directPort;}break;}
       case 'insertChannel':{const rows=routing.inputs,at=action.at==='end'?Math.max(0,...rows.map(row=>row.number||0))+1:Number(action.at);if(!Number.isInteger(at)||at<1||at>999||rows.some(row=>row.number>=at&&row.number>=999))throw Error('Keine freie Kanalnummer verfügbar.');
         if(rows.some(row=>row.stereoGroup&&row.number>=at&&rows.some(other=>other.stereoGroup===row.stereoGroup&&other.number<at)))throw Error('Bitte vor dem vollständigen Stereo-Paar einfügen.');
         for(const row of rows.filter(row=>row.number>=at)){routingEditableRow('inputs',row.id);row.number++;}
@@ -391,6 +733,27 @@ function dispatchRoutingWorkspace(action){
         if(Object.hasOwn(fields,'connector')){const box=routingStageboxes(direction).find(box=>box.id===row.stagebox);if(box&&!routeStageboxCompatible(row,direction,box)){row.stagebox='';row.stageboxPort=null;}}
         if(Object.hasOwn(fields,'notes')&&Array.isArray(action.rowIds))for(const id of action.rowIds)routingEditableRow(direction,id).notes=projectText(fields.notes,240);
         if(Object.hasOwn(fields,'phantom'))row.phantom=fields.phantom===true;row.edited=true;if(direction==='inputs')writeRoutingPickup(row);break;}
+      case 'linkMixerChannels':{
+        const first=action.first;
+        if(!Number.isInteger(first)||first<1||first>31||first%2!==1)throw Error('Einen ungeraden Startkanal wählen.');
+        const slots=[first,first+1].map(n=>routing.inputs.find(row=>row.number===n&&row.x32?.kind!=='aux'));
+        const bothOccupied=slots.every(row=>row&&!row.mixerVacant);
+        if(bothOccupied&&slots.some((row,i)=>row.id!==action.ids?.[i]))throw Error('Die Kanalbelegung hat sich geändert.');
+        const group='stereo-'+routeToken();
+        for(const [offset,mode] of ['Stereo L','Stereo R'].entries()){
+          const number=first+offset;
+          let row=routing.inputs.find(item=>item.number===number&&item.x32?.kind!=='aux');
+          if(row){
+            routingEditableRow('inputs',row.id);
+            if(row.stereoGroup)throw Error('Dieser Mixerkanal ist bereits verlinkt.');
+          }else{
+            row=normalizeRouteChannel({id:'route-'+routeToken(),number,instrument:'',manual:true,mixerVacant:true},routing.inputs.length,'inputs');
+            routing.inputs.push(row);
+          }
+          Object.assign(row,{mode,stereoGroup:group,edited:true});
+        }
+        break;
+      }
       case 'linkStereo':{const rows=action.rowIds.map(id=>routingEditableRow('inputs',id));if(rows.length!==2||rows[0].id===rows[1].id)throw Error('Für Stereo zwei unterschiedliche Abnahmen auswählen.');if(rows.some(row=>row.stereoGroup))throw Error('Diese Abnahme ist bereits mit einem Stereokanal verbunden.');const pair=routingNativeOutputPair(rows);if(pair){setRoutingSourceOutputs({type:'setSourceOutputStereo',sourceId:pair.source.id,start:pair.start,linked:true});break;}const group='stereo-'+routeToken();rows.forEach((row,i)=>Object.assign(row,{stereoGroup:group,mode:i?'Stereo R':'Stereo L',edited:true}));break;}
       case 'unlinkStereo':{const ids=new Set(action.rowIds),groups=new Set(routing.inputs.filter(row=>ids.has(row.id)).map(row=>row.stereoGroup).filter(Boolean)),rows=routing.inputs.filter(row=>ids.has(row.id)||groups.has(row.stereoGroup));for(const members of [rows,...[...groups].map(group=>rows.filter(row=>row.stereoGroup===group))]){const pair=routingNativeOutputPair(members);if(pair){const io=objectIo(pair.source);pair.source.io={...io,stereoPairs:io.stereoPairs.filter(start=>start!==pair.start)};}}for(const row of rows){routingEditableRow('inputs',row.id);Object.assign(row,{stereoGroup:'',mode:'Mono',edited:true});}break;}
       case 'editMonitor':routingMonitorFields(action.rowIds.map(id=>routingEditableRow('outputs',id)),action.fields||{});break;
@@ -399,9 +762,12 @@ function dispatchRoutingWorkspace(action){
         if(kind==='line')routing.outputs.push(normalizeRouteChannel({id:'route-'+routeToken(),manual:true,instrument:'Line Out',outputKind:'line',pickup:'Direct',signalType:'Line',connector:'XLR',edited:true},routing.outputs.length,'outputs'));
         else {const type=kind==='iem'?'rack':'wedge';if(!isObjectUnlocked(type))throw Error('Dieses Gerät gehört zu einem noch gesperrten Paket.');const o=makeObject(type,{x:stage.w/2,y:Math.max(.5,stage.d-1)},'station-'+nextId++);objects.push(o);}routingTab='outputs';break;}
       case 'editStagebox':{const o=objects.find(o=>o.id===action.boxId&&stageboxCapacity[o.type]);if(!o||o.locked)throw Error('Die Stagebox kann nicht geändert werden.');if(Object.hasOwn(action.fields,'name')){const name=projectText(action.fields.name,42).trim();if(!name)throw Error('Bitte einen Namen eingeben.');o.label=name;}if(Object.hasOwn(action.fields,'comboJacks')){if(stageboxCapacity[o.type].comboJacks!==undefined)throw Error('Die Buchsenart ist bei diesem Modell festgelegt.');if(!action.fields.comboJacks&&routing.inputs.some(row=>row.stagebox===o.id&&row.connector==='Klinke'))throw Error('Die Klinkensignale zuerst auf DI umstellen oder abstecken.');o.comboJacks=action.fields.comboJacks===true;}break;}
-      case 'addStagebox':{if(!stageboxCapacity[action.objectType])throw Error('Ungültige Stagebox.');if(!isObjectUnlocked(action.objectType))throw Error('Diese Stagebox gehört zu einem noch gesperrten Paket.');const o=makeObject(action.objectType,{x:Math.max(.5,stage.w-1),y:Math.max(.5,stage.d-1)},'station-'+nextId++);objects.push(o);activeStageboxId=o.id;routingTab='stageboxes';break;}
+      case 'addStagebox':{if(!stageboxCapacity[action.objectType])throw Error('Ungültige Stagebox.');if(!isObjectUnlocked(action.objectType))throw Error('Diese Stagebox gehört zu einem noch gesperrten Paket.');const o=makeObject(action.objectType,{x:Math.max(.5,stage.w-1),y:Math.max(.5,stage.d-1)},'station-'+nextId++);if(action.name?.trim())o.label=projectText(action.name.trim(),42);objects.push(o);activeStageboxId=o.id;if(!action.stayInMixer)routingTab='stageboxes';break;}
       case 'number':{const used=new Set(routing[direction].map(row=>row.number).filter(Boolean));let number=1;for(const row of routing[direction])if(!row.number&&!['aux','output'].includes(row.x32?.kind)){while(used.has(number))number++;if(number>999)throw Error('Keine freie Kanalnummer verfügbar.');row.number=number;used.add(number);}break;}
       default:throw Error('Diese Routing-Aktion ist nicht verfügbar.');
+    }
+    if(['completeMixerStereo','setUserMixerInput','setMixerBank','moveMixerSocket','assignMixerInput','transferToMixerSocket','insertMixerSignal','transferMixerSignal'].includes(action.type)){
+      initializeMixerPatch(routing);applyMixerChannelPatches(routing);
     }
     syncRoutingFromStage(false,false);reconcileCablesWithRouting();keepHistory(before);
   }catch(error){const old=JSON.parse(before);stage=old.stage;objects=old.objects;history=transactionHistory;future=transactionFuture;nextId=transactionNextId;throw error;}

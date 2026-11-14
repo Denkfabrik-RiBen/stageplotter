@@ -1,0 +1,90 @@
+{
+  "id": "cq-20b",
+  "name": "CQ-20B",
+  "brand": "Allen & Heath",
+  "file": "cq-20b.jpg",
+  "frame": [
+    1774,
+    887
+  ],
+  "viewBox": [
+    0,
+    90,
+    1774,
+    735
+  ],
+  "diameter": 79,
+  "ports": {
+    "inputs": [
+      [
+        368,
+        368
+      ],
+      [
+        483,
+        368
+      ],
+      [
+        599,
+        368
+      ],
+      [
+        713,
+        368
+      ],
+      [
+        829,
+        368
+      ],
+      [
+        944,
+        368
+      ],
+      [
+        1058,
+        368
+      ],
+      [
+        1174,
+        368
+      ],
+      [
+        368,
+        508
+      ],
+      [
+        483,
+        508
+      ],
+      [
+        599,
+        508
+      ],
+      [
+        713,
+        508
+      ],
+      [
+        829,
+        508
+      ],
+      [
+        944,
+        508
+      ],
+      [
+        1058,
+        508
+      ],
+      [
+        1174,
+        508
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://www.jpleisure.co.uk/allenandheath_CQ-20B_2.jpg",
+  "product": "https://www.allen-heath.com/content/uploads/2024/06/CQ-20B-Tech-Datasheet_Iss3.pdf",
+  "prompt": "Front-facing product retouch of the original connector panel, preserving input count, order and grouping, neutral studio background.",
+  "generator": "OpenAI ImageGen"
+}

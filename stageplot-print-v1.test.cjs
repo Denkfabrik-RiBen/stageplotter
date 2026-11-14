@@ -1,14 +1,15 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('stageplot-studio.html','utf8');
 const extract=name=>{const match=html.match(new RegExp('  function '+name+'\\([^]*?\\n  }'));assert(match,name);return match[0];};
-const nodes=new Map(),$=id=>{if(!nodes.has(id))nodes.set(id,{checked:false,textContent:'',querySelector:()=>({})});return nodes.get(id);};
+const nodes=new Map(),$=id=>{if(!nodes.has(id))nodes.set(id,{checked:false,textContent:'',style:{setProperty(key,value){this[key]=value;}},querySelector:()=>({})});return nodes.get(id);};
 const ctx={$,stage:{title:'Konzert',projectId:'SP-TEST',project:{artist:'Band',venue:'Saal',date:'2026-10-16'},routing:{inputs:[],outputs:[]}},objects:[],byId:{},imageExportPlan:()=>({pixelWidth:2048,pixelHeight:1448}),
  normalizeProjectInfo:p=>p,projectIdentity:id=>id,projectPrintMarkup:()=>'<p>Kontakte</p>',productionLines:()=>['Strom: 2 × Schuko 230 V'],
  esc:value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;'),StageplotPrint:{render(host,report){ctx.report=report;return 3;}},
  DOMPoint:class {constructor(x,y){this.x=x;this.y=y;}matrixTransform(m){return {x:m.a*this.x+m.c*this.y+m.e,y:m.b*this.x+m.d*this.y+m.f};}}};
 vm.createContext(ctx);vm.runInContext(['technicalExportNeedsPro','renderPrintPages','exportArtworkBounds'].map(extract).join('\n'),ctx);
 $('sp-export-format').value='pdf';$('sp-print-measures').checked=true;$('sp-print-dimensions').textContent='8 × 5 m';
-ctx.renderPrintPages('');assert.equal(ctx.report.sections.length,0);assert.equal(ctx.report.id,'SP-TEST');assert.match(ctx.report.subtitle,/16\.10\.2026 · 8 × 5 m/);
+$('sp-print-table-size').value='15';$('sp-print-table-spacing').value='11';
+ctx.renderPrintPages('');assert.equal($('sp-report-pages').style['--sp-report-table-size'],'15px');assert.equal($('sp-report-pages').style['--sp-report-table-padding'],'11px');assert.equal(ctx.report.sections.length,0);assert.equal(ctx.report.id,'SP-TEST');assert.match(ctx.report.subtitle,/16\.10\.2026 · 8 × 5 m/);
 assert.equal($('sp-export-preview-title').textContent,'3 Seiten · A4 quer');assert.equal(ctx.technicalExportNeedsPro(),false);
 for(const id of ['sp-print-inputs','sp-print-routing','sp-print-notes','sp-print-legend-toggle'])$(id).checked=true;
 ctx.renderPrintPages('');assert.equal(ctx.report.sections.length,0,'Leere Listen, Legenden und Notizen erzeugen keine Platzhalterseiten.');

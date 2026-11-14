@@ -1,7 +1,7 @@
 const {spawn}=require('node:child_process');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const checks=['check-workflow-feedback.cjs','check-x32-scenes.cjs','check-x32-wizard.cjs','check-inspector-controls.cjs','check-object-menu-motion.cjs','check-stagebox-models.cjs','check-routing-workspace-v2.cjs','check-project-dashboard.cjs','check-mobile-library.cjs','check-mobile-routing.cjs','check-project-actions.cjs','check-share-navigation.cjs','check-project-sharing.cjs','check-venue-editor.cjs','check-stairs.cjs','check-mic-head-direction.cjs','check-mic-layers.cjs','check-mobile-stage.cjs','check-new-project.cjs','check-theme-switch.cjs','check-print-assets.cjs'];
+const checks=['check-mixer-patch.cjs','check-workflow-feedback.cjs','check-editor-ux.cjs','check-routing-list-ux.cjs','check-x32-scenes.cjs','check-x32-wizard.cjs','check-inspector-controls.cjs','check-object-menu-motion.cjs','check-stagebox-models.cjs','check-routing-workspace-v2.cjs','check-project-dashboard.cjs','check-mobile-library.cjs','check-mobile-routing.cjs','check-project-actions.cjs','check-share-navigation.cjs','check-project-sharing.cjs','check-venue-editor.cjs','check-stairs.cjs','check-mic-head-direction.cjs','check-mic-layers.cjs','check-mobile-stage.cjs','check-new-project.cjs','check-theme-switch.cjs','check-print-assets.cjs'];
 function run(file,env){
   return new Promise((resolve,reject)=>{
     const child=spawn(process.execPath,[path.join(__dirname,file)],{cwd:root,env,stdio:'inherit'});
@@ -9,6 +9,9 @@ function run(file,env){
   });
 }
 (async()=>{
+  const requested=process.argv.slice(2);
+  for(const file of requested)if(!checks.includes(file))throw new Error('Unknown browser check: '+file);
+  const selected=requested.length?[...new Set(requested)]:checks;
   const env={...process.env},port=process.env.QA_PORT||'8898';let server,serverError;
   try{
     if(!env.APP_URL){
@@ -27,8 +30,8 @@ function run(file,env){
       }
     }
     const failures=[];
-    for(const file of checks){try{await run(file,env);}catch(error){console.error(error);failures.push(file);}}
+    for(const file of selected){try{await run(file,env);}catch(error){console.error(error);failures.push(file);}}
     if(failures.length)throw new Error('Browser checks failed: '+failures.join(', '));
-    console.log('PASS: '+checks.length+' browser flows ('+(env.BROWSER||'chromium')+').');
+    console.log('PASS: '+selected.length+' browser flows ('+(env.BROWSER||'chromium')+').');
   }finally{if(server)server.kill();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

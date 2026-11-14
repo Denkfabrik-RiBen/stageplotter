@@ -105,5 +105,5 @@
   #sp-prototype .sp-report-sheet:last-child { break-after:auto; }
   #sp-prototype .sp-report-page { transform:none!important; box-shadow:none!important; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
 }
-#sp-prototype .sp-report-page table { table-layout:fixed; width:100%; font-size:var(--sp-report-table-size,13px); }
-#sp-prototype .sp-report-page :is(td,th) { overflow-wrap:anywhere; white-space:normal; padding:var(--sp-report-table-padding,7px); }
+#sp-prototype .sp-report-page .sp-report-section table { table-layout:fixed; width:100%; font-size:var(--sp-report-table-size,13px); }
+#sp-prototype .sp-report-page .sp-report-section :is(td,th) { overflow-wrap:anywhere; white-space:normal; padding:var(--sp-report-table-padding,7px); }

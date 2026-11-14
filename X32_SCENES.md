@@ -7,7 +7,9 @@ X32-Edit oder vom Pult dient als Ausgangspunkt.
 
 ## Import-Wizard
 
-Nach der Dateiauswahl führt der Wizard durch vier Schritte:
+Nach der Dateiauswahl stehen zwei getrennte Wege bereit: **Als Vorlage verwenden**
+speichert die Szene als Ausgangsdatei für den Export und erhält die Routinglisten.
+Dieser Weg zeigt keine Kanalauswahl. **Routing importieren** führt durch vier Schritte:
 
 1. **Inputs auswählen:** benannte Eingangskanäle und Aux-/USB-Kanäle sind
    vorausgewählt. Auch unbenannte Inputs lassen sich übernehmen. Die tatsächliche
@@ -21,6 +23,10 @@ Nach der Dateiauswahl führt der Wizard durch vier Schritte:
    wird angeklickt, belegte Buchsen sind markiert. AES50 A/B und die erste
    Eingangsadresse können dort eingestellt werden. Nicht auflösbare Quellen
    bleiben erkennbar; sie werden nicht als lokale Pultbuchsen geraten.
+   Unter **Mehrere Inputs einer Stagebox zuordnen** lassen sich die zuvor
+   ausgewählten Inputs eines AES50-Blocks gemeinsam verbinden. Hardware,
+   AES50 A/B und Startadresse werden ausdrücklich gewählt. **Zuordnung prüfen**
+   zeigt alle betroffenen Inputs und Buchsen; Konflikte verhindern das Vormerken.
 3. **Busverwendung bestätigen:** alle Mixbusse erscheinen unabhängig von
    physischen Ausgängen. Erkennbare FX-Sends und Subgruppen sind vorbelegt;
    Monitor, In-Ear oder ein anderer Verwendungszweck wird vom Benutzer gewählt.
@@ -29,7 +35,11 @@ Nach der Dateiauswahl führt der Wizard durch vier Schritte:
    Signalquelle, Abgriffpunkt und vorhandenes Delay. Die tatsächlich benötigten
    Ausgänge werden ausgewählt und erhalten Zielnamen, beispielsweise PA links
    oder IEM Drums. AES50-Kanal und Stagebox-Ausgangsbuchse werden ausdrücklich
-   einander zugeordnet.
+   einander zugeordnet. Ausgänge ohne Signalquelle werden zunächst ausgeblendet,
+   bereits ausgewählte Ziele bleiben sichtbar. **Alle Ausgangsadressen anzeigen**
+   öffnet die vollständige Liste; nicht gewählte Ausgänge bleiben kompakt.
+   Vor der Übernahme zeigt eine Zusammenfassung, wie viele bestehende und neue
+   Inputs und Outputs betroffen sind.
 
 Erst **I/O-Routing übernehmen** ersetzt die bisherigen Routinglisten. Die
 Bühnenobjekte bleiben erhalten; deren automatisch erzeugte Routingzeilen werden

@@ -1,0 +1,88 @@
+{
+  "id": "sq-rack",
+  "name": "SQ-Rack",
+  "brand": "Allen & Heath",
+  "file": "sq-rack.jpg",
+  "frame": [
+    1673,
+    940
+  ],
+  "viewBox": [
+    28,
+    150,
+    1610,
+    607
+  ],
+  "diameter": 65,
+  "ports": {
+    "inputs": [
+      [
+        1468,
+        355
+      ],
+      [
+        1389,
+        355
+      ],
+      [
+        1310,
+        355
+      ],
+      [
+        1231,
+        355
+      ],
+      [
+        1152,
+        355
+      ],
+      [
+        1072,
+        355
+      ],
+      [
+        993,
+        355
+      ],
+      [
+        914,
+        355
+      ],
+      [
+        835,
+        355
+      ],
+      [
+        756,
+        355
+      ],
+      [
+        677,
+        355
+      ],
+      [
+        598,
+        355
+      ],
+      [
+        519,
+        355
+      ],
+      [
+        440,
+        355
+      ],
+      [
+        361,
+        355
+      ],
+      [
+        282,
+        355
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://hollywooddj.com/cdn/shop/files/2095216.jpg?v=1759759764&width=2500",
+  "prompt": "Precision retouch of the original Allen & Heath product photograph with diffuse studio light. Preserve all port centers, groups, numbers and physical connector types."
+}

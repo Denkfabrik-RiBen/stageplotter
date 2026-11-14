@@ -317,6 +317,60 @@
     });
   }
 
+  function stripMapping(value,keepIdentity=false){
+    if(value==null)return {};
+    if(!object(value))fail('Ungültige X32-Kanalkonfiguration.');
+    const mapping={};
+    for(const [target,source] of Object.entries(value)){
+      if(!integer(target,1,32)||String(Number(target))!==target||!Number.isInteger(source)||!integer(source,1,32))fail('Ungültige X32-Kanalkonfiguration.');
+      if(keepIdentity||Number(target)!==source)mapping[target]=source;
+    }
+    return mapping;
+  }
+  // Resolve every strip from the same original snapshot, including sparse scene
+  // records. A swap must never read back the first half of its own write.
+  function configuredScene(text,mapping,processing={},sends={},inputs=[]){
+    const map=stripMapping(mapping);
+    const configMap=stripMapping(processing,true),sendMap=stripMapping(sends,true);
+    // Keep a linked pair together after channel moves and in older drafts.
+    const rightChannels=new Map((Array.isArray(inputs)?inputs:[]).filter(row=>row?.mode==='Stereo R').map(row=>[row.number,row]));
+    for(const left of Array.isArray(inputs)?inputs:[]){
+      if(left?.mode!=='Stereo L'||!left.stereoGroup||left.number%2!==1)continue;
+      const right=rightChannels.get(left.number+1);
+      if(right?.stereoGroup!==left.stereoGroup)continue;
+      const origin=sendMap[left.number]||map[left.number]||left.number;
+      if((sendMap[right.number]||map[right.number]||right.number)!==origin)sendMap[right.number]=origin;
+    }
+    const changed=new Set([...Object.keys(map),...Object.keys(configMap),...Object.keys(sendMap)].map(Number));
+    if(!changed.size)return text;
+    const data=read(text), strips=new Map();
+    for(const record of data.records.values()){
+      const match=/^\/ch\/(\d\d)(\/.*)$/.exec(record.path);
+      if(!match)continue;
+      const number=Number(match[1]);
+      if(!strips.has(number))strips.set(number,[]);
+      strips.get(number).push(data.lines[record.index].body);
+    }
+    const ending=data.lines.find(line=>line.ending)?.ending||'\n';
+    const written=new Set(),parts=[];
+    for(const line of data.lines){
+      const match=/^\s*\/ch\/(\d\d)\//.exec(line.body), target=match&&Number(match[1]);
+      if(!changed.has(target)){parts.push(line.body+line.ending);continue;}
+      if(written.has(target))continue;
+      const whole=map[target]||target;
+      const get=n=>{if(!strips.has(n))fail('CH '+n+' fehlt in der X32-Vorlage.');return strips.get(n);};
+      const section=body=>/^\s*\/ch\/\d\d\/config(?:\s|$)/.test(body)?'identity':/^\s*\/ch\/\d\d\/mix\/\d\d(?:\/|\s|$)/.test(body)?'sends':'processing';
+      const original=(configMap[target]||sendMap[target])?[
+        ...get(whole).filter(body=>section(body)==='identity'),
+        ...get(configMap[target]||whole).filter(body=>section(body)==='processing'),
+        ...get(sendMap[target]||whole).filter(body=>section(body)==='sends')
+      ]:get(whole);
+      parts.push(original.map(body=>body.replace(/^(\s*\/ch\/)\d\d/,(_,prefix)=>prefix+pad(target))).join(ending)+(line.ending||ending));
+      written.add(target);
+    }
+    if(written.size!==changed.size)fail('Ein Zielkanal fehlt in der X32-Vorlage.');
+    return parts.join('');
+  }
   function normalizeAttachment(value){
     if(value==null)return null;
     if(!object(value)||value.version!==1||typeof value.text!=='string')fail('Die gespeicherte X32-Vorlage ist ungültig.');
@@ -325,7 +379,7 @@
       if(validationCache.size>2)validationCache.delete(validationCache.keys().next().value);
     }
     const filename=cleanText(value.filename).split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f]/g,'').slice(0,120)||'X32-Vorlage.scn';
-    return {version:1,text:value.text,filename,mappings:normalizeMappings(value.mappings),...(value.wizard!=null?{wizard:normalizeWizard(value.wizard)}:{})};
+    return {version:1,text:value.text,filename,...(value.channelStrips?{channelStrips:stripMapping(value.channelStrips)}:{}),mappings:normalizeMappings(value.mappings),...(value.wizard!=null?{wizard:normalizeWizard(value.wizard)}:{})};
   }
 
   function label(value,current,path,warnings){
@@ -342,7 +396,7 @@
 
   function exportScene(templateText,plan={}){
     if(!object(plan))fail('Ungültige X32-Exportdaten.');
-    const data=read(templateText),scene=data.result,warnings=scene.warnings.slice(),changes=[],replacements=new Map(),mappings=normalizeMappings(plan.mappings);
+    const configured=configuredScene(templateText,plan.channelStrips,plan.processing,plan.sends,plan.inputs),data=read(configured),scene=data.result,original=configured===templateText?data:read(templateText),warnings=scene.warnings.slice(),changes=[],replacements=new Map(),mappings=normalizeMappings(plan.mappings);
     const patch=(path,index,value,quote=false)=>{
       const record=data.records.get(path);if(!record||!record.parts[index])fail('Der Parameter '+path+' fehlt in der X32-Vorlage.');
       if(record.parts[index].value===String(value))return;
@@ -386,14 +440,14 @@
       const path='/'+kind+'/'+pad(row.number)+'/config',entry=(kind==='ch'?scene.channels:scene.buses).find(entry=>entry.number===Number(row.number));
       if(!entry)fail('Der '+(kind==='ch'?'Kanal ':'Bus ')+row.number+' fehlt in der X32-Vorlage.');
       patch(path,0,label(row.instrument,entry.name,path,warnings),true);
-      if(row.x32&&Number(row.x32.channel)!==Number(row.number))warnings.push((kind==='ch'?'Kanal ':'Bus ')+row.x32.channel+' wird auf '+row.number+' übertragen. Der ursprüngliche Kanal und die Klangbearbeitung des Zielkanals bleiben unverändert.');
+      if(row.x32&&!plan.channelStrips?.[row.number]&&Number(row.x32.channel)!==Number(row.number))warnings.push((kind==='ch'?'Kanal ':'Bus ')+row.x32.channel+' wird auf '+row.number+' übertragen. Der ursprüngliche Kanal und die Klangbearbeitung des Zielkanals bleiben unverändert.');
       if(kind==='bus'){
         if(row.stagebox||row.stageboxPort!=null)warnings.push('Bus '+row.number+': Die physische Ausgangszuordnung bleibt wie in der X32-Vorlage. Stagebox-Ausgangsbuchsen werden nicht übertragen.');
         continue;
       }
       let source=entry.source;
       if(row.x32){
-        const origin=scene.channels.find(channel=>channel.number===Number(row.x32.channel));
+        const origin=original.result.channels.find(channel=>channel.number===Number(row.x32.channel));
         if(!origin)fail('Der ursprüngliche X32-Kanal '+row.x32.channel+' fehlt in dieser Vorlage. Bitte die Kanäle erneut importieren.');
         if(own(row.x32,'source')&&(!integer(row.x32.source,0,65535)||Number(row.x32.source)!==origin.source))fail('Die gespeicherte X32-Eingangsquelle für Kanal '+row.number+' passt nicht zur Vorlage. Bitte die Kanäle erneut importieren.');
         if(row.x32.directPort!=null&&!integer(row.x32.directPort,1,32))fail('Die direkte Pultbuchse an Kanal '+row.number+' muss zwischen 1 und 32 liegen.');
@@ -410,13 +464,13 @@
         source=(matches.find(candidate=>candidate.source===source)||matches[0]).source;
       }else{
         if(row.stageboxPort!=null&&row.stageboxPort!=='')fail('Kanal '+row.number+' hat eine Buchse ohne zugeordnete Stagebox.');
-        if(row.x32?.directPort!=null){
-          const port=Number(row.x32.directPort),matches=scene.routing.sources.filter(candidate=>candidate.resolved&&candidate.bank==='local'&&candidate.port===port);
+        if((row.localPort??row.x32?.directPort)!=null){
+          const port=Number(row.localPort??row.x32.directPort),matches=scene.routing.sources.filter(candidate=>candidate.resolved&&candidate.bank==='local'&&candidate.port===port);
           if(!matches.length)fail('Pult direkt · Local '+port+' ist in den aktiven Eingangsblöcken der Vorlage nicht enthalten. Bitte das Routing zuerst in X32-Edit vorbereiten.');
           source=(matches.find(candidate=>candidate.source===source)||matches[0]).source;
         }
       }
-      if(!row.x32&&!row.stagebox)warnings.push('Kanal '+row.number+' übernimmt die Eingangsquelle der Vorlage ('+entry.sourceAddress.label+').');
+      if(!row.x32&&!row.stagebox&&!row.localPort)warnings.push('Kanal '+row.number+' übernimmt die Eingangsquelle der Vorlage ('+entry.sourceAddress.label+').');
       // Numeric spelling (e.g. +1 or 01) is not an edit. Preserve the token too.
       if(source!==entry.source)patch(path,3,source);
     }
@@ -426,8 +480,18 @@
       for(const [index,value] of [...map.entries()].sort((a,b)=>b[0]-a[0])){const part=record.parts[index];after=after.slice(0,part.start)+value+after.slice(part.end);}
       line.body=after;changes.push({path,before,after});
     }
-    return {text:data.lines.map(line=>line.body+line.ending).join(''),changes,warnings};
+    const text=data.lines.map(line=>line.body+line.ending).join('');
+    if(configured!==templateText){
+      const final=read(text);
+      changes.length=0;
+      for(const path of new Set([...original.records.keys(),...final.records.keys()])){
+        const before=original.lines[original.records.get(path)?.index]?.body||'';
+        const after=final.lines[final.records.get(path)?.index]?.body||'';
+        if(before!==after)changes.push({path,before,after});
+      }
+    }
+    return {text,changes,warnings};
   }
 
-  return {parse,inspectRouting,importRouting,exportScene,normalizeAttachment,normalizeMappings,normalizeWizard,MAX_TEXT,BANKS};
+  return {parse,inspectRouting,importRouting,configuredScene,exportScene,normalizeAttachment,normalizeMappings,normalizeWizard,MAX_TEXT,BANKS};
 });

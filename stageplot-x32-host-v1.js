@@ -1,7 +1,10 @@
 // Embedded in the app closure; scene edits share the existing project/undo store.
 let x32Pending=null,x32Prepared=null,x32ReadGeneration=0;
 function x32Error(message=''){
-  $('sp-x32-error').textContent=message;$('sp-x32-error').hidden=!message;
+  const error=$('sp-x32-error');error.textContent=message;error.hidden=!message;
+  if(x32Pending)$('sp-x32-import').parentElement.prepend(error);
+  else $('sp-x32-import-options').before(error);
+  if(message){error.tabIndex=-1;error.focus({preventScroll:true});error.scrollIntoView({block:'nearest'});}
 }
 function x32InvalidateExport(){
   x32Prepared=null;$('sp-x32-download').hidden=true;$('sp-x32-changes').replaceChildren();
@@ -63,6 +66,7 @@ function x32DescribeChange(change,before,after){
     if(channels&&previous.source!==next.source)details.push('Quelle: '+previous.sourceAddress.label+' → '+next.sourceAddress.label);
     return {title:(channels?'Kanal ':'Mixbus ')+number,details};
   }
+  if(change.path.startsWith('/ch/'))return {title:'CH '+Number(change.path.split('/')[2])+' · '+change.path.split('/').slice(3).join('/'),details:[change.after||'Parameter entfernt']};
   const channels=change.path==='/config/chlink',key=channels?'channelLinks':'busLinks',previous=new Set(before[key].map(pair=>pair.join('/'))),next=new Set(after[key].map(pair=>pair.join('/')));
   return {title:channels?'Kanal-Stereopaare':'Bus-Stereopaare',details:[...new Set([...previous,...next])].filter(pair=>previous.has(pair)!==next.has(pair)).map(pair=>pair+': '+(next.has(pair)?'Stereo verknüpft':'Verknüpfung aufgehoben'))};
 }
@@ -104,8 +108,10 @@ function x32BeginWizard(attachment,editing=false){
     }
     if(attachment.wizard)wizard.outputAssignments=stage.routing.outputs.filter(row=>row.x32?.kind==='output').map(row=>({outputId:row.x32.endpoint,destination:row.instrument||'',stagebox:row.stagebox||'',port:row.stageboxPort||null}));
   }
-  x32Pending={attachment,inventory,wizard,owner:stage,step:0,editing,newBoxes:[],boxMappings:clone(attachment.mappings),inputChooser:null,moreModels:null};
+  x32Pending={attachment,inventory,wizard,owner:stage,step:0,editing,newBoxes:[],boxMappings:clone(attachment.mappings),inputChooser:null,moreModels:null,allOutputs:false,bulk:{box:'',bank:'aes50-a',first:1},bulkOpen:false,bulkPreview:null,bulkNotice:''};
   $('sp-x32-mode').value=editing||!stage.routing.inputs.length&&!stage.routing.outputs.length?'routing':'template';
+  $('sp-x32-mode').querySelector('[value="routing"]').textContent='Routing importieren · Inputs und Ausgangsziele auswählen';
+  $('sp-x32-mode').querySelector('[value="template"]').textContent='Exportvorlage hinterlegen · vorhandenes Routing behalten';
   $('sp-x32-mode').disabled=editing;
   $('sp-x32-import-options').hidden=false;$('sp-x32-attached').hidden=true;$('sp-x32-preview').hidden=true;
   x32RenderWizard();
@@ -115,6 +121,32 @@ function x32WizardBoxes(){
   return [...allRoutingStageboxes(),...(x32Pending?.newBoxes||[]).map(box=>({id:box.id,name:box.label,type:box.type,...stageboxCapacity[box.type]}))];
 }
 function x32CompatibleBox(box){const model=StageplotStageboxes.get(box.type);return !model||model.protocol==='AES50';}
+function x32CreateWizardBox(type){
+  const model=StageplotStageboxes.get(type);if(model?.protocol!=='AES50'||!isObjectUnlocked(type))throw Error('Bitte eine verfügbare AES50-Stagebox wählen.');
+  const id='station-x32-'+routeToken(),index=x32Pending.newBoxes.length,box=makeObject(type,{x:Math.max(.5,stage.w-1-index*.6),y:Math.max(.5,stage.d-.5)},id);
+  const used=new Set(x32WizardBoxes().map(item=>item.name));let label=model.name,n=2;while(used.has(label))label=model.name+' '+n++;box.label=label;
+  x32Pending.newBoxes.push(box);return {id,name:label,type,...stageboxCapacity[type]};
+}
+function x32BulkPlan(){
+  const {bulk,inventory,wizard}=x32Pending,newType=bulk.box.startsWith('new:')?bulk.box.slice(4):'',model=StageplotStageboxes.get(newType);
+  const box=newType&&model?.protocol==='AES50'?{id:'',type:newType,name:model.name,inputs:model.inputs}:x32WizardBoxes().find(item=>item.id===bulk.box);
+  if(!box||!x32CompatibleBox(box))throw Error('Bitte zuerst die vorhandene Stagebox oder ein neues Modell auswählen.');
+  const first=Number(bulk.first);if(!Number.isInteger(first)||first<1||first+box.inputs-1>48)throw Error('Der Eingangsblock muss vollständig innerhalb der AES50-Adressen 1 bis 48 liegen.');
+  const rows=inventory.inputs.filter(input=>wizard.inputIds.includes(input.id)&&x32InputCanPatch(input)&&input.sourceAddress.bank===bulk.bank&&input.sourceAddress.port>=first&&input.sourceAddress.port<first+box.inputs).map(input=>({input,port:input.sourceAddress.port-first+1}));
+  const conflicts=[],candidateIds=new Set(rows.map(row=>row.input.id)),mapping=x32Pending.boxMappings.find(item=>item.stagebox===box.id);
+  if(!rows.length)conflicts.push('Keiner der ausgewählten Inputs verwendet diesen AES50-Block.');
+  for(const assignment of wizard.inputAssignments){
+    if(!box.id||assignment.stagebox!==box.id||!wizard.inputIds.includes(assignment.inputId)||candidateIds.has(assignment.inputId)||assignment.connection==='direct')continue;
+    const other=inventory.inputs.find(input=>input.id===assignment.inputId);
+    if(mapping&&(mapping.bank!==bulk.bank||mapping.offset!==first-1))conflicts.push((other?.label||assignment.inputId)+' ist bereits an dieser Stagebox zugeordnet. Der neue Block würde dessen Quelle ändern.');
+    for(const row of rows)if(assignment.port===row.port&&!x32SameInputSource(row.input,other))conflicts.push('IN '+row.port+' ist bereits mit '+(other?.label||assignment.inputId)+' belegt.');
+  }
+  return {box,newType,bank:bulk.bank,first,rows,conflicts:[...new Set(conflicts)]};
+}
+function x32RenderBulk(){
+  const {bulk,bulkPreview:preview,bulkNotice}=x32Pending,boxes=x32WizardBoxes().filter(box=>box.inputs&&x32CompatibleBox(box));
+  return '<details class="sp-x32-bulk"'+(x32Pending.bulkOpen?' open':'')+'><summary>Mehrere Inputs einer Stagebox zuordnen</summary><p>Wähle die tatsächliche Hardware und ihren AES50-Eingangsblock. Es werden nur die zuvor ausgewählten Inputs dieses Blocks zugeordnet.</p><div class="sp-x32-bulk-fields"><label>Stagebox<select data-x32-bulk="box"><option value="">Hardware auswählen</option>'+boxes.map(box=>'<option value="'+esc(box.id)+'"'+(bulk.box===box.id?' selected':'')+'>'+esc(box.name)+'</option>').join('')+StageplotStageboxes.models.filter(model=>model.protocol==='AES50'&&isObjectUnlocked(model.type)).map(model=>'<option value="new:'+model.type+'"'+(bulk.box==='new:'+model.type?' selected':'')+'>Neu: '+esc(model.name)+' · '+model.inputs+' In</option>').join('')+'</select></label><label>Anschluss<select data-x32-bulk="bank"><option value="aes50-a"'+(bulk.bank==='aes50-a'?' selected':'')+'>AES50 A</option><option value="aes50-b"'+(bulk.bank==='aes50-b'?' selected':'')+'>AES50 B</option></select></label><label>IN 1 entspricht Adresse<input type="number" min="1" max="48" step="1" value="'+esc(bulk.first)+'" data-x32-bulk="first"></label></div><button type="button" class="sp-button" data-x32-bulk-preview>Zuordnung prüfen</button>'+(preview?'<section class="sp-x32-bulk-preview" tabindex="-1"><h4>'+esc(StageplotX32.BANKS[preview.bank].label)+' '+preview.first+'–'+(preview.first+preview.box.inputs-1)+' → '+esc(preview.box.name)+' IN 1–'+preview.box.inputs+'</h4>'+ (preview.rows.length?'<ul>'+preview.rows.map(row=>'<li>'+esc(row.input.label)+' → '+esc(preview.box.name)+' IN '+row.port+'</li>').join('')+'</ul>':'')+(preview.conflicts.length?'<ul class="sp-x32-warnings">'+preview.conflicts.map(message=>'<li>'+esc(message)+'</li>').join('')+'</ul>':'<p>'+preview.rows.length+' Inputs werden zugeordnet. Bisherige Einzelzuordnungen dieser Inputs werden ersetzt.</p>')+'<button type="button" class="sp-button" data-x32-bulk-apply'+(preview.conflicts.length?' disabled':'')+'>Diese Zuordnung vormerken</button></section>':'')+(bulkNotice?'<p class="sp-x32-bulk-notice" role="status">'+esc(bulkNotice)+'</p>':'')+'</details>';
+}
 function x32InputAssignment(input){
   let assignment=x32Pending.wizard.inputAssignments.find(item=>item.inputId===input.id);
   if(!assignment){assignment={inputId:input.id,stagebox:'',port:null};x32Pending.wizard.inputAssignments.push(assignment);}
@@ -166,6 +198,15 @@ function x32OpenSocket(inputId,boxId,opener){
 }
 function x32CloseSocket(){if($('sp-x32-socket-dialog').open)$('sp-x32-socket-dialog').close();}
 $('sp-x32-socket-close').addEventListener('click',x32CloseSocket);
+$('sp-x32-socket-dialog').addEventListener('keydown',event=>{
+  if(event.key!=='Tab')return;
+  const dialog=event.currentTarget,controls=[...dialog.querySelectorAll('button,input,select,textarea,a[href],[tabindex]')].filter(element=>!element.disabled&&element.tabIndex>=0&&element.getClientRects().length);
+  if(!controls.length)return;
+  // Explicit traversal also includes buttons when WebKit's native tab policy skips them.
+  event.preventDefault();
+  const current=controls.indexOf(document.activeElement),next=current<0?(event.shiftKey?controls.length-1:0):(current+(event.shiftKey?-1:1)+controls.length)%controls.length;
+  controls[next].focus({preventScroll:true});
+});
 $('sp-x32-socket-dialog').addEventListener('close',()=>{
   const previous=x32Socket;x32Socket=null;
   if(!x32Pending||!$('sp-x32-dialog').open)return;
@@ -203,9 +244,7 @@ function x32HandleInputClick(event){
   if(button.dataset.x32InputSocket){const assignment=x32InputAssignment(input);if(assignment.stagebox)x32OpenSocket(inputId,assignment.stagebox,button);return true;}
   if(button.dataset.x32AddBox){
     const model=StageplotStageboxes.get(button.dataset.x32AddBox);if(model?.protocol!=='AES50'||!isObjectUnlocked(model.type))return true;
-    const id='station-x32-'+routeToken(),index=x32Pending.newBoxes.length,box=makeObject(model.type,{x:Math.max(.5,stage.w-1-index*.6),y:Math.max(.5,stage.d-.5)},id);
-    const used=new Set(x32WizardBoxes().map(box=>box.name));let label=model.name,n=2;while(used.has(label))label=model.name+' '+n++;box.label=label;
-    x32Pending.newBoxes.push(box);x32OpenSocket(inputId,id,button);return true;
+    const box=x32CreateWizardBox(model.type);x32OpenSocket(inputId,box.id,button);return true;
   }
   return false;
 }
@@ -216,7 +255,7 @@ function x32WizardPatchFields(id,direction,assignment){
 }
 function x32ReadWizardStep(){
   const pending=x32Pending;if(!pending)return;const {wizard,inventory,step}=pending,host=$('sp-x32-wizard-body');
-  if(step===0){
+  if(step===0&&host.querySelector('[data-x32-input-id]')){
     const ids=new Set([...host.querySelectorAll('[data-x32-input-id]:checked')].map(input=>input.dataset.x32InputId));
     for(const input of inventory.inputs)if(ids.has(input.id)&&input.linkedWith)ids.add(input.kind+'-'+input.linkedWith);
     wizard.inputIds=[...ids];
@@ -247,32 +286,43 @@ function x32ValidateWizardAssignments(wizard,inventory,direction){
 function x32RenderWizard(){
   if(!x32Pending)return;
   const {inventory,wizard,step}=x32Pending,selected=new Set(wizard.inputIds),host=$('sp-x32-wizard-body');
-  const titles=['Szene prüfen und Inputs auswählen','Wo sind die Eingänge angeschlossen?','Wofür werden die Busse verwendet?','Wohin führen die Ausgänge?'];
-  $('sp-x32-step-title').textContent=(step+1)+' / 4 · '+titles[step];
-  $('sp-x32-step-title').focus({preventScroll:true});
-  $('sp-x32-step-progress').textContent=['Inputs','Anschlüsse','Busse','Outputs'].map((name,index)=>(index===step?'● ':'○ ')+name).join('  ›  ');
-  $('sp-x32-back').hidden=step===0;
   const template=$('sp-x32-mode').value==='template';
+  const titles=['Szene prüfen und Inputs auswählen','Wo sind die Eingänge angeschlossen?','Wofür werden die Busse verwendet?','Wohin führen die Ausgänge?'];
+  $('sp-x32-step-title').textContent=template?'Exportvorlage hinterlegen':(step+1)+' / 4 · '+titles[step];
+  $('sp-x32-step-title').focus({preventScroll:true});
+  $('sp-x32-step-progress').hidden=template;
+  $('sp-x32-step-progress').textContent=['Inputs','Anschlüsse','Busse','Outputs'].map((name,index)=>(index===step?'● ':'○ ')+name).join('  ›  ');
+  $('sp-x32-back').hidden=step===0||template;
+  $('sp-x32-next').textContent=['Weiter: Anschlüsse','Weiter: Busse','Weiter: Ausgänge','Weiter'][step];
   $('sp-x32-next').hidden=step===3||template;$('sp-x32-import').hidden=step!==3&&!template;$('sp-x32-import').disabled=false;
   $('sp-x32-mode-field').hidden=step!==0;
-  $('sp-x32-import').textContent=template?'Vorlage speichern':x32Pending.editing?'Zuordnungen übernehmen':'I/O-Routing übernehmen';
-  if(step===0){
+  $('sp-x32-import').textContent=template?'Exportvorlage speichern':x32Pending.editing?'Zuordnungen übernehmen':'I/O-Routing übernehmen';
+  if(template){
+    host.innerHTML='<div class="sp-x32-template-summary"><p><strong>'+esc(x32Pending.attachment.filename)+'</strong></p><p>Die Szene wird im Projekt als Ausgangsdatei für den X32-Export gespeichert.</p><p>Die vorhandenen '+stage.routing.inputs.length+' Inputs und '+stage.routing.outputs.length+' Outputs bleiben erhalten. Bestehende X32-Kanalbindungen werden gelöst; beim Export gelten die Kanalnummern deiner Routingliste.</p><p class="sp-muted">Für die Übernahme der Szenenkanäle wähle oben „Routing importieren“.</p></div>';
+  }else if(step===0){
     host.innerHTML='<p><strong>'+esc(inventory.scene.name||'X32-Szene')+'</strong> · '+inventory.inputs.length+' Inputs · '+inventory.buses.length+' Mixbusse · '+inventory.outputs.length+' Ausgangsadressen</p><p>Welche Inputs brauchst du in der Routingliste? Stereo-Partner bleiben zusammen. Die vollständige Szene bleibt erhalten.</p><div class="sp-actions"><button type="button" class="sp-button" data-x32-input-selection="all">Alle auswählen</button><button type="button" class="sp-button" data-x32-input-selection="named">Benannte Inputs</button></div><div class="sp-x32-scroll"><table><thead><tr><th>Übernehmen</th><th>Input</th><th>Quelle aus Szene</th><th>Format</th></tr></thead><tbody>'+inventory.inputs.map(input=>'<tr><td><input type="checkbox" data-x32-input-id="'+input.id+'" aria-label="'+esc(input.label)+' übernehmen"'+(selected.has(input.id)?' checked':'')+'></td><td>'+esc(input.label)+'</td><td>'+esc(input.sourceAddress.label)+'</td><td>'+(input.linkedWith?'Stereo mit '+input.linkedWith:'Mono')+'</td></tr>').join('')+'</tbody></table></div><p class="sp-muted">„I/O-Routing übernehmen“ ersetzt die bisherigen Routinglisten. Bühnenobjekte bleiben erhalten. Die gesamte Übernahme lässt sich rückgängig machen.</p>';
   }else if(step===1){
-    host.innerHTML='<p>Wähle pro Kanal <strong>Pult direkt</strong> oder <strong>Stagebox</strong>. Bei direktem Anschluss steht die Buchse aus der Szene bereits dabei. Eine Stagebox kannst du hier hinzufügen und ihre Eingangsbuchse im Popup anklicken.</p>'+inventory.inputs.filter(input=>selected.has(input.id)).map(x32RenderInputPatch).join('');
+    host.innerHTML='<p>Wähle pro Kanal <strong>Pult direkt</strong> oder <strong>Stagebox</strong>. Bei direktem Anschluss steht die Buchse aus der Szene bereits dabei.</p>'+x32RenderBulk()+inventory.inputs.filter(input=>selected.has(input.id)).map(x32RenderInputPatch).join('');
   }else if(step===2){
     host.innerHTML='<p>Bestätige die Verwendung der Mixbusse. Erkannte Effekt- und Subgruppenwege sind vorbelegt. Monitor oder In-Ear legst du selbst fest; Busnummer und Ausgangsbuchse sind unabhängig.</p>'+inventory.buses.map(bus=>'<article class="sp-x32-wizard-row sp-x32-bus-row"><div><strong>'+esc(bus.label)+'</strong><small>'+esc([bus.linkedWith?'Stereo mit Bus '+bus.linkedWith:'Mono',bus.fxSlots.length?'speist FX '+bus.fxSlots.join(', '):'',bus.main.stereo?'→ Main L/R':'',bus.insert?.enabled?'Insert '+bus.insert.source:''].filter(Boolean).join(' · '))+'</small></div><label>Verwendung<select data-x32-bus-role="'+bus.number+'">'+x32BusRoles.map(([value,label])=>'<option value="'+value+'"'+(wizard.busRoles.find(item=>item.bus===bus.number)?.role===value?' selected':'')+'>'+label+'</option>').join('')+'</select></label></article>').join('')+'<p class="sp-muted">Diese Angaben beschreiben den Aufbau. Sie ändern weder Sends noch Effekte in der Szenendatei.</p>';
   }else{
-    const banks=[...new Set(inventory.outputs.map(output=>output.bank))];
-    host.innerHTML='<p>Welche Ausgangsadressen werden tatsächlich verwendet? Gib das Ziel an, zum Beispiel „PA links“ oder „IEM Drums“. Bei AES50 legst du zusätzlich fest, an welcher Stagebox-Buchse das Signal anliegt.</p>'+banks.map(bank=>{
-      const outputs=inventory.outputs.filter(output=>output.bank===bank),chosen=outputs.filter(output=>wizard.outputAssignments.some(item=>item.outputId===output.id)).length;
-      return '<details class="sp-x32-output-bank"'+(chosen||bank==='local'?' open':'')+'><summary>'+esc(({local:'Lokale XLR-Ausgänge','aes50-a':'AES50 A','aes50-b':'AES50 B',card:'Card / USB',aux:'Aux Out',p16:'Ultranet',aes:'AES/EBU',rec:'USB Recorder'})[bank]||bank)+' · '+outputs.length+' Adressen</summary>'+outputs.map(output=>{
+    const visibleOutputs=inventory.outputs.filter(output=>x32Pending.allOutputs||output.source.kind!=='off'||wizard.outputAssignments.some(item=>item.outputId===output.id)),banks=[...new Set(visibleOutputs.map(output=>output.bank))];
+    host.innerHTML='<p>Gezeigt werden Ausgänge mit einer Signalquelle und deine ausgewählten Ziele. Wähle die benötigten Ausgänge und gib das Ziel an, etwa „PA links“ oder „IEM Drums“.</p><label class="sp-x32-check sp-x32-output-filter"><input type="checkbox" data-x32-all-outputs'+(x32Pending.allOutputs?' checked':'')+'>Alle '+inventory.outputs.length+' Ausgangsadressen anzeigen</label>'+banks.map(bank=>{
+      const outputs=visibleOutputs.filter(output=>output.bank===bank),chosen=outputs.filter(output=>wizard.outputAssignments.some(item=>item.outputId===output.id)).length;
+      return '<details class="sp-x32-output-bank"'+(chosen||bank==='local'?' open':'')+'><summary>'+esc(({local:'Lokale XLR-Ausgänge','aes50-a':'AES50 A','aes50-b':'AES50 B',card:'Card / USB',aux:'Aux Out',p16:'Ultranet',aes:'AES/EBU',rec:'USB Recorder'})[bank]||bank)+' · '+outputs.length+' Adressen · '+chosen+' ausgewählt</summary>'+outputs.map(output=>{
         const assignment=wizard.outputAssignments.find(item=>item.outputId===output.id);
-        return '<article class="sp-x32-output-row"><label class="sp-x32-check"><input type="checkbox" data-x32-output-id="'+output.id+'"'+(assignment?' checked':'')+'><strong>'+esc(output.label)+'</strong></label><p>'+esc(output.source.label)+(output.tap?' · '+esc(output.tap):'')+(output.delay?.enabled?' · Delay '+output.delay.ms+' ms':'')+'</p><label>Ziel / Gerät<input maxlength="100" data-x32-output-destination="'+output.id+'" value="'+esc(assignment?.destination||'')+'" placeholder="Zuordnung noch offen"></label><div class="sp-x32-output-patch">'+x32WizardPatchFields(output.id,'output',assignment)+'</div></article>';
+        return '<article class="sp-x32-output-row" data-selected="'+!!assignment+'"><label class="sp-x32-check"><input type="checkbox" data-x32-output-id="'+output.id+'"'+(assignment?' checked':'')+'><strong>'+esc(output.label)+'</strong></label><p>'+esc(output.source.label)+(output.tap?' · '+esc(output.tap):'')+(output.delay?.enabled?' · Delay '+output.delay.ms+' ms':'')+'</p><div class="sp-x32-output-fields"'+(!assignment?' hidden':'')+'><label>Ziel / Gerät<input maxlength="100" data-x32-output-destination="'+output.id+'" value="'+esc(assignment?.destination||'')+'" placeholder="Zuordnung noch offen"></label><div class="sp-x32-output-patch">'+x32WizardPatchFields(output.id,'output',assignment)+'</div></div></article>';
       }).join('')+'</details>';
     }).join('')+(!banks.length?'<p>In dieser Datei wurden keine physischen Ausgangszuordnungen gefunden. Interne Out-Slots bleiben in der I/O-Liste sichtbar.</p>':'')+'<p class="sp-muted">Die Zuordnungen werden lokal im Projekt gespeichert. Der Ausgangs-Patch der X32-Datei bleibt erhalten.</p>';
   }
+  if(!template&&step===3){const summary=document.createElement('section');summary.id='sp-x32-import-summary';summary.className='sp-x32-import-summary';summary.setAttribute('aria-live','polite');host.append(summary);x32RenderImportSummary();}
   x32Warnings(inventory.warnings,$('sp-x32-wizard-warnings'));
+}
+function x32RenderImportSummary(){
+  const host=$('sp-x32-import-summary');if(!host||!x32Pending)return;
+  const {wizard,inventory,editing}=x32Pending,selected=new Set(wizard.inputIds),usedBoxes=new Set([...wizard.inputAssignments.filter(item=>selected.has(item.inputId)),...wizard.outputAssignments].map(item=>item.stagebox));
+  const newBoxes=x32Pending.newBoxes.filter(box=>usedBoxes.has(box.id)),openInputs=inventory.inputs.filter(input=>selected.has(input.id)&&input.sourceAddress.bank.startsWith('aes50-')&&!wizard.inputAssignments.some(item=>item.inputId===input.id&&(item.stagebox||item.connection==='direct'))).length,openOutputs=wizard.outputAssignments.filter(item=>!item.destination).length;
+  host.innerHTML='<h4>Beim Übernehmen</h4><p><strong>'+wizard.inputIds.length+' Inputs und '+wizard.outputAssignments.length+' Outputs</strong> ersetzen die bisherigen '+stage.routing.inputs.length+' Inputs und '+stage.routing.outputs.length+' Outputs.'+(newBoxes.length?' '+newBoxes.length+' neue Stagebox'+(newBoxes.length===1?' wird':'en werden')+' auf die Bühne gesetzt.':'')+'</p><p>'+(openInputs?openInputs+' Stagebox-Zuordnungen sind noch offen. ':'')+(openOutputs?openOutputs+' Ausgangsziele sind noch unbenannt. ':'')+(editing?'Die Zuordnungen':'Die Szene und Busangaben')+' werden im Projekt gespeichert. Die Übernahme lässt sich in einem Schritt rückgängig machen.</p>';
 }
 function x32WizardPlan(){
   x32ReadWizardStep();const {inventory,wizard,attachment,editing}=x32Pending;
@@ -311,6 +361,8 @@ function x32WizardPlan(){
 }
 $('sp-x32-wizard-body').addEventListener('change',event=>{
   const input=event.target;
+  if(!x32Pending)return;
+  if(input.hasAttribute('data-x32-all-outputs')){x32ReadWizardStep();x32Pending.allOutputs=input.checked;x32RenderWizard();$('sp-x32-wizard-body').querySelector('[data-x32-all-outputs]').focus({preventScroll:true});return;}
   if(input.dataset.x32InputId){
     const entry=x32Pending?.inventory.inputs.find(item=>item.id===input.dataset.x32InputId);
     if(entry?.linkedWith){const partner=$('sp-x32-wizard-body').querySelector('[data-x32-input-id="'+entry.kind+'-'+entry.linkedWith+'"]');if(partner)partner.checked=input.checked;}
@@ -320,13 +372,36 @@ $('sp-x32-wizard-body').addEventListener('change',event=>{
     const id=input.getAttribute('data-x32-'+direction+'-box'),port=$('sp-x32-wizard-body').querySelector('[data-x32-'+direction+'-port="'+id+'"]');
     port.disabled=!input.value;if(!input.value)port.value='';
   }
+  if(input.dataset.x32OutputId){const row=input.closest('.sp-x32-output-row'),bank=row.closest('.sp-x32-output-bank'),summary=bank.querySelector('summary');row.dataset.selected=String(input.checked);row.querySelector('.sp-x32-output-fields').hidden=!input.checked;summary.textContent=summary.textContent.replace(/\d+ ausgewählt$/,bank.querySelectorAll('[data-x32-output-id]:checked').length+' ausgewählt');}
+  if(x32Pending.step===3){x32ReadWizardStep();x32RenderImportSummary();}
+});
+$('sp-x32-wizard-body').addEventListener('input',event=>{
+  if(!x32Pending)return;
+  const input=event.target;
+  if(input.dataset.x32Bulk){x32Pending.bulk[input.dataset.x32Bulk]=input.value;x32Pending.bulkPreview=null;x32Pending.bulkNotice='';input.closest('.sp-x32-bulk').querySelector('.sp-x32-bulk-preview')?.remove();input.closest('.sp-x32-bulk').querySelector('.sp-x32-bulk-notice')?.remove();}
+  if(x32Pending.step===3){x32ReadWizardStep();x32RenderImportSummary();}
 });
 $('sp-x32-wizard-body').addEventListener('click',event=>{
+  if(event.target.closest('[data-x32-bulk-preview],[data-x32-bulk-apply]')&&x32Pending){
+    try{
+      x32Error();x32Pending.bulkOpen=true;
+      for(const field of $('sp-x32-wizard-body').querySelectorAll('[data-x32-bulk]'))x32Pending.bulk[field.dataset.x32Bulk]=field.value;
+      const plan=x32BulkPlan();x32Pending.bulkPreview=plan;x32Pending.bulkNotice='';
+      if(event.target.closest('[data-x32-bulk-apply]')&&!plan.conflicts.length){
+        const box=plan.newType?x32CreateWizardBox(plan.newType):plan.box;
+        for(const row of plan.rows){const assignment=x32InputAssignment(row.input);delete assignment.directPort;Object.assign(assignment,{connection:'stagebox',stagebox:box.id,port:row.port});}
+        x32Pending.boxMappings=x32Pending.boxMappings.filter(item=>item.stagebox!==box.id);x32Pending.boxMappings.push({stagebox:box.id,bank:plan.bank,offset:plan.first-1});
+        x32Pending.bulk.box=box.id;x32Pending.bulkPreview=null;x32Pending.bulkNotice=plan.rows.length+' Inputs für '+box.name+' vorgemerkt. Das Projekt wird erst beim abschließenden Übernehmen geändert.';
+      }
+      x32RenderWizard();const target=$('sp-x32-wizard-body').querySelector('.sp-x32-bulk-preview,.sp-x32-bulk-notice');if(target){target.tabIndex=-1;target.focus({preventScroll:true});target.scrollIntoView({block:'nearest'});}
+    }catch(error){x32Error(error.message);}
+    return;
+  }
   if(x32HandleInputClick(event))return;
   const selection=event.target.closest('[data-x32-input-selection]');if(!selection||!x32Pending)return;
   x32Pending.wizard.inputIds=selection.dataset.x32InputSelection==='all'?x32Pending.inventory.inputs.map(input=>input.id):x32WizardDefaults(x32Pending.inventory).inputIds;x32RenderWizard();
 });
-$('sp-x32-mode').addEventListener('change',()=>{x32ReadWizardStep();x32RenderWizard();});
+$('sp-x32-mode').addEventListener('change',()=>{x32ReadWizardStep();x32Error();x32RenderWizard();});
 $('sp-x32-back').addEventListener('click',()=>{x32ReadWizardStep();x32Error();if(x32Pending.step>0)x32Pending.step--;x32RenderWizard();});
 $('sp-x32-next').addEventListener('click',()=>{
   try{x32ReadWizardStep();x32Error();if(x32Pending.step===1)x32ValidateWizardAssignments(x32Pending.wizard,x32Pending.inventory,'input');if(x32Pending.step<3)x32Pending.step++;x32RenderWizard();}catch(error){x32Error(error.message);}
@@ -379,11 +454,11 @@ $('sp-x32-export').addEventListener('click',()=>{
     x32Error();x32InvalidateExport();
     if(!stage.x32Scene)throw Error('Bitte zuerst eine Szene als Vorlage laden.');
     if(x32Pending)throw Error('Bitte die neue Vorlage erst übernehmen oder den Dialog erneut öffnen.');
-    const mappings=x32CurrentMappings(),result=StageplotX32.exportScene(stage.x32Scene.text,{inputs:stage.routing.inputs.filter(row=>row.x32?.kind!=='aux'),outputs:stage.routing.outputs.filter(row=>row.x32?.kind!=='output'),mappings});
+    const mappings=x32CurrentMappings(),result=StageplotX32.exportScene(stage.x32Scene.text,{channelStrips:stage.x32Scene.channelStrips,processing:stage.routing.processing,sends:stage.routing.sends,inputs:stage.routing.inputs.filter(row=>row.x32?.kind!=='aux'&&!row.mixerDisplaced),outputs:stage.routing.outputs.filter(row=>row.x32?.kind!=='output'),mappings});
     const aux=StageplotX32.parse(stage.x32Scene.text).auxInputs;
     if(stage.routing.inputs.some(row=>row.x32?.kind==='aux'&&row.instrument!==aux.find(input=>input.number===row.x32.channel)?.name))result.warnings.push('Geänderte Aux-/USB-Namen bleiben nur im Stageplot-Projekt; die Szene behält die ursprünglichen Aux-Namen.');
     const host=$('sp-x32-changes'),heading=document.createElement('h3');heading.textContent=result.changes.length+' Änderungen gegenüber der Vorlage';host.append(heading);
-    const explanation=document.createElement('p');explanation.textContent='Nur die aufgeführten Beschriftungen, Kanalquellen und Stereo-Verknüpfungen werden geändert. Nicht aufgeführte Kanäle und alle Klang- und Ausgangseinstellungen bleiben aus der Vorlage.';host.append(explanation);
+    const explanation=document.createElement('p');explanation.textContent=stage.x32Scene.channelStrips||stage.routing.processing||stage.routing.sends?'Die Liste enthält die geänderten Kanalparameter einschließlich der übernommenen Sends.':'Nur die aufgeführten Beschriftungen, Kanalquellen und Stereo-Verknüpfungen werden geändert. Nicht aufgeführte Kanäle und alle Klang- und Ausgangseinstellungen bleiben aus der Vorlage.';host.append(explanation);
     const list=document.createElement('ul');list.className='sp-x32-change-list';
     const original=StageplotX32.parse(stage.x32Scene.text),updated=StageplotX32.parse(result.text);
     for(const change of result.changes){

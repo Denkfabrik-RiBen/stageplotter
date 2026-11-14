@@ -1,0 +1,9 @@
+{
+  "asset": "x32-rear-v1.jpg",
+  "model": "Behringer X32 full-size with X-USB expansion card",
+  "reference": "https://theatrecrafts.com/archive/documents/BEHRINGER_X32_P0ASF_Product_Information_Document.pdf",
+  "referencePage": 36,
+  "generator": "OpenAI ImageGen",
+  "prompt": "Precision catalog retouch of the original rear view. Preserve connector count, positions, legends and group spacing. Flat pale warm-gray background and studio lighting.",
+  "date": "2026-11-14"
+}

@@ -106,6 +106,12 @@ async function downloadScene(page) {
     await page.locator('#sp-x32-file').setInputFiles({name:filename,mimeType:'text/plain',buffer:Buffer.from(scene)});
     await page.locator('#sp-x32-wizard').waitFor({state:'visible'});
     await page.locator('#sp-x32-mode').selectOption('template');
+    assert.equal(await page.locator('[data-x32-input-id]').count(), 0, 'Template mode has no irrelevant input selection');
+    assert(await page.locator('#sp-x32-step-progress').isHidden(), 'Template mode is separate from the four routing steps');
+    assert.equal((await page.locator('#sp-x32-step-title').textContent()).trim(), 'Exportvorlage hinterlegen');
+    await page.locator('#sp-x32-mode').selectOption('routing');
+    assert(await page.locator('[data-x32-input-id]:checked').count() > 0, 'Switching back from template mode preserves the input selection');
+    await page.locator('#sp-x32-mode').selectOption('template');
     await importSelectedScene(page);
     await page.waitForFunction(expected => JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.x32Scene?.text === expected, scene);
     await waitSaved(page);
@@ -239,6 +245,7 @@ async function downloadScene(page) {
     fresh.setDefaultTimeout(10000);
     await fresh.goto(process.env.APP_URL || 'http://127.0.0.1:8898/');
     const chooser = fresh.waitForEvent('filechooser');
+    if (!(await fresh.locator('#sp-project-import').isVisible())) await fresh.locator('#sp-project-management > summary').click();
     await fresh.locator('#sp-project-import').click();
     await (await chooser).setFiles({name:'synthetic-portable.stageplot.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(portable))});
     await fresh.waitForFunction(() => JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1') || 'null')?.entry?.document?.stage?.x32Scene?.mappings.length === 1);

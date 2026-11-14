@@ -1,0 +1,152 @@
+{
+  "id": "cdm32",
+  "name": "dLive CDM32 MixRack",
+  "brand": "Allen & Heath",
+  "file": "cdm32.jpg",
+  "frame": [
+    1539,
+    1022
+  ],
+  "viewBox": [
+    175,
+    265,
+    1190,
+    569
+  ],
+  "diameter": 45,
+  "ports": {
+    "inputs": [
+      [
+        323,
+        371
+      ],
+      [
+        386,
+        371
+      ],
+      [
+        449,
+        371
+      ],
+      [
+        511,
+        371
+      ],
+      [
+        576,
+        371
+      ],
+      [
+        637,
+        371
+      ],
+      [
+        700,
+        371
+      ],
+      [
+        763,
+        371
+      ],
+      [
+        323,
+        456
+      ],
+      [
+        386,
+        456
+      ],
+      [
+        449,
+        456
+      ],
+      [
+        511,
+        456
+      ],
+      [
+        576,
+        456
+      ],
+      [
+        637,
+        456
+      ],
+      [
+        700,
+        456
+      ],
+      [
+        763,
+        456
+      ],
+      [
+        323,
+        539
+      ],
+      [
+        386,
+        539
+      ],
+      [
+        449,
+        539
+      ],
+      [
+        511,
+        539
+      ],
+      [
+        576,
+        539
+      ],
+      [
+        637,
+        539
+      ],
+      [
+        700,
+        539
+      ],
+      [
+        763,
+        539
+      ],
+      [
+        323,
+        623
+      ],
+      [
+        386,
+        623
+      ],
+      [
+        449,
+        623
+      ],
+      [
+        511,
+        623
+      ],
+      [
+        576,
+        623
+      ],
+      [
+        637,
+        623
+      ],
+      [
+        700,
+        623
+      ],
+      [
+        763,
+        623
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://www.avc-group.com/assets/products/Allen-Heath/allenheath-pic-cdm32-1.jpg",
+  "prompt": "Precision retouch of the original Allen & Heath product photograph with diffuse studio light. Preserve all port centers, groups, numbers and physical connector types."
+}

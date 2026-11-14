@@ -85,6 +85,33 @@ async function downloadScene(page) {
     const before = comparable(await storedDocument(page));
     assert(!before.objects.some(item => /^stagebox-/.test(item.type)), 'The wizard can start without stageboxes');
     await openScene(page);
+    const bulkScene = scene.replace('/ch/03/config "KEYS L" 1 RD 3', '/ch/03/config "KEYS L" 1 RD 19').replace('/ch/04/config "" 1 RD 4', '/ch/04/config "" 1 RD 20');
+    await page.locator('#sp-x32-file').setInputFiles({name:'bulk-synthetic.scn',mimeType:'text/plain',buffer:Buffer.from(bulkScene)});
+    await page.locator('#sp-x32-mode').selectOption('routing');
+    await page.locator('[data-x32-input-id="channel-2"]').check();
+    await page.locator('#sp-x32-next').click();
+    await page.locator('.sp-x32-bulk > summary').click();
+    assert.equal(await page.locator('[data-x32-bulk="box"]').inputValue(), '', 'Bulk mapping never guesses the physical stagebox');
+    await page.locator('[data-x32-bulk-preview]').click();
+    assert(await page.locator('#sp-x32-error').evaluate(node => node === document.activeElement && node.closest('.sp-x32-wizard-actions')), 'A validation error is focused next to the sticky actions');
+    await page.locator('[data-x32-bulk="box"]').selectOption('new:stagebox-behringer-s16');
+    await page.locator('[data-x32-bulk-preview]').click();
+    assert.equal(await page.locator('.sp-x32-bulk-preview > ul > li').count(), 3, 'Preview maps each selected signal in the chosen AES50 block');
+    assert.match(await page.locator('.sp-x32-bulk-preview h4').textContent(), /AES50 A 1–16 → S16 IN 1–16/);
+    assert(await page.locator('[data-x32-input-socket="channel-1"]').isDisabled(), 'A preview does not create hardware or assign sockets');
+    await page.locator('[data-x32-bulk-apply]').click();
+    for (const channel of [1,3,4]) assert.equal((await page.locator('[data-x32-input-socket="channel-' + channel + '"]').textContent()).trim(), String(channel));
+    assert.deepEqual(comparable(await storedDocument(page)), before, 'Bulk mapping remains staged until the final import');
+    await page.locator('[data-x32-input-mode="direct"][data-x32-input="channel-1"]').click();
+    await page.locator('[data-x32-input-mode="stagebox"][data-x32-input="channel-2"]').click();
+    await page.locator('[data-x32-existing-box][data-x32-input="channel-2"]').first().click();
+    await page.locator('#sp-x32-socket-dialog [data-x32-socket-port="1"]').click();
+    await page.locator('[data-x32-bulk-preview]').click();
+    assert.match(await page.locator('.sp-x32-bulk-preview').textContent(), /IN 1 ist bereits/);
+    assert(await page.locator('[data-x32-bulk-apply]').isDisabled(), 'Bulk preview blocks a socket occupied by a different signal');
+    await page.locator('#sp-x32-close').click();
+    assert.deepEqual(comparable(await storedDocument(page)), before, 'Cancelling bulk mapping discards all staged hardware and choices');
+    await openScene(page);
     await loadScene(page);
     assert.deepEqual(comparable(await storedDocument(page)), before, 'Scene preview does not change the project');
     assert(await page.locator('#sp-x32-import').isHidden(), 'Import is offered only after reviewing the routing steps');
@@ -126,9 +153,13 @@ async function downloadScene(page) {
     await existingBox.click();
     await socketDialog.waitFor({state:'visible'});
     assert(await socketDialog.locator('[data-x32-socket-port="1"]').isDisabled(), 'A socket used by a different source cannot be silently reused');
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 24; i++) {
       await page.keyboard.press('Tab');
       assert(await socketDialog.evaluate(dialog => dialog.contains(document.activeElement)), 'Keyboard focus stays within the socket popup');
+    }
+    for (let i = 0; i < 24; i++) {
+      await page.keyboard.press('Shift+Tab');
+      assert(await socketDialog.evaluate(dialog => dialog.contains(document.activeElement)), 'Reverse keyboard navigation stays within the socket popup');
     }
     await page.keyboard.press('Escape');
     await socketDialog.waitFor({state:'hidden'});
@@ -142,9 +173,15 @@ async function downloadScene(page) {
     await page.locator('[data-x32-bus-role="1"]').selectOption('monitor');
     await page.locator('#sp-x32-next').click();
     await page.locator('[data-x32-output-id="output-local-7"]').waitFor({state:'visible'});
+    assert.equal(await page.locator('[data-x32-output-id="output-local-1"]').count(), 0, 'Inactive outputs are initially filtered out');
+    await page.locator('[data-x32-all-outputs]').check();
+    assert(await page.locator('[data-x32-output-id="output-local-1"]').isVisible(), 'All-address toggle exposes inactive sockets');
+    assert(await page.locator('[data-x32-output-destination="output-local-1"]').isHidden(), 'Inactive rows stay compact until selected');
+    await page.locator('[data-x32-all-outputs]').uncheck();
     for (const checkbox of await page.locator('[data-x32-output-id]').all()) await checkbox.uncheck();
     await page.locator('[data-x32-output-id="output-local-7"]').check();
     await page.locator('[data-x32-output-destination="output-local-7"]').fill('Vocal zone');
+    assert.match(await page.locator('#sp-x32-import-summary').textContent(), /4 Inputs und 1 Outputs.*ersetzen/);
     assert.match(await page.locator('#sp-x32-wizard').textContent(), /VOX GROUP/, 'Nonidentity output patch resolves XLR 7 to the source bus');
     await page.locator('#sp-x32-back').click();
     assert.equal(await page.locator('[data-x32-bus-role="1"]').inputValue(), 'monitor', 'Backward navigation retains bus usage');
@@ -208,6 +245,7 @@ async function downloadScene(page) {
     fresh.setDefaultTimeout(10000);
     await fresh.goto(process.env.APP_URL || 'http://127.0.0.1:8898/');
     const chooser = fresh.waitForEvent('filechooser');
+    if (!(await fresh.locator('#sp-project-import').isVisible())) await fresh.locator('#sp-project-management > summary').click();
     await fresh.locator('#sp-project-import').click();
     await (await chooser).setFiles({name:'wizard-portable.stageplot.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(portable))});
     await fresh.waitForFunction(key => !!JSON.parse(localStorage.getItem(key) || 'null')?.entry.document.stage.x32Scene?.wizard, storageKey);

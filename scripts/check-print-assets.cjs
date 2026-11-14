@@ -35,6 +35,30 @@ const {engine,launchBrowser,artifactPath}=require('./browser-qa.cjs');
       assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,2,'Two actual PDF pages, without blank overflow sheets');
       assert(pdf.length>20000,'PDF contains embedded artwork');
     }
-    assert.deepEqual(errors,[]);console.log('PASS '+engine+': self-contained drum/guitar print artwork, image preparation, complete channel list and two-page PDF layout.');
+    await page.emulateMedia({media:'screen'});await page.locator('#sp-export-details > summary').click();
+    for(const [size,spacing] of [['15','11'],['11','4'],['13','7']]){
+      await page.locator('#sp-print-table-size').selectOption(size);await page.locator('#sp-print-table-spacing').selectOption(spacing);
+      assert.equal(await report.locator('tbody td').first().evaluate(el=>getComputedStyle(el).fontSize),size+'px','Table font follows the selected format');
+      assert.equal(await report.locator('tbody td').first().evaluate(el=>getComputedStyle(el).paddingTop),spacing+'px','Table padding follows the selected spacing');
+      assert(await report.evaluate(host=>[...host.querySelectorAll('.sp-report-content')].every(el=>el.scrollHeight<=el.clientHeight+1)),'Formatting repaginates without clipping');
+    }
+    // A realistic long input list exercises repeated page headers and every channel.
+    await page.evaluate(()=>{
+      const workspace=JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')),drafts=JSON.parse(localStorage.getItem('stageplot-studio:drafts:v1'));
+      workspace.entry.document.stage.routing.inputs=Array.from({length:64},(_,i)=>({id:'route-long-'+i,number:100+i,instrument:'PDF-Kanal-'+(100+i),manual:true,notes:('Langer Kanalhinweis '+i+' ').repeat(10).slice(0,230)}));
+      drafts.entries[drafts.entries.findIndex(item=>item.id===workspace.entry.id)]=workspace.entry;
+      localStorage.setItem('stageplot-studio:workspace:v1',JSON.stringify(workspace));localStorage.setItem('stageplot-studio:drafts:v1',JSON.stringify(drafts));
+    });
+    await page.reload();await page.locator('#sp-show-print').click();await page.locator('[data-pdf-preset="full"]').click();await page.locator('#sp-export-details > summary').click();
+    await page.locator('#sp-print-table-size').selectOption('15');await page.locator('#sp-print-table-spacing').selectOption('11');
+    const pageCount=await report.locator('.sp-report-page').count();assert(pageCount>3,'Long input list spans multiple pages');
+    const copy=await report.innerText();for(let i=100;i<164;i++)assert(copy.includes('PDF-Kanal-'+i),'Channel '+i+' is retained in print');
+    assert(await report.evaluate(host=>[...host.querySelectorAll('.sp-report-content')].every(el=>el.scrollHeight<=el.clientHeight+1)),'Large type and spacing fit every page');
+    await page.emulateMedia({media:'print'});
+    if(engine!=='webkit'){
+      const pdf=await page.pdf({path:artifactPath('print-long-input-list.pdf'),preferCSSPageSize:true,printBackground:true});
+      assert.equal((pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length,pageCount,'Actual long-list PDF matches the complete preview');
+    }
+    assert.deepEqual(errors,[]);console.log('PASS '+engine+': self-contained drum/guitar print artwork, image preparation, font/spacing controls, two-page artwork PDF and complete 64-channel multipage PDF.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,0 +1,90 @@
+{
+  "id": "x32-producer",
+  "name": "X32 Producer",
+  "brand": "Behringer",
+  "file": "x32-producer.jpg",
+  "frame": [
+    2005,
+    784
+  ],
+  "viewBox": [
+    0,
+    4,
+    2005,
+    775
+  ],
+  "diameter": 78,
+  "ports": {
+    "inputs": [
+      [
+        1802,
+        324
+      ],
+      [
+        1698,
+        324
+      ],
+      [
+        1593,
+        324
+      ],
+      [
+        1488,
+        324
+      ],
+      [
+        1383,
+        324
+      ],
+      [
+        1278,
+        324
+      ],
+      [
+        1173,
+        324
+      ],
+      [
+        1069,
+        324
+      ],
+      [
+        1802,
+        453
+      ],
+      [
+        1698,
+        453
+      ],
+      [
+        1593,
+        453
+      ],
+      [
+        1488,
+        453
+      ],
+      [
+        1383,
+        453
+      ],
+      [
+        1278,
+        453
+      ],
+      [
+        1173,
+        453
+      ],
+      [
+        1069,
+        453
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://verleih.ustp.at/upload/Behringer_Midas_X32_Producer__1455023776.pdf#page=33",
+  "product": "https://www.behringer.com/en/products/0603-ADP",
+  "prompt": "Precision retouch of manufacturer rear panel, exact counts, numbering, connectors and geometry; neutral warm-gray background and even studio light.",
+  "generator": "OpenAI ImageGen"
+}

@@ -12,7 +12,7 @@ async function seed(page){
   entry.document.objects=[{id:'station-1',type:'stagebox-32',x:1,y:1,angle:0,label:'Stagebox Bühne'}];
   localStorage.setItem('stageplot-studio:drafts:v1',JSON.stringify(library));localStorage.setItem('stageplot-studio:workspace:v1',JSON.stringify({version:1,entry}));
  });
- await page.reload();await page.locator('.sp-steps [data-view="routing"]').tap();
+ await page.reload();await page.locator('.sp-steps [data-view="routing"]').tap();await page.locator('[data-rw-tab="inputs"]').tap();
  await page.locator('#sp-routing-workspace-v2 [data-rw-tab="inputs"]').waitFor();
 }
 

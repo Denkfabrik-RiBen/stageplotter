@@ -139,3 +139,30 @@ assert.equal(context.StageplotRoutingModel.diModels.length,8);
 console.log('PASS: shared DI devices, atomic occupancy, pickup persistence and legacy routing migration.');
 
 assert.equal(model.normalizeDevices([{id:'di-missing',modelId:'radial-prod2',objectId:'removed'}],new Map([['other','station-1']]))[0].objectId,'','Missing physical symbols cannot attach to an unrelated renumbered object.');
+
+// Physical sockets belong to sources, including across save/load and older
+// projects with ambiguous duplicate patches. Matching labels are insufficient.
+{
+  const source=row('route-kick','kick:out',{number:8});
+  const copy={...source,id:'route-kick-copy',sourceKey:'',number:1,mixerSourceId:source.id};
+  const collision={...source,id:'route-other',sourceKey:'other:out',number:4};
+  const patch=routing([copy,source,collision]);
+  model.ensure(patch);
+  assert.equal(collision.stageboxPort,null);
+  const inv=model.mixerInventory(patch,[{id:'station-box',inputs:8}]);
+  assert.deepEqual(inv.at('station-box',4).rows.map(r=>r.number),[1,8]);
+  assert.equal(inv.groups.get(collision.id).patch,null);
+  assert.equal(model.rowExtras(copy).mixerSourceId,source.id);
+}
+
+{
+  const kick=row('route-kick','drums:kick',{instrument:'Kick In',number:3,stagebox:'',stageboxPort:null,localPort:3});
+  const bass=row('route-bass','bass:out',{instrument:'Bass',number:11,stagebox:'',stageboxPort:null,localPort:3,mixerSourceId:kick.id});
+  const draft=routing([kick,bass]);
+  model.ensure(draft);
+  assert.equal(kick.number,3);
+  assert.equal(bass.number,null);
+  assert.equal(bass.instrument,'Bass');
+  assert.equal(bass.mixerDisplaced,true);
+  assert.equal(model.explicitSocket(bass),null);
+}

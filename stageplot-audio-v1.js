@@ -29,10 +29,11 @@ function planAudioPatch(rows,members,box,direction,{startPort=null,preserve=fals
   return {assignments:members.map((row,i)=>({id:row.id,stagebox:box.id,stageboxPort:ports[i]})),displaced:[...displaced]};
 }
 function applyAudioPatchPlan(rows,plan){
-  const changed=new Map(plan.assignments.map(item=>[item.id,item]));for(const row of rows){if(plan.displaced.includes(row.id)){row.stagebox='';row.stageboxPort=null;}const patch=changed.get(row.id);if(patch){row.stagebox=patch.stagebox;row.stageboxPort=patch.stageboxPort;}}
+  const changed=new Map(plan.assignments.map(item=>[item.id,item]));for(const row of rows){if(plan.displaced.includes(row.id)){row.stagebox='';row.stageboxPort=null;}const patch=changed.get(row.id);if(patch){delete row.localPort;if(row.x32)delete row.x32.directPort;row.stagebox=patch.stagebox;row.stageboxPort=patch.stageboxPort;}}
 }
 function audioPatchStatus(row,direction){
   if(row.connector==='Dante'){const source=routeSourceObject(row);return row.stagebox?'review':source?.playback?.target?'patched':'unpatched';}
+  if(direction==='inputs'&&!row.stagebox&&(row.localPort||row.x32?.directPort))return 'patched';
   if(!row.stagebox||!row.stageboxPort)return 'unpatched';
   const box=routingStageboxes(direction).find(item=>item.id===row.stagebox);
   return !box||row.stageboxPort>box.capacity||routeNeedsDi(row,direction,box)?'review':'patched';

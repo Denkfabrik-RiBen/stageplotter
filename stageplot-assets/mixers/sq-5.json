@@ -1,0 +1,90 @@
+{
+  "id": "sq-5",
+  "name": "SQ-5",
+  "brand": "Allen & Heath",
+  "file": "sq-5.jpg",
+  "frame": [
+    1774,
+    887
+  ],
+  "viewBox": [
+    0,
+    56,
+    1774,
+    772
+  ],
+  "diameter": 75,
+  "ports": {
+    "inputs": [
+      [
+        1663,
+        346
+      ],
+      [
+        1566,
+        346
+      ],
+      [
+        1468,
+        346
+      ],
+      [
+        1371,
+        346
+      ],
+      [
+        1274,
+        346
+      ],
+      [
+        1177,
+        346
+      ],
+      [
+        1079,
+        346
+      ],
+      [
+        982,
+        346
+      ],
+      [
+        886,
+        346
+      ],
+      [
+        789,
+        346
+      ],
+      [
+        692,
+        346
+      ],
+      [
+        595,
+        346
+      ],
+      [
+        499,
+        346
+      ],
+      [
+        402,
+        346
+      ],
+      [
+        305,
+        346
+      ],
+      [
+        208,
+        346
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://www.mixfoundation.co.nz/cdn/shop/products/Allen_Heath-SQ-5-Back-adj.jpg?v=1565215978&width=2000",
+  "product": "https://www.allen-heath.com/content/uploads/2023/05/SQ_ReferenceGuide_V1_6_0_iss2.pdf",
+  "prompt": "Front-facing product retouch of the original connector panel, preserving input count, order and grouping, neutral studio background.",
+  "generator": "OpenAI ImageGen"
+}

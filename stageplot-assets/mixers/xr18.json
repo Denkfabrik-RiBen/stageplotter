@@ -1,0 +1,114 @@
+{
+  "id": "xr18",
+  "name": "X AIR XR18",
+  "brand": "Behringer",
+  "file": "xr18.jpg",
+  "frame": [
+    1600,
+    983
+  ],
+  "viewBox": [
+    0,
+    276,
+    1600,
+    689
+  ],
+  "diameter": 100,
+  "ports": {
+    "inputs": [
+      [
+        193,
+        535
+      ],
+      [
+        328,
+        535
+      ],
+      [
+        462,
+        535
+      ],
+      [
+        598,
+        535
+      ],
+      [
+        733,
+        535
+      ],
+      [
+        868,
+        535
+      ],
+      [
+        1003,
+        535
+      ],
+      [
+        1138,
+        535
+      ],
+      [
+        193,
+        687
+      ],
+      [
+        328,
+        687
+      ],
+      [
+        462,
+        687
+      ],
+      [
+        598,
+        687
+      ],
+      [
+        733,
+        687
+      ],
+      [
+        868,
+        687
+      ],
+      [
+        1003,
+        687
+      ],
+      [
+        1138,
+        687
+      ]
+    ],
+    "outputs": [
+      [
+        193,
+        842
+      ],
+      [
+        328,
+        842
+      ],
+      [
+        462,
+        842
+      ],
+      [
+        598,
+        842
+      ],
+      [
+        733,
+        842
+      ],
+      [
+        868,
+        842
+      ]
+    ]
+  },
+  "reference": "https://media.musicshop360.com/8669/xr18_p0bi8_front_l_20181216162806.png",
+  "prompt": "Retouch the exact hardware photograph as an orthographic studio product elevation, preserving connector positions, counts and legends on a pale neutral background.",
+  "generator": "OpenAI ImageGen"
+}

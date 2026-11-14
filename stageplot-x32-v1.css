@@ -36,12 +36,27 @@
 #sp-prototype .sp-x32-check { display:flex!important; align-items:center; gap:10px!important; }
 #sp-prototype .sp-x32-output-patch { display:grid; grid-template-columns:minmax(0,1fr) 90px; gap:12px; margin-top:10px; }
 #sp-prototype .sp-x32-wizard-actions { position:sticky; bottom:-22px; padding:12px 0; background:var(--sp-panel); border-top:1px solid var(--sp-line); }
+#sp-prototype .sp-x32-wizard-actions #sp-x32-error { flex-basis:100%; margin:0 0 8px; max-height:140px; overflow:auto; }
+#sp-prototype .sp-x32-output-filter { margin:16px 0; }
+#sp-prototype .sp-x32-output-row[data-selected=false] { display:grid; grid-template-columns:minmax(130px,1fr) minmax(0,2fr); gap:12px; align-items:center; padding:6px 12px; }
+#sp-prototype .sp-x32-output-row[data-selected=false] p { margin:0; font-size:12px; }
+#sp-prototype .sp-x32-output-fields[hidden] { display:none; }
+#sp-prototype .sp-x32-bulk, #sp-prototype .sp-x32-import-summary, #sp-prototype .sp-x32-template-summary { border:1px solid var(--sp-line); border-radius:10px; padding:14px; margin:16px 0; background:var(--sp-soft); }
+#sp-prototype .sp-x32-bulk summary { cursor:pointer; font-weight:650; min-height:28px; }
+#sp-prototype .sp-x32-bulk-fields { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(100px,1fr) minmax(110px,1fr); gap:12px; margin-bottom:12px; }
+#sp-prototype .sp-x32-bulk-preview ul { max-height:220px; overflow:auto; padding-left:24px; }
+#sp-prototype .sp-x32-bulk-preview h4, #sp-prototype .sp-x32-import-summary h4 { margin:10px 0; }
+#sp-prototype .sp-x32-import-summary p { margin:8px 0; }
 #sp-prototype #sp-x32-edit-wizard { margin:12px 0; }
+#sp-prototype #sp-x32-preview { margin-top:20px; border-top:1px solid var(--sp-line); padding-top:12px; }
+#sp-prototype #sp-x32-summary { cursor:pointer; font-weight:650; padding:8px 0; }
 @media(max-width:600px){
   #sp-prototype .sp-x32-wizard-row { grid-template-columns:minmax(0,1fr) 80px; }
   #sp-prototype .sp-x32-wizard-row>div { grid-column:1/-1; }
   #sp-prototype .sp-x32-bus-row { grid-template-columns:1fr; }
   #sp-prototype .sp-x32-wizard-actions { bottom:-14px; }
+  #sp-prototype .sp-x32-bulk-fields { grid-template-columns:1fr; }
+  #sp-prototype .sp-x32-output-row[data-selected=false] { grid-template-columns:1fr; gap:4px; }
 }
 #sp-prototype .sp-x32-input-row { grid-template-columns:minmax(130px,.8fr) minmax(0,1.7fr) 80px; align-items:start; padding:18px 0; }
 #sp-prototype .sp-x32-field-label { display:block; font-size:12px; font-weight:650; margin-bottom:6px; }

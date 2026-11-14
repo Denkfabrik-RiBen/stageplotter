@@ -339,3 +339,40 @@ const context={};vm.createContext(context);vm.runInContext(fs.readFileSync('stag
 assert.equal(typeof context.StageplotX32.exportScene,'function');
 assert.equal(context.StageplotX32.exportScene(text,context.StageplotX32.importRouting(text)).text,text);
 console.log('PASS X32 SCENES: wizard input/bus/FX/output inventory, output bank resolution, paired send taps, preserved wizard choices, exact template roundtrip, known input-bank mapping, explicit stagebox offsets, sparse overlays, channel/bus stereo, unchanged DSP/phantom/outputs, native-name preview, metadata validation and malformed-scene rejection.');
+
+// A label-only exchange must never transfer bus sends. Full strip transfers read
+// both channels from the original, including asymmetric sets of parameter paths.
+{
+  const adapter=require('./stageplot-x32-v1.js');
+  const template='#4.0# "Mixer"\r\n/ch/01/config "Bass" 1 RD 1\r\n/ch/01/mix/01 OFF -40\r\n/ch/08/config "Kick" 2 BL 8\r\n/ch/08/mix/01 ON -6\r\n/ch/08/eq/1 PEQ 100 +3 1\r\n/bus/01/config "IEM" 1 BL\r\n';
+  const inputs=[{number:1,instrument:'Kick'},{number:8,instrument:'Bass'}];
+  const names=adapter.exportScene(template,{inputs}).text;
+  assert(names.includes('/ch/08/mix/01 ON -6'));
+  assert(names.includes('/ch/01/mix/01 OFF -40'));
+  const swap=adapter.exportScene(template,{inputs,channelStrips:{1:8,8:1}});
+  assert(swap.text.includes('/ch/01/mix/01 ON -6'));
+  assert(swap.text.includes('/ch/08/mix/01 OFF -40'));
+  assert(swap.text.includes('/ch/01/eq/1 PEQ'));
+  assert(!swap.text.includes('/ch/08/eq/1'));
+  assert(swap.changes.some(change=>change.path==='/ch/01/mix/01'));
+  const duplicate=adapter.configuredScene(template,{1:8});
+  assert(duplicate.includes('/ch/01/mix/01 ON -6')&&duplicate.includes('/ch/08/mix/01 ON -6'));
+  assert.equal(adapter.configuredScene(template,{}),template);
+}
+
+{
+  const text='#4.0# "Link"\n/ch/01/config "Left" 1 RD 1\n/ch/01/mix ON -3\n/ch/01/mix/01 ON -5\n/ch/02/config "Right" 2 BL 2\n/ch/02/mix OFF -6\n/ch/02/mix/01 OFF -9\n';
+  for(const [processing,sends,leftMix,rightMix,leftSend,rightSend] of [
+    [{2:1},{},'ON -3','ON -3','ON -5','OFF -9'],
+    [{1:2},{2:1},'OFF -6','OFF -6','ON -5','ON -5'],
+    [{2:1},{1:2},'ON -3','ON -3','OFF -9','OFF -9']
+  ]){
+    const result=X.exportScene(text,{processing,sends}).text;
+    for(const [i,mix,send] of [['01',leftMix,leftSend],['02',rightMix,rightSend]]){
+      assert(result.includes('/ch/'+i+'/mix '+mix+'\n'));
+      assert(result.includes('/ch/'+i+'/mix/01 '+send+'\n'));
+    }
+    assert(result.includes('/ch/01/config "Left" 1 RD 1'));
+    assert(result.includes('/ch/02/config "Right" 2 BL 2'));
+  }
+}

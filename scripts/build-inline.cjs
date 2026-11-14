@@ -19,7 +19,7 @@ const INDEX = path.join(root, 'index.html');
 // Reihenfolge = Ladereihenfolge in der HTML (export vor drums vor symbols).
 // transform() muss exakt den Text erzeugen, der eingebettet werden soll.
 const MODULES = [
-  {file:'stageplot-stageboxes-v1.js',transform:s=>s.trim()},
+  {file:'stageplot-stageboxes-v1.js',transform:embedMixerPanels},
   ...['stageplot-x32-v1.js','stageplot-x32-v1.css','stageplot-x32-host-v1.js'].map(file=>({file,transform:s=>s.trim()})),
   ...['stageplot-object-menu-v1.js','stageplot-object-menu-v1.css'].map(file=>({file,transform:s=>s.trim()})),
   ...['stageplot-routing-model-v2.js','stageplot-routing-workspace-v2.js','stageplot-routing-workspace-v2.css','stageplot-routing-host-v2.js'].map(file=>({file,transform:s=>s.trim()})),
@@ -62,6 +62,17 @@ const MODULES = [
 
 // Die CommonJS-Exportzeile am Dateiende ist nur für node/Tests; im Browser ist
 // `module` undefiniert. Sie wird aus der Einbettung entfernt.
+function embedMixerPanels(source) {
+  const dir = path.join(root, 'stageplot-assets/mixers');
+  const panels = fs.readdirSync(dir).filter(file => file.endsWith('.json')).sort().map(file => {
+    const {id,name,brand,frame,viewBox,diameter,ports,file:asset} = JSON.parse(fs.readFileSync(path.join(dir,file),'utf8'));
+    if (file !== id+'.json' || !fs.existsSync(path.join(dir,asset)) || !ports.inputs.length)
+      throw Error('Unvollständiges Mischpult: '+file);
+    return {id,name,brand,frame,viewBox,diameter,ports,file:asset};
+  });
+  return source.trim().replace('/* mixer-panel-data */ []', () => JSON.stringify(panels));
+}
+
 function stripCommonJsExport(source) {
   return source.trim().split('\nif(typeof module')[0].trim();
 }

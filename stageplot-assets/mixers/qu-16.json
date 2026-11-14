@@ -1,0 +1,90 @@
+{
+  "id": "qu-16",
+  "name": "Qu-16",
+  "brand": "Allen & Heath",
+  "file": "qu-16.jpg",
+  "frame": [
+    1591,
+    989
+  ],
+  "viewBox": [
+    91,
+    175,
+    1404,
+    590
+  ],
+  "diameter": 56,
+  "ports": {
+    "inputs": [
+      [
+        1388,
+        409
+      ],
+      [
+        1314,
+        409
+      ],
+      [
+        1240,
+        409
+      ],
+      [
+        1166,
+        409
+      ],
+      [
+        1090,
+        409
+      ],
+      [
+        1015,
+        409
+      ],
+      [
+        941,
+        409
+      ],
+      [
+        867,
+        409
+      ],
+      [
+        792,
+        409
+      ],
+      [
+        718,
+        409
+      ],
+      [
+        644,
+        409
+      ],
+      [
+        570,
+        409
+      ],
+      [
+        496,
+        409
+      ],
+      [
+        422,
+        409
+      ],
+      [
+        348,
+        409
+      ],
+      [
+        274,
+        409
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://media.decksaver.com/uploads/2020/10/DSP-PC-QU16_BACK_jersqy_otfaa8.png",
+  "product": "https://www.allen-heath.com/content/uploads/2023/06/Qu-Mixer-Reference-Guide-AP9372_10.pdf",
+  "prompt": "Front-facing product retouch of the original connector panel, preserving input count, order and grouping, neutral studio background.",
+  "generator": "OpenAI ImageGen"
+}

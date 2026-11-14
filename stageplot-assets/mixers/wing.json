@@ -1,0 +1,90 @@
+{
+  "id": "wing",
+  "name": "WING",
+  "brand": "Behringer",
+  "file": "wing.jpg",
+  "frame": [
+    1973,
+    797
+  ],
+  "viewBox": [
+    430,
+    413,
+    1110,
+    318
+  ],
+  "diameter": 46,
+  "ports": {
+    "inputs": [
+      [
+        1485,
+        566
+      ],
+      [
+        1430,
+        566
+      ],
+      [
+        1376,
+        566
+      ],
+      [
+        1321,
+        566
+      ],
+      [
+        1267,
+        566
+      ],
+      [
+        1212,
+        566
+      ],
+      [
+        1158,
+        566
+      ],
+      [
+        1103,
+        566
+      ]
+    ],
+    "outputs": [
+      [
+        1034,
+        566
+      ],
+      [
+        980,
+        566
+      ],
+      [
+        925,
+        566
+      ],
+      [
+        870,
+        566
+      ],
+      [
+        816,
+        566
+      ],
+      [
+        761,
+        566
+      ],
+      [
+        707,
+        566
+      ],
+      [
+        652,
+        566
+      ]
+    ]
+  },
+  "reference": "https://audiomaxx.in/cdn/shop/files/Image_BE_P0BV2_WING_Rear_XL.png",
+  "prompt": "Retouch the exact hardware photograph as an orthographic studio product elevation, preserving connector positions, counts and legends on a pale neutral background.",
+  "generator": "OpenAI ImageGen"
+}

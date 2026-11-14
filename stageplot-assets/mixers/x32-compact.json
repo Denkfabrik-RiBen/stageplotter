@@ -1,0 +1,122 @@
+{
+  "id": "x32-compact",
+  "name": "X32 Compact",
+  "brand": "Behringer",
+  "file": "x32-compact.jpg",
+  "frame": [
+    1995,
+    788
+  ],
+  "viewBox": [
+    1,
+    6,
+    1992,
+    705
+  ],
+  "diameter": 67,
+  "ports": {
+    "inputs": [
+      [
+        1799,
+        314
+      ],
+      [
+        1715,
+        314
+      ],
+      [
+        1631,
+        314
+      ],
+      [
+        1547,
+        314
+      ],
+      [
+        1463,
+        314
+      ],
+      [
+        1379,
+        314
+      ],
+      [
+        1295,
+        314
+      ],
+      [
+        1211,
+        314
+      ],
+      [
+        1799,
+        440
+      ],
+      [
+        1715,
+        440
+      ],
+      [
+        1631,
+        440
+      ],
+      [
+        1547,
+        440
+      ],
+      [
+        1463,
+        440
+      ],
+      [
+        1379,
+        440
+      ],
+      [
+        1295,
+        440
+      ],
+      [
+        1211,
+        440
+      ]
+    ],
+    "outputs": [
+      [
+        1061,
+        440
+      ],
+      [
+        977,
+        440
+      ],
+      [
+        893,
+        440
+      ],
+      [
+        810,
+        440
+      ],
+      [
+        726,
+        440
+      ],
+      [
+        642,
+        440
+      ],
+      [
+        558,
+        440
+      ],
+      [
+        474,
+        440
+      ]
+    ]
+  },
+  "reference": "https://theatrecrafts.com/archive/documents/X32-COMPACT_P0AAP_Rear_XL.jpg",
+  "prompt": "Reproduce Compact rear plate and labels precisely from the original photo on pale neutral background. 16 inputs in two rows of eight, single row of eight outputs.",
+  "generator": "OpenAI ImageGen"
+}

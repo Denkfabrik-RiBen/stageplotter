@@ -35,15 +35,15 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return
-        if route.path.startswith(("/stageplot-assets/drums/", "/stageplot-assets/objects/", "/stageplot-assets/percussion/", "/stageplot-assets/orchestra/", "/stageplot-assets/toolbar/", "/stageplot-assets/categories/", "/stageplot-assets/tech/", "/stageplot-assets/lights/", "/stageplot-assets/stageboxes/")):
+        if route.path.startswith(("/stageplot-assets/drums/", "/stageplot-assets/objects/", "/stageplot-assets/percussion/", "/stageplot-assets/orchestra/", "/stageplot-assets/toolbar/", "/stageplot-assets/categories/", "/stageplot-assets/tech/", "/stageplot-assets/lights/", "/stageplot-assets/stageboxes/", "/stageplot-assets/mixers/")):
             asset_root = (root / "stageplot-assets" / route.path.split("/")[2]).resolve()
             asset = (root / route.path.lstrip("/")).resolve()
-            if asset.parent != asset_root or asset.suffix not in (".png", ".webp", ".svg") or not asset.is_file():
+            if asset.parent != asset_root or asset.suffix not in (".png", ".webp", ".svg", ".jpg") or not asset.is_file():
                 self.send_error(404)
                 return
             body = asset.read_bytes()
             self.send_response(200)
-            content_type = {".webp": "image/webp", ".png": "image/png", ".svg": "image/svg+xml"}[asset.suffix]
+            content_type = {".webp": "image/webp", ".png": "image/png", ".svg": "image/svg+xml", ".jpg": "image/jpeg"}[asset.suffix]
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "public, max-age=31536000, immutable")

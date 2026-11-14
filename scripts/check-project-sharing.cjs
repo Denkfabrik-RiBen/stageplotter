@@ -55,7 +55,7 @@ const base=(process.env.APP_URL||'http://127.0.0.1:8884/').split('#')[0],host='h
   assert.equal(await page.evaluate(()=>window.qaCopiedLinks.at(-1)),base+'#p/'+id);assert.notEqual(await page.evaluate(()=>window.qaClipboardGestures[0]),false,'Clipboard starts inside the tap before awaiting publication');assert.equal(await page.locator('#sp-share-copy-id').count(),0);
   assert.equal(await page.locator('#sp-share-link').inputValue(),base+'#p/'+id);await assertNoOverflow(page,'#sp-share-dialog','Share dialog mobile');
   await page.screenshot({path:artifactPath('project-sharing-'+engine+'.png')});await page.locator('#sp-share-close').tap();const before=await local();
-  await page.locator('#sp-shared-open').tap();await page.locator('#sp-shared-id').fill(id.toLowerCase());await page.locator('#sp-shared-form button').tap();
+  await page.locator('#sp-project-management > summary').tap();await page.locator('#sp-shared-open').tap();await page.locator('#sp-shared-id').fill(id.toLowerCase());await page.locator('#sp-shared-form button').tap();
   await page.waitForFunction(()=>document.querySelector('#sp-prototype')?.dataset.readonly==='true'&&document.querySelector('#sp-prototype')?.dataset.view==='print');
   assert.equal(await page.locator('#sp-project-heading').textContent(),'Lokaler Testplan');assert.deepEqual(await local(),before);assert.ok(!await page.locator('#sp-report-pages').textContent().then(text=>text.includes('PRIVATE')));
   await page.locator('#sp-shared-return').tap();await ready();await page.waitForFunction(()=>document.querySelector('#sp-prototype')?.dataset.readonly!=='true');assert.deepEqual(await local(),before);

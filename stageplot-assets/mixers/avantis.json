@@ -1,0 +1,72 @@
+{
+  "id": "avantis",
+  "name": "Avantis",
+  "brand": "Allen & Heath",
+  "file": "avantis.jpg",
+  "frame": [
+    1540,
+    1021
+  ],
+  "viewBox": [
+    120,
+    265,
+    1300,
+    395
+  ],
+  "diameter": 27,
+  "ports": {
+    "inputs": [
+      [
+        556,
+        457
+      ],
+      [
+        590,
+        457
+      ],
+      [
+        625,
+        457
+      ],
+      [
+        661,
+        457
+      ],
+      [
+        695,
+        457
+      ],
+      [
+        730,
+        457
+      ],
+      [
+        764,
+        457
+      ],
+      [
+        798,
+        457
+      ],
+      [
+        833,
+        457
+      ],
+      [
+        867,
+        457
+      ],
+      [
+        902,
+        457
+      ],
+      [
+        936,
+        457
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://www.avc-group.com/assets/products/Allen-Heath/allenheath-pic-avantis-2.jpg",
+  "prompt": "Precision retouch of the original Allen & Heath product photograph with diffuse studio light. Preserve all port centers, groups, numbers and physical connector types."
+}

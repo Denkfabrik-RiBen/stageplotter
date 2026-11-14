@@ -35,7 +35,7 @@ const {engine,launchBrowser,artifactPath}=require('./browser-qa.cjs');
     await page.reload();assert.equal((await drafts()).entries.length,2);
     await page.locator('.sp-steps [data-view="dashboard"]').click();
     const imported=structuredClone(payload);imported.name='QA Import';imported.document.stage.title='QA Import';imported.document.stage.project.name='QA Import';
-    const chooser=page.waitForEvent('filechooser');await page.locator('#sp-project-import').click();
+    const chooser=page.waitForEvent('filechooser');await page.locator('#sp-project-management > summary').click();await page.locator('#sp-project-import').click();
     await(await chooser).setFiles({name:'qa-import.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
     await page.locator('#sp-setup-confirm-accept').click();
     await page.waitForFunction(()=>document.querySelector('#sp-project-heading').textContent.includes('QA Import'));

@@ -1,0 +1,72 @@
+{
+  "id": "ui16",
+  "name": "Ui16",
+  "brand": "Soundcraft",
+  "file": "ui16.jpg",
+  "frame": [
+    1774,
+    887
+  ],
+  "viewBox": [
+    55,
+    147,
+    1664,
+    647
+  ],
+  "diameter": 77,
+  "ports": {
+    "inputs": [
+      [
+        294,
+        590
+      ],
+      [
+        391,
+        590
+      ],
+      [
+        488,
+        590
+      ],
+      [
+        585,
+        590
+      ],
+      [
+        682,
+        590
+      ],
+      [
+        779,
+        590
+      ],
+      [
+        294,
+        696
+      ],
+      [
+        391,
+        696
+      ],
+      [
+        488,
+        696
+      ],
+      [
+        585,
+        696
+      ],
+      [
+        682,
+        696
+      ],
+      [
+        779,
+        696
+      ]
+    ],
+    "outputs": []
+  },
+  "reference": "https://adn.harmanpro.com/product_attachments/product_attachments/3165_1468014535/ui16-front_original.jpg",
+  "prompt": "Retouch the original Ui16 straight-on product photograph. Keep all twelve input jacks in two rows of six, the original auxiliary and master outputs, antennas and controls. Use neutral studio light."
+}

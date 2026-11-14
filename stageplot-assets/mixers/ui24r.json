@@ -1,0 +1,138 @@
+{
+  "id": "ui24r",
+  "name": "Ui24R",
+  "brand": "Soundcraft",
+  "file": "ui24r.jpg",
+  "frame": [
+    2067,
+    761
+  ],
+  "viewBox": [
+    95,
+    6,
+    1878,
+    741
+  ],
+  "diameter": 81,
+  "ports": {
+    "inputs": [
+      [
+        363,
+        529
+      ],
+      [
+        474,
+        529
+      ],
+      [
+        585,
+        529
+      ],
+      [
+        695,
+        529
+      ],
+      [
+        806,
+        529
+      ],
+      [
+        916,
+        529
+      ],
+      [
+        1027,
+        529
+      ],
+      [
+        1137,
+        529
+      ],
+      [
+        1247,
+        529
+      ],
+      [
+        1358,
+        529
+      ],
+      [
+        363,
+        650
+      ],
+      [
+        474,
+        650
+      ],
+      [
+        585,
+        650
+      ],
+      [
+        695,
+        650
+      ],
+      [
+        806,
+        650
+      ],
+      [
+        916,
+        650
+      ],
+      [
+        1027,
+        650
+      ],
+      [
+        1137,
+        650
+      ],
+      [
+        1247,
+        650
+      ],
+      [
+        1358,
+        650
+      ]
+    ],
+    "outputs": [
+      [
+        835,
+        165
+      ],
+      [
+        946,
+        165
+      ],
+      [
+        1055,
+        165
+      ],
+      [
+        1165,
+        165
+      ],
+      [
+        1276,
+        165
+      ],
+      [
+        1386,
+        165
+      ],
+      [
+        1495,
+        165
+      ],
+      [
+        1607,
+        165
+      ]
+    ]
+  },
+  "reference": "https://www.soundtech.co.uk/img/general/Ui24R-front_original.jpg",
+  "prompt": "Retouch the original front photo. Preserve ten combination inputs and ten XLR inputs as numbered, with eight aux and two master outputs. Neutral background.",
+  "generator": "OpenAI ImageGen"
+}
