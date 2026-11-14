@@ -7458,7 +7458,7 @@ html,body { height:100%; overflow:hidden; }
   #sp-prototype .rw-source-flow:has(.rw-patch-card .rw-card-editor) {min-width:805px;grid-template-columns:110px 30px 155px 23px 285px 23px 145px;}
   #sp-prototype .rw-card {padding:10px;min-height:222px;}
   #sp-prototype .rw-source-card .rw-art {height:104px;min-height:104px;}
-  #sp-prototype .rw-flow-scroll {margin-right:-12px;padding-right:12px;scroll-padding:12px;}
+  #sp-prototype .rw-flow-scroll {max-width:100%;min-width:0;box-sizing:border-box;scroll-padding:12px;}
   #sp-prototype .rw-footer {padding:11px 12px;min-height:55px;}
   #sp-prototype .rw-save-state {font-size:9px;}
   #sp-prototype .rw-primary,#sp-prototype .rw-export {font-size:10px;padding:8px;}
@@ -7808,6 +7808,17 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .rw-zoom-panel .mx-link-symbol {grid-row:1}
 #sp-prototype .rw-zoom-panel [data-rw-mixer-user-port] .mx-socket-badge {bottom:95%}
 #sp-prototype .mx-right .sp-stagebox-device:not(.rw-panel-fullscreen *) {min-width:calc(var(--jack-min-width) * var(--panel-scale,1))!important}
+
+/* Keep the lamp and the socket independently touchable in the stagebox overview. */
+#sp-prototype .rw-stagebox-hardware .sp-stagebox-device:not(.rw-panel-fullscreen *) {
+  min-width:calc(var(--jack-min-width) * 2 * var(--panel-scale,1))!important;
+}
+#sp-prototype .rw-stagebox-hardware .sp-stagebox-hotspot:not(.rw-panel-fullscreen *)>.rw-preamp {
+  min-width:44px;min-height:44px;left:-12%;bottom:-12%;
+}
+@media(max-width:780px) {
+  #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
+}
 /* build-inline:end stageplot-routing-workspace-v2.css */
 </style>
 <style>
