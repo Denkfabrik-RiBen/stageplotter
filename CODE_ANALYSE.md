@@ -22,7 +22,9 @@ Belegarten im Text:
 
 ## 1. Fehler und Risiken
 
-### 1.1 Ein ungültiges Objekt blendet alle Projekte aus (hoch, reproduziert)
+### 1.1 Ein ungültiges Objekt blendet alle Projekte aus (hoch, reproduziert, behoben)
+
+**Behoben auf diesem Branch:** `readDraftLibrary` lädt jeden Eintrag einzeln. Unlesbare Einträge bleiben unverändert im Speicher, auch nach weiteren Speichervorgängen. Das Dashboard meldet sie und bietet „Rohdaten sichern“ an. Im Browser gegengeprüft und per Test in `stageplot-project-identity.test.cjs` abgesichert. Offen bleibt der Rückfall auf Standardmaße für Podeste.
 
 `readDraftLibrary` (`stageplot-studio.html:22437`) normalisiert jeden gespeicherten Entwurf in einer gemeinsamen `map`. Wirft `normalizeSetupDocument` für einen einzigen Eintrag, ist die ganze Bibliothek unlesbar.
 
@@ -41,7 +43,9 @@ Die Strenge ist außerdem uneinheitlich. FOH, Treppen und Zugänge fallen bei un
 
 Empfehlung: Einträge einzeln laden. Ein defekter Eintrag erscheint als „beschädigt“ mit Sicherungsdownload der Rohdaten, die übrigen bleiben nutzbar. Für Podeste denselben Rückfall auf Standardmaße wie bei FOH.
 
-### 1.2 Toter Schlagzeug-Zweig mit `ReferenceError` (niedrig, reproduziert)
+### 1.2 Toter Schlagzeug-Zweig mit `ReferenceError` (niedrig, reproduziert, behoben)
+
+**Behoben auf diesem Branch:** Zweig und die Helfer `kick`, `drum`, `kickTop`, `kickOverhead` sind entfernt. Die Zeilenangaben unten beziehen sich auf den Stand davor.
 
 `stageplot-symbols-v3.js:463` bis 478 zeichnet ein Schlagzeug ohne `drumLayout`. Der Zweig liest die nie deklarierte Variable `large` (Zeile 477).
 
@@ -51,7 +55,9 @@ createStageplotSymbolV3('drums')  ->  ReferenceError: large is not defined
 
 Die App erreicht den Zweig nicht: Alle drei Aufrufe für Schlagzeuge übergeben ein `drumLayout` (`stageplot-studio.html:15512`, 20579, 20864). Er ist also zugleich tot und defekt. Mit ihm entfallen die nur dort verwendeten Helfer `kick` und `drum`.
 
-### 1.3 Doppelter Schlüssel beim Duplizieren einer Treppe (niedrig, statisch)
+### 1.3 Doppelter Schlüssel beim Duplizieren einer Treppe (niedrig, statisch, behoben)
+
+**Behoben auf diesem Branch:** Der zweite Schlüssel ist entfernt, die Begrenzung auf 1 bis 24 gilt.
 
 `stageplot-studio.html:22283` setzt `stairsSteps` zweimal im selben Objektliteral. Der zweite Wert (`source.stairsSteps||3`) überschreibt den ersten, der auf 1 bis 24 begrenzt und gerundet ist. Die Begrenzung wirkt dadurch nicht.
 

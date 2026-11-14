@@ -47,6 +47,18 @@ assert.equal(old.readDraftLibrary(old.localStorage).entries.find(item=>item.id==
 // Linking a device retains both local identities when promoting drafts to cloud records.
 old.hasLinkedAccount=()=>true;old.cloudBridge={local:{matches:()=>false}};const before=new Map(old.readDraftLibrary(old.localStorage).entries.map(item=>[item.id,item.document.stage.projectId]));
 old.prepareDraftsForSync();for(const item of old.readDraftLibrary(old.localStorage).entries){assert.equal(item.document.stage.projectId,before.get(item.id));assert.equal(old.readSetupLibrary(old.localStorage).find(setup=>setup.id===item.sourceSetupId).document.stage.projectId,item.document.stage.projectId);}
+// One unreadable project neither hides the others nor is lost on the next save.
+const mixed=environment(),good=draft('draft-good'),bad=draft('draft-bad');bad.document={stage:null};
+mixed.localStorage.setItem('drafts',JSON.stringify({version:1,entries:[good,bad],lastId:'draft-bad'}));
+const mixedRead=mixed.readDraftLibrary(mixed.localStorage);
+assert.equal(mixedRead.entries.map(item=>item.id).join(),'draft-good');assert.equal(mixedRead.damaged.length,1);assert.equal(mixedRead.lastId,null);
+assert.equal(mixed.dashboardProjects().length,1,'Lesbare Projekte bleiben im Dashboard.');
+mixed.writeDraftLibrary(mixed.localStorage,{entries:mixedRead.entries,lastId:'draft-good'});
+const keptDrafts=JSON.parse(mixed.localStorage.getItem('drafts')).entries;
+assert.equal(keptDrafts.map(item=>item.id).join(),'draft-good,draft-bad');assert.equal(JSON.stringify(keptDrafts[1]),JSON.stringify(bad),'Der unlesbare Eintrag bleibt unverändert gespeichert.');
+// A writer that never read this stored state still keeps the unreadable entry.
+mixed.readDraftLibrary.raw=null;mixed.readDraftLibrary.damaged=[];mixed.writeDraftLibrary(mixed.localStorage,{entries:[],lastId:null});
+assert.equal(JSON.parse(mixed.localStorage.getItem('drafts')).entries.map(item=>item.id).join(),'draft-bad');
 // Failure to save never assigns an unpersisted identity or changes a stored project.
 const failed=environment();failed.stage=failed.normalizeSetupDocument(legacyDocument()).stage;
 failed.localStorage.setItem=()=>{throw new Error('Speicher voll');};assert.equal(failed.persistDraft(true),false);assert.equal(failed.stage.projectId,undefined);assert.equal(failed.activeDraftId,null);assert.equal(failed.draftState,'error');
