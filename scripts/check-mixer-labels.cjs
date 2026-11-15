@@ -15,7 +15,7 @@ async function fixture(page, model, count) {
     const doc=workspace.entry.document;
     doc.objects=[];
     delete doc.stage.x32Scene;
-    const names=['Keys Hauptinstrument · L','Keys Hauptinstrument · R','Gesang Sängerin mit langem Signalnamen','Drums · Kick Out','Bass DI','Unbekanntes Instrument ÄÖÜ'];
+    const names=['Keys Hauptinstrument · L','Keys Hauptinstrument · R','Gesang Sängerin mit langem Signalnamen','Drums · Kick Out','Bass DI','Unbekanntes Instrument ÄÖÜ','E-Gitarre','Drums · Snare'];
     doc.stage.routing={version:2,mixerModel:model,outputs:[],
       mixerBanks:Array.from({length:4},(_,i)=>({id:'@user',first:i*8+1,last:i*8+8})),
       userInputs:Array.from({length:32},(_,i)=>i<count?{id:'@local',port:i+1}:null),
@@ -32,6 +32,14 @@ async function fixture(page, model, count) {
   await page.locator('[data-rw-mixer-device="@local"]').click();
   await page.waitForFunction(()=>document.querySelector('#sp-header-draft-status').textContent==='Lokal gespeichert');
   await settled(page);
+  // Persist the synthetic fixture through the app before comparing full snapshots.
+  // This supplies canonical route IDs/defaults without duplicating its normalizer.
+  const power=page.locator('.mx-right [data-rw-preamp="3"]');
+  await power.click();
+  await page.waitForFunction(model=>!JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower?.some(entry=>entry.device==='@local/'+model&&entry.port===3),model);
+  await power.click();
+  await page.waitForFunction(model=>JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower?.some(entry=>entry.device==='@local/'+model&&entry.port===3),model);
+  await settled(page);
 }
 
 async function checkLabels(panel, count, label) {
@@ -46,21 +54,39 @@ async function checkLabels(panel, count, label) {
     const badges=[...root.querySelectorAll('[data-rw-mixer-port] .mx-socket-badge')];
     const lamps=[...root.querySelectorAll('[data-rw-preamp]')];
     for(const badge of badges){
-      const port=badge.closest('[data-rw-mixer-port]').dataset.rwMixerPort,box=rect(badge);
+      const input=badge.closest('[data-rw-mixer-port]'),port=input.dataset.rwMixerPort,box=rect(badge),jack=rect(input),style=getComputedStyle(badge);
       const caption=badge.querySelector('.mx-signal-caption'),glyph=badge.querySelector('.mx-socket-glyph');
-      const number=badge.closest('[data-rw-mixer-port]').querySelector('.mx-input-number');
+      const number=input.querySelector('.mx-input-number');
       if(!caption?.textContent.trim()||!glyph?.textContent.trim()&&!glyph?.querySelector('img,svg'))issues.push('IN '+port+' missing caption or instrument');
       if(caption&&parseFloat(getComputedStyle(caption).fontSize)<9)issues.push('IN '+port+' caption under 9px');
       if(!box.width||!box.height)issues.push('IN '+port+' label hidden');
+      if(Math.abs(box.width-box.height)>1)issues.push('IN '+port+' overlay is not square');
+      for(const radius of [style.borderTopLeftRadius,style.borderTopRightRadius,style.borderBottomLeftRadius,style.borderBottomRightRadius])if(radius.endsWith('%')?parseFloat(radius)<48:parseFloat(radius)<Math.min(box.width,box.height)*.48)issues.push('IN '+port+' overlay is not round');
+      if(Math.abs(box.x+box.width/2-jack.x-jack.width/2)>1.5||Math.abs(box.y+box.height/2-jack.y-jack.height/2)>1.5)issues.push('IN '+port+' overlay is not centered on its jack');
+      if(box.width<jack.width*.84||box.width>jack.width*1.1)issues.push('IN '+port+' overlay does not cover the jack face');
       if(number&&glyph&&overlaps(rect(number),rect(glyph)))issues.push('IN '+port+' number overlaps instrument');
       for(const mark of badge.querySelectorAll('b,.mx-link-symbol'))if(glyph&&overlaps(rect(mark),rect(glyph)))issues.push('IN '+port+' stereo marker overlaps instrument');
-      for(const lamp of lamps)if(overlaps(box,rect(lamp)))issues.push('IN '+port+' label overlaps 48 V control '+lamp.dataset.rwPreamp);
+      for(const lamp of lamps){
+        if(lamp.dataset.rwPreamp===port){
+          if(glyph&&overlaps(rect(glyph),rect(lamp)))issues.push('IN '+port+' 48 V control covers instrument');
+          if(caption&&overlaps(rect(caption),rect(lamp)))issues.push('IN '+port+' 48 V control covers caption');
+        }else if(overlaps(box,rect(lamp)))issues.push('IN '+port+' label overlaps neighbouring 48 V control '+lamp.dataset.rwPreamp);
+      }
     }
     for(let i=0;i<badges.length;i++)for(let j=i+1;j<badges.length;j++)if(overlaps(rect(badges[i]),rect(badges[j])))issues.push('labels overlap: '+badges[i].closest('[data-rw-mixer-port]').dataset.rwMixerPort+'/'+badges[j].closest('[data-rw-mixer-port]').dataset.rwMixerPort);
     for(const lamp of lamps)if(!/48\s*V/.test(lamp.textContent))issues.push('48 V is not visibly labelled');
     return issues;
   });
-  if(problems.length)await panel.screenshot({path:artifactPath('mixer-labels-failure-'+label.replace(/[^a-z0-9]+/gi,'-')+'-'+engine+'.png')});
+  if(problems.length){
+    console.error(label,await panel.locator('[data-rw-mixer-port]').evaluateAll(inputs=>inputs.slice(0,2).map(input=>{
+      const jack=input.getBoundingClientRect(),bounds=selector=>{
+        const element=input.querySelector(selector);if(!element)return null;
+        const box=element.getBoundingClientRect();return {x:box.x-jack.x,y:box.y-jack.y,width:box.width,height:box.height};
+      };
+      return {port:input.dataset.rwMixerPort,diameter:jack.width,circle:bounds('.mx-socket-badge'),number:bounds('.mx-input-number'),glyph:bounds('.mx-socket-glyph'),caption:bounds('.mx-signal-caption'),side:bounds('b'),link:bounds('.mx-link-symbol')};
+    })));
+    await panel.screenshot({path:artifactPath('mixer-labels-failure-'+label.replace(/[^a-z0-9]+/gi,'-')+'-'+engine+'.png')});
+  }
   assert.deepEqual(problems,[],label);
 }
 
@@ -70,6 +96,27 @@ async function checkReadableInputs(panel, label) {
     return width<43?[{port:input.dataset.rwMixerPort,width}]:[];
   }));
   assert.deepEqual(undersized,[],label+' keeps physical inputs at a readable width');
+}
+
+async function checkPreampAction(page, panel, model) {
+  const before=await savedRouting(page),control=()=>panel.locator('[data-rw-preamp="4"]');
+  assert.equal(await control().getAttribute('aria-pressed'),'false');
+  await control().click();
+  assert.equal(await page.locator('.mx-picker:modal').count(),0,model+' 48 V click does not open the jack picker');
+  await page.waitForFunction(model=>JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower?.some(entry=>entry.device==='@local/'+model&&entry.port===4),model);
+  assert.equal(await control().getAttribute('aria-pressed'),'true');
+  if(model==='x32-local'){
+    await page.reload();
+    await page.locator('.sp-steps [data-view="routing"]').click();
+    await page.locator('[data-rw-tab="mixer"]').click();
+    await page.locator('[data-rw-mixer-device="@local"]').click();
+    await settled(page);
+    assert.equal(await control().getAttribute('aria-pressed'),'true','Physical 48 V state survives reloading the project');
+  }
+  await control().click();
+  assert.equal(await page.locator('.mx-picker:modal').count(),0,model+' turning 48 V off does not open the jack picker');
+  await page.waitForFunction(model=>!JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower?.some(entry=>entry.device==='@local/'+model&&entry.port===4),model);
+  assert.deepEqual(await savedRouting(page),before,model+' 48 V controls preserve signal names, phantom requirements and routing');
 }
 
 (async()=>{
@@ -86,6 +133,7 @@ async function checkReadableInputs(panel, label) {
       await fixture(page,model,count);
       const panel=page.locator('.mx-right .rw-zoom-panel'),before=await savedRouting(page);
       await checkLabels(panel,count,model+' 100%');
+      await checkPreampAction(page,panel,model);
       await panel.locator('[data-panel-expand]').click();
       await checkLabels(page.locator('.rw-panel-fullscreen:modal'),count,model+' fullscreen');
       if(['x32-local','cdm32','ui24r'].includes(model))await page.locator('.rw-panel-fullscreen:modal').screenshot({path:artifactPath('mixer-labels-'+model+'-fullscreen-'+engine+'.png')});

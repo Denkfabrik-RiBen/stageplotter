@@ -126,10 +126,20 @@
       [/sax/,'saxophone'],[/geige/,'violin'],[/playback|clicktrack/,'laptop']
     ];
     const drumBadges=[
-      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png'],[/snare/,'snare.webp'],
-      [/hi[ -]?hat/,'hihat-overhead-v2.png'],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
+      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png',{width:512,height:543,crop:[0,0,512,320]}],[/snare/,'snare.webp'],
+      [/hi[ -]?hat/,'hihat-overhead-v2.png',{width:313,height:512,crop:[0,0,313,310]}],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
       [/ride/,'ride.webp'],[/crash|overhead/,'crash.webp']
     ];
+    function socketInstrumentArt(type,source,drum){
+      if(drum){
+        const frame=drum[2],file='stageplot-assets/drums/'+drum[1];
+        return frame?'<svg viewBox="'+frame.crop.join(' ')+'" aria-hidden="true"><image href="'+file+'" width="'+frame.width+'" height="'+frame.height+'"/></svg>':'<img src="'+file+'" alt="">';
+      }
+      const thumbnail=api.socketIcon?.(source?{...source,angle:0}:type);
+      if(thumbnail)return thumbnail;
+      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
+      return compactSymbol||(type?icon(source?{...source,angle:0}:type):'');
+    }
     function socketBadge(row){
       if(!row)return '';
       const name=row.instrument||row.generatedInstrument||'Signal', text=normalized(name);
@@ -138,11 +148,9 @@
       const match=!source&&!drum&&Object.values(state.catalog||{}).filter(c=>c.instrument!==false).find(c=>
         [c.id,c.name,c.short].some(label=>label&&normalized(baseName(name)).trim()===normalized(label)));
       const type=source?.type||match?.id||socketAliases.find(([re])=>re.test(text))?.[1];
-      // Stageplan keyboards are drawn from above and become a thin line at socket size.
-      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
-      const glyph=compactSymbol|| (drum?'<img src="stageplot-assets/drums/'+drum[1]+'" alt="">':type?icon(source||type):'');
+      const glyph=socketInstrumentArt(type,source,drum);
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
+      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
     }
     const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];

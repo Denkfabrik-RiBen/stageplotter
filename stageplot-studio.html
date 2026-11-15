@@ -7746,53 +7746,47 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .sp-stagebox-image-port .mx-port-name {position:absolute;left:50%;bottom:58%;transform:translateX(-50%);z-index:2}
 #sp-prototype .sp-stagebox-image-port .mx-port-free {position:absolute;top:0;right:0}
 
-/* Signal cards use the socket face; spacing follows the measured panel layout. */
+/* Circular signal medallions sit directly on the measured socket face. */
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot {container-type:inline-size}
 #sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge {
-  position:absolute;left:50%;top:-12%;bottom:auto;transform:translateX(-50%);
-  display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:start;
-  gap:1px;width:var(--signal-width,100%);max-width:none;height:auto;box-sizing:border-box;
-  padding:2px;border:1px solid #65706b;border-radius:5px;background:#18221f;color:#fff;
-  box-shadow:0 1px 3px #0006;font:650 clamp(9px,23cqw,16px)/1.08 system-ui;
+  position:absolute;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);
+  display:block;width:94%;height:94%;max-width:none;box-sizing:border-box;padding:0;
+  border:1px solid #aebbae;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fffef8,#e9eee5 78%);
+  color:#21382c;box-shadow:inset 0 0 0 2px #ffffffb3,0 2px 5px #0006;
+  font:700 clamp(9px,14cqw,24px)/1.04 system-ui;
 }
-#sp-prototype .rw-zoom-panel [data-signal-layout="compact"] .sp-stagebox-image-port .mx-socket-badge {top:0}
-#sp-prototype .rw-zoom-panel [data-signal-layout="single"] .sp-stagebox-image-port .mx-socket-badge {top:-30%}
 #sp-prototype .rw-zoom-panel .mx-socket-badge .mx-socket-glyph {
-  grid-column:1;grid-row:1;justify-self:center;width:26cqw;height:36cqw;min-width:0;
-  max-width:24px;max-height:28px;font-size:clamp(10px,26cqw,20px);filter:none;
+  position:absolute;left:50%;top:26%;transform:translateX(-50%);display:grid;place-items:center;
+  width:58%;height:33%;min-width:0;font-size:clamp(19px,39cqw,38px);color:#29483a;filter:drop-shadow(0 1px 1px #16291a24);
 }
-#sp-prototype .rw-zoom-panel .mx-socket-glyph :is(img,svg) {display:block;width:100%;height:100%;object-fit:contain;background:#f0f3ee;border-radius:2px}
+#sp-prototype .rw-zoom-panel .mx-socket-initials {font:750 clamp(12px,24cqw,28px)/1 system-ui}
+#sp-prototype .rw-zoom-panel .mx-socket-glyph :is(img,svg) {display:block;width:100%;height:100%;object-fit:contain;background:transparent;border-radius:0}
 #sp-prototype .rw-zoom-panel .mx-signal-caption {
-  grid-column:1;grid-row:2;min-width:0;width:100%;text-align:center;line-height:1.08;
+  position:absolute;left:11%;top:61%;width:78%;min-width:0;text-align:center;line-height:1.04;
   overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
 }
 #sp-prototype .rw-zoom-panel .mx-socket-badge b,
 #sp-prototype .rw-zoom-panel .mx-link-symbol {
-  position:absolute;right:1px;top:1px;grid-row:auto;padding:0 1px;border-radius:2px;
-  color:#e4ffd7;background:#344c3b;font:800 clamp(8px,21cqw,14px)/1.05 system-ui;
+  position:absolute;right:-3%;top:-8%;display:grid;place-items:center;
+  width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);padding:0;border:1px solid #edf6e8;border-radius:50%;
+  color:#f6ffec;background:#45693a;box-shadow:0 1px 2px #0005;font:800 clamp(9px,20cqw,28px)/1 system-ui;
 }
-#sp-prototype .rw-zoom-panel .mx-link-symbol {top:calc(21cqw + 2px);font-size:clamp(6px,15cqw,10px);letter-spacing:-.03em}
-#sp-prototype .rw-zoom-panel .mx-input-number {
-  position:absolute;z-index:1;left:calc((100% - var(--signal-width,100%))/2 + 2px);top:calc(-12% + 2px);
-  padding:0;border-radius:2px;background:#18221f;color:#fff;
-  font:700 clamp(8px,20cqw,14px)/1.05 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;
-}
-#sp-prototype .rw-zoom-panel [data-signal-layout="compact"] .mx-input-number {top:2px}
-#sp-prototype .rw-zoom-panel [data-signal-layout="single"] .mx-input-number {top:calc(-30% + 2px)}
-#sp-prototype .rw-zoom-panel .sp-stagebox-image-port:not(:has(.mx-socket-badge)) .mx-input-number {top:50%;left:50%;transform:translate(-50%,-50%)}
+#sp-prototype .rw-zoom-panel .mx-link-symbol {top:-3%;left:50%;right:auto;transform:translateX(-50%);width:auto;height:auto;padding:1px 3px;border-radius:8px;font:750 clamp(7px,13cqw,18px)/1.1 system-ui}
+#sp-prototype .rw-zoom-panel .mx-input-number,
 #sp-prototype .rw-zoom-panel .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {
-  top:calc(-12% + 2px);left:calc((100% - var(--signal-width,100%))/2 + 2px);transform:none;
-  min-width:0;border:0;border-radius:2px;padding:0;background:#18221f;color:white;z-index:1;
-  font:700 clamp(8px,20cqw,14px)/1.05 ui-monospace,SFMono-Regular,Menlo,monospace;
+  position:absolute;z-index:1;left:0;top:-2%;transform:none;display:grid;place-items:center;
+  width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);min-width:0;padding:0;border:1px solid #edf4e8;border-radius:50%;
+  background:#293e33;color:#fff;box-shadow:0 1px 2px #0005;
+  font:700 clamp(8px,17cqw,26px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;
 }
-#sp-prototype .rw-zoom-panel [data-signal-layout="compact"] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {top:2px}
-#sp-prototype .rw-zoom-panel [data-signal-layout="single"] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {top:calc(-30% + 2px)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port:not(:has(.mx-socket-badge)) .mx-input-number {top:50%;left:50%;transform:translate(-50%,-50%)}
 #sp-prototype .rw-zoom-panel [data-rw-mixer-user-port] .mx-signal-caption {display:-webkit-box}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot>.rw-preamp {
-  position:absolute;z-index:2;left:50%;top:104%;bottom:auto;transform:translateX(-50%);
-  display:flex;align-items:center;justify-content:center;gap:2px;width:var(--signal-width,100%);height:28%;
-  min-width:0;min-height:0;padding:0 2px;border:1px solid #616e67;border-radius:3px;
-  background:#1c2622;color:#c9d2cd;font:650 clamp(8px,20cqw,13px)/1 system-ui;white-space:nowrap;cursor:pointer;
+  position:absolute;z-index:2;left:50%;top:96%;bottom:auto;transform:translateX(-50%);
+  display:flex;align-items:center;justify-content:center;gap:3px;width:clamp(34px,64cqw,74px);height:clamp(14px,23cqw,26px);
+  min-width:0;min-height:14px;padding:0 3px;border:1px solid #8e9e90;border-radius:999px;
+  background:#e8eee4;color:#3c5143;box-shadow:0 1px 2px #0005;
+  font:750 clamp(8px,16cqw,13px)/1 system-ui;white-space:nowrap;cursor:pointer;
 }
 #sp-prototype .rw-preamp i {flex:none;width:clamp(4px,11cqw,8px);height:clamp(4px,11cqw,8px);border:1px solid #8a9990;border-radius:50%;background:#39463f}
 #sp-prototype .rw-preamp[aria-pressed=true] {background:#67321d!important;color:#fff0d8!important;border-color:#ffb46f!important}
@@ -7808,7 +7802,7 @@ html,body { height:100%; overflow:hidden; }
   min-width:calc(var(--jack-min-width) * 2 * var(--panel-scale,1))!important;
 }
 #sp-prototype .rw-stagebox-hardware .sp-stagebox-hotspot:not(.rw-panel-fullscreen *)>.rw-preamp {
-  min-width:44px;min-height:44px;top:90%;
+  min-width:44px;min-height:44px;top:96%;
 }
 @media(max-width:780px) {
   #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
@@ -9690,19 +9684,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
   function surface(type,renderPort,directions=['inputs','outputs']){
     const m=get(type);if(!m)return '';
     const [x,y,w,h]=m.viewBox,percent=n=>Number(n.toFixed(4));
-    // Size signal cards from physical neighbours, including reverse-numbered and
-    // multi-row panels. Dense rows keep the card within the socket face.
-    const allPorts=[...m.ports.inputs,...m.ports.outputs];
-    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>{
-      const neighbours=allPorts.filter(([a,b])=>a!==px||b!==py);
-      const columnGap=Math.min(...neighbours.filter(([,b])=>Math.abs(b-py)<m.diameter*.6).map(([a])=>Math.abs(a-px)));
-      const rowGap=Math.min(...neighbours.filter(([a,b])=>Math.abs(a-px)<m.diameter&&Math.abs(b-py)>m.diameter*.6).map(([,b])=>Math.abs(b-py)));
-      const layout=!Number.isFinite(rowGap)?'single':rowGap/m.diameter<1.6?'compact':'rows';
-      const labelWidth=Math.min(1.24,columnGap/m.diameter-.1);
-      return '<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" data-signal-layout="'+layout+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%;--signal-width:'+percent(labelWidth*100)+'%">'+renderPort(direction,index+1)+'</span>';
-    })).join('');
-    // Min width preserves a 44px target even on the densest 16-column rack.
-    const minWidth=Math.ceil(w/m.diameter*44);
+    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
+    // Keep the circular instrument overlay and its edge badges readable.
+    const minWidth=Math.ceil(w/m.diameter*56);
     return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
   }
   const api=Object.freeze({models,mixers,get,capacities,picture,artwork,surface});
@@ -10689,10 +10673,20 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       [/sax/,'saxophone'],[/geige/,'violin'],[/playback|clicktrack/,'laptop']
     ];
     const drumBadges=[
-      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png'],[/snare/,'snare.webp'],
-      [/hi[ -]?hat/,'hihat-overhead-v2.png'],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
+      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png',{width:512,height:543,crop:[0,0,512,320]}],[/snare/,'snare.webp'],
+      [/hi[ -]?hat/,'hihat-overhead-v2.png',{width:313,height:512,crop:[0,0,313,310]}],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
       [/ride/,'ride.webp'],[/crash|overhead/,'crash.webp']
     ];
+    function socketInstrumentArt(type,source,drum){
+      if(drum){
+        const frame=drum[2],file='stageplot-assets/drums/'+drum[1];
+        return frame?'<svg viewBox="'+frame.crop.join(' ')+'" aria-hidden="true"><image href="'+file+'" width="'+frame.width+'" height="'+frame.height+'"/></svg>':'<img src="'+file+'" alt="">';
+      }
+      const thumbnail=api.socketIcon?.(source?{...source,angle:0}:type);
+      if(thumbnail)return thumbnail;
+      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
+      return compactSymbol||(type?icon(source?{...source,angle:0}:type):'');
+    }
     function socketBadge(row){
       if(!row)return '';
       const name=row.instrument||row.generatedInstrument||'Signal', text=normalized(name);
@@ -10701,11 +10695,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const match=!source&&!drum&&Object.values(state.catalog||{}).filter(c=>c.instrument!==false).find(c=>
         [c.id,c.name,c.short].some(label=>label&&normalized(baseName(name)).trim()===normalized(label)));
       const type=source?.type||match?.id||socketAliases.find(([re])=>re.test(text))?.[1];
-      // Stageplan keyboards are drawn from above and become a thin line at socket size.
-      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
-      const glyph=compactSymbol|| (drum?'<img src="stageplot-assets/drums/'+drum[1]+'" alt="">':type?icon(source||type):'');
+      const glyph=socketInstrumentArt(type,source,drum);
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
+      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
     }
     const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];
@@ -17968,10 +17960,20 @@ function drawRoutingStage(host,ids=[]){
     node.style.opacity=active||!selectedIds.size?'1':'.62';
   }
 }
+function routingSocketIcon(value){
+  const o=typeof value==='string'?{type:value}:value;if(!o||!byId[o.type])return '';
+  const c=objectCatalog(o),type=c.art||c.id;
+  const frame=stageplotStringFrame(type)||stageplotBassFrame(type)||stageplotAcousticFrame(type);
+  if(!frame)return '';
+  // Reuse the generated local image, with a body-and-neck crop for the small
+  // circular overlay rather than the object's rotated metric stage frame.
+  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.5);
+  return '<svg viewBox="'+[x-w*.06,y+h-cropHeight,w*1.12,cropHeight].join(' ')+'" aria-hidden="true"><image href="stageplot-assets/objects/'+esc(frame.asset)+'" width="'+frame.imageWidth+'" height="'+frame.imageHeight+'"/></svg>';
+}
 function renderRouting(){
   if(!stage)return;syncRoutingFromStage(false,false);
   const host=$('sp-routing-workspace-v2');if(!host)return;
-  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
+  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,socketIcon:routingSocketIcon,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
   $('sp-routing').dataset.workspaceV2='true';routingWorkspaceV2.render();
 }
 function openRoutingSource(direction,rowId){

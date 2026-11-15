@@ -34,6 +34,10 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const ch=n=>page.locator('[data-rw-mixer-channel="'+n+'"]');
     const click=async(key,value)=>page.locator('[data-rw-'+key+'="'+value+'"]').click();
     const socket=n=>page.locator('[data-rw-mixer-port="'+n+'"]');
+    const glyphAsset=async n=>{
+      const image=socket(n).locator('.mx-socket-glyph').locator('img,image').first();
+      return await image.getAttribute('src')||await image.getAttribute('href');
+    };
     const dragSocket=async(from,to,expectedPair)=>{
       await socket(from).scrollIntoViewIfNeeded();
       const a=await socket(from).boundingBox(),b=await socket(to).boundingBox();
@@ -115,7 +119,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-device','station-1');await click('mixer-port',1);
     assert.match(await page.locator('.mx-picker h2').innerText(),/SD8 · IN 1 → CH 8/);
     await click('mixer-pick','route-signal-0');
-    assert.match(await page.locator('[data-rw-mixer-port="1"] .mx-socket-glyph img').getAttribute('src'),/kick-overhead/);
+    assert.match(await glyphAsset(1),/kick-overhead/);
     assert.match(await patch(8).innerText(),/SD8 · IN 1/);
     await page.waitForFunction(()=>JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.inputs[0].stageboxPort===1);
     await open();
@@ -125,7 +129,9 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     for(const [n,side] of [[11,'L'],[12,'R']]){
       const badge=page.locator('[data-rw-mixer-port="'+n+'"] .mx-socket-badge');
       assert.equal(await badge.locator('b').innerText(),side);
-      assert.equal(await badge.locator('.mx-socket-glyph').innerText(),'🎹');
+      const glyph=badge.locator('.mx-socket-glyph');
+      assert(await glyph.isVisible());
+      assert(await glyph.evaluate(element=>element.textContent.includes('🎹')||!!element.querySelector('img,svg')),'Keyboard uses a visible instrument thumbnail');
     }
     // Fixed IN 9 must target CH 9 even while the stereo source is selected on CH 11.
     await ch(11).click();await page.keyboard.press('Escape');
@@ -370,7 +376,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-port',5);
     await click('mixer-pick','route-signal-2');
     const patched=page.locator('[data-rw-mixer-port="5"]');
-    assert.match(await patched.locator('.mx-socket-glyph img').getAttribute('src'),/hihat/);
+    assert.match(await glyphAsset(5),/hihat/);
     await click('mixer-port',5);await click('mixer-pick','route-stereo-2');
     await click('mixer-operation','switch');
     assert.match(await patched.getAttribute('aria-label'),/Vocal/);
@@ -483,7 +489,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     for(const reload of [false,true]){
       if(reload){await open();await click('mixer-device','station-1');}
       assert.match(await ch(5).innerText(),/Rack Tom/);
-      assert.match(await socket(5).locator('.mx-socket-glyph img').getAttribute('src'),/rack-tom/);
+      assert.match(await glyphAsset(5),/rack-tom/);
       assert.match(await socket(6).getAttribute('aria-label'),/Electric Guitar/);
     }
     await page.setViewportSize({width:390,height:740});

@@ -246,10 +246,20 @@ function drawRoutingStage(host,ids=[]){
     node.style.opacity=active||!selectedIds.size?'1':'.62';
   }
 }
+function routingSocketIcon(value){
+  const o=typeof value==='string'?{type:value}:value;if(!o||!byId[o.type])return '';
+  const c=objectCatalog(o),type=c.art||c.id;
+  const frame=stageplotStringFrame(type)||stageplotBassFrame(type)||stageplotAcousticFrame(type);
+  if(!frame)return '';
+  // Reuse the generated local image, with a body-and-neck crop for the small
+  // circular overlay rather than the object's rotated metric stage frame.
+  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.5);
+  return '<svg viewBox="'+[x-w*.06,y+h-cropHeight,w*1.12,cropHeight].join(' ')+'" aria-hidden="true"><image href="stageplot-assets/objects/'+esc(frame.asset)+'" width="'+frame.imageWidth+'" height="'+frame.imageHeight+'"/></svg>';
+}
 function renderRouting(){
   if(!stage)return;syncRoutingFromStage(false,false);
   const host=$('sp-routing-workspace-v2');if(!host)return;
-  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
+  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,socketIcon:routingSocketIcon,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
   $('sp-routing').dataset.workspaceV2='true';routingWorkspaceV2.render();
 }
 function openRoutingSource(direction,rowId){
