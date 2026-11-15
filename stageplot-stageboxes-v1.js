@@ -1520,13 +1520,13 @@
     const photo='<image href="'+href+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/>';
     return '<svg class="sp-stagebox-picture" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><defs><clipPath id="'+id+'">'+masks+'</clipPath><filter id="'+id+'-off" color-interpolation-filters="sRGB"><feColorMatrix values="0 .8 .2 0 0  0 .8 .2 0 0  0 .8 .2 0 0  0 0 0 1 0"/></filter></defs>'+photo+'<g clip-path="url(#'+id+')"><g filter="url(#'+id+'-off)">'+photo+'</g></g></svg>';
   }
-  function surface(type,renderPort,directions=['inputs','outputs']){
+  function surface(type,renderPort,directions=['inputs','outputs'],decoration={}){
     const m=get(type);if(!m)return '';
     const [x,y,w,h]=m.viewBox,percent=n=>Number(n.toFixed(4));
-    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
+    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'"'+(decoration.portAttributes?.(direction,index+1)||'')+' style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
     // Keep the circular instrument overlay and its edge badges readable.
-    const minWidth=Math.ceil(w/m.diameter*56);
-    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
+    const minWidth=Math.ceil(w/m.diameter*72);
+    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+(decoration.overlay||'')+sockets+'</div></div>';
   }
   const api=Object.freeze({models,mixers,get,capacities,picture,artwork,surface});
   if(typeof module!=='undefined'&&module.exports)module.exports=api;

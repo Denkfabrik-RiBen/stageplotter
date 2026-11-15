@@ -166,3 +166,72 @@ assert.equal(model.normalizeDevices([{id:'di-missing',modelId:'radial-prod2',obj
   assert.equal(bass.mixerDisplaced,true);
   assert.equal(model.explicitSocket(bass),null);
 }
+
+// Linked 48 V follows physical preamps, independently of signal requirements.
+{
+  const local={id:'@local',type:'x32-local',inputs:32},box={id:'stage-a',type:'stagebox-8',inputs:8},other={id:'stage-b',type:'stagebox-8',inputs:8};
+  const input=(id,number,side,patch,group='keys')=>({id,number,manual:true,instrument:id,mode:side?'Stereo '+side:'Mono',stereoGroup:side?group:'',phantom:side==='L',...patch});
+  const socket=(device,port)=>({device,port}),resolve=(r,device,port)=>model.linkedPreampSockets(r,[box,other],device,port);
+  const l=input('route-l',1,'L',{localPort:1}),r=input('route-r',2,'R',{localPort:2}),draft=routing([l,r]);
+  const before=clone(draft);
+  assert.deepEqual(resolve(draft,local,1),[socket('@local/x32-local',1),socket('@local/x32-local',2)]);
+  assert.deepEqual(resolve(draft,local,2),[socket('@local/x32-local',2),socket('@local/x32-local',1)],'Either jack resolves the same pair with the selected socket first');
+  assert.deepEqual(draft,before,'Resolving physical power has no routing or phantom side effects');
+  assert.deepEqual(resolve(draft,local,7),[socket('@local/x32-local',7)],'Free physical inputs remain independent');
+  assert.deepEqual(resolve(draft,local,33),[]);
+  assert.deepEqual(resolve(draft,local,0),[]);
+
+  delete l.localPort;delete r.localPort;
+  Object.assign(l,{x32:{kind:'channel',directPort:9}});Object.assign(r,{x32:{kind:'channel',directPort:10}});
+  assert.deepEqual(resolve(draft,local,10),[socket('@local/x32-local',10),socket('@local/x32-local',9)],'Imported direct local inputs resolve to physical preamps');
+  Object.assign(l,{stagebox:box.id,stageboxPort:3});Object.assign(r,{stagebox:other.id,stageboxPort:4});
+  assert.deepEqual(resolve(draft,box,3),[socket(box.id,3),socket(other.id,4)],'A stereo link can span stageboxes without using stale local ports');
+  assert.deepEqual(resolve(draft,local,9),[socket('@local/x32-local',9)]);
+  r.stageboxPort=9;
+  assert.deepEqual(resolve(draft,box,3),[socket(box.id,3)],'Unavailable partner hardware cannot couple another input');
+  r.stageboxPort=4;r.mode='Mono';
+  assert.deepEqual(resolve(draft,box,3),[socket(box.id,3)],'A stereo token without both explicit L/R sides is incomplete');
+}
+
+{
+  const local={id:'@local',type:'x32-local',inputs:32},box={id:'stage-a',type:'stagebox-8',inputs:8};
+  const pair=[{id:'route-l',number:11,localPort:1,mode:'Stereo L',stereoGroup:'keys'}, {id:'route-r',number:12,localPort:2,mode:'Stereo R',stereoGroup:'keys'}];
+  const draft=routing(pair);
+  draft.mixerBanks=Array.from({length:4},(_,i)=>({id:'@user',first:i*8+1}));
+  draft.userInputs=Array(32).fill(null);draft.userInputs[10]={id:box.id,port:5};draft.userInputs[11]={id:'@local',port:7};
+  assert.deepEqual(model.linkedPreampSockets(draft,[box],box,5),[{device:box.id,port:5},{device:'@local/x32-local',port:7}],'User In overrides stale explicit patch fields');
+  assert.deepEqual(model.linkedPreampSockets(draft,[box],local,1),[{device:'@local/x32-local',port:1}]);
+  delete draft.userInputs;for(const row of pair)delete row.localPort;
+  pair[0].number=9;pair[1].number=10;
+  draft.mixerBanks[1]={id:box.id,first:1};
+  assert.deepEqual(model.linkedPreampSockets(draft,[box],box,1),[{device:box.id,port:1},{device:box.id,port:2}],'Fixed channel banks resolve their actual hardware inputs');
+}
+
+{
+  const local={id:'@local',type:'x32-local',inputs:32};
+  const l={id:'route-l',number:1,localPort:1,mode:'Stereo L',stereoGroup:'original'},r={id:'route-r',number:2,localPort:2,mode:'Stereo R',stereoGroup:'original'};
+  const lCopy={...l,id:'route-l-copy',number:11,mixerSourceId:l.id,stereoGroup:'copy'},rCopy={...r,id:'route-r-copy',number:12,mixerSourceId:r.id,stereoGroup:'copy'};
+  const draft=routing([lCopy,rCopy,l,r]);
+  assert.deepEqual(model.linkedPreampSockets(draft,[],local,1),[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:2}],'Duplicated mixer pairs share the same two preamps exactly once');
+  lCopy.stereoGroup='shared';rCopy.stereoGroup='';rCopy.mode='Mono';
+  draft.inputs.push({id:'route-third',number:13,localPort:3,mode:'Stereo R',stereoGroup:'shared'},{id:'route-unrelated',number:14,localPort:4,mode:'Mono'});
+  assert.deepEqual(model.linkedPreampSockets(draft,[],local,2),[{device:'@local/x32-local',port:2},{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:3}],'A split source keeps all connected valid stereo pairs in a single physical power state');
+  lCopy.stereoGroup='original';
+  draft.inputs.push({id:'route-ambiguous',number:15,localPort:5,mode:'Stereo L',stereoGroup:'original'});
+  assert.deepEqual(model.linkedPreampSockets(draft,[],local,2),[{device:'@local/x32-local',port:2}],'An ambiguous group with multiple distinct L preamps does not couple unrelated hardware');
+  const same=routing([{id:'route-same',number:1,localPort:1,mode:'Stereo L',stereoGroup:'same'}, {id:'route-same-copy',number:2,localPort:1,mixerSourceId:'route-same',mode:'Stereo R',stereoGroup:'same'}]);
+  assert.deepEqual(model.linkedPreampSockets(same,[],local,1),[{device:'@local/x32-local',port:1}],'Two strips of one physical socket produce one power entry');
+  same.inputs[1].mixerVacant=true;
+  assert.deepEqual(model.linkedPreampSockets(same,[],local,1),[{device:'@local/x32-local',port:1}]);
+  same.inputs[1].mixerVacant=false;same.inputs[1].x32={kind:'aux'};
+  assert.deepEqual(model.linkedPreampSockets(same,[],local,1),[{device:'@local/x32-local',port:1}]);
+}
+
+{
+  const local={id:'@local',type:'x32-local',inputs:32};
+  const draft=routing([{id:'route-empty-l',number:9,mixerVacant:true,mode:'Stereo L',stereoGroup:'empty'},{id:'route-empty-r',number:10,mixerVacant:true,mode:'Stereo R',stereoGroup:'empty'}]);
+  assert.deepEqual(model.linkedPreampSockets(draft,[],local,9),[{device:'@local/x32-local',port:9},{device:'@local/x32-local',port:10}],'Linked empty strips use their physical bank inputs before instruments are assigned');
+  draft.inputs[1].mode='Mono';
+  assert.deepEqual(model.linkedPreampSockets(draft,[],local,9),[{device:'@local/x32-local',port:9}],'Unlinked empty strips never couple free sockets');
+}
+console.log('PASS: physical stereo preamp groups, local/stagebox/bank/User In mapping, duplicates and guarded incomplete links.');

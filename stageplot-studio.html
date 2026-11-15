@@ -7789,8 +7789,8 @@ html,body { height:100%; overflow:hidden; }
   font:750 clamp(8px,16cqw,13px)/1 system-ui;white-space:nowrap;cursor:pointer;
 }
 #sp-prototype .rw-preamp i {flex:none;width:clamp(4px,11cqw,8px);height:clamp(4px,11cqw,8px);border:1px solid #8a9990;border-radius:50%;background:#39463f}
-#sp-prototype .rw-preamp[aria-pressed=true] {background:#67321d!important;color:#fff0d8!important;border-color:#ffb46f!important}
-#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ffb46f;border-color:#ffe4be;box-shadow:0 0 3px #ffb46f}
+#sp-prototype .rw-preamp[aria-pressed=true] {background:#b81930;color:#fff4ed;border-color:#ff6576}
+#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ff6576;border-color:#ffdce0;box-shadow:0 0 3px #ff344e}
 #sp-prototype .rw-preamp:hover,#sp-prototype .rw-preamp:focus-visible {outline:2px solid #c9f500;outline-offset:1px}
 #sp-prototype .mx-output-caption {display:block;position:absolute;bottom:90%;left:50%;transform:translateX(-50%);width:max-content;max-width:115%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#252a2b;color:#eee;border-radius:3px;padding:1px 3px;font:650 clamp(8px,19cqw,16px)/1.1 system-ui;pointer-events:none}
 #sp-prototype .mx-generic-jack {position:relative}
@@ -7807,6 +7807,31 @@ html,body { height:100%; overflow:hidden; }
 @media(max-width:780px) {
   #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
 }
+
+/* Variant B: one sculpted double ring for the two physical stereo inputs. */
+#sp-prototype .rw-zoom-panel .sp-stagebox-device {container-type:inline-size}
+#sp-prototype .mx-stereo-pair {position:absolute;pointer-events:none}
+#sp-prototype .mx-stereo-frame {position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0;filter:drop-shadow(0 2px 2px #0008)}
+#sp-prototype .mx-stereo-link {position:absolute;z-index:2;left:50%;top:var(--stereo-link-top,13%);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .025);color:#faf7e6;white-space:nowrap;font:850 var(--stereo-link-font,max(9px,calc(var(--stereo-unit) * .105)))/1 system-ui;letter-spacing:calc(var(--stereo-unit) * .003)}
+#sp-prototype .mx-stereo-link svg {display:block;width:calc(var(--stereo-unit) * .22);height:calc(var(--stereo-unit) * .15)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port {border:0!important;outline:none;box-shadow:none!important;background:transparent!important}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port:focus-visible {outline:2px solid white;outline-offset:2px}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-socket-badge {border:1px solid #f7faec;background:radial-gradient(circle at 38% 26%,#fffdf0,#edecd9 86%);box-shadow:inset 0 0 0 1px #ffffffb3,0 0 0 1px #91a083;color:#082c17}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] b {top:2%;left:15%;right:auto;width:70%;height:36%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#07351b;font:850 44cqw/.9 system-ui}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-socket-glyph {top:44%;height:28%;width:52%;font-size:31cqw}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-signal-caption {top:73%;left:10%;width:80%;font:800 max(9px,11cqw)/1.04 system-ui}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-link-symbol {top:-12%;font-size:max(7px,10cqw)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-link-symbol {display:none}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:0;top:14%;width:23%;height:23%;font:750 14cqw/1 system-ui;background:#123a23;border:1px solid #f8f9eb;box-shadow:0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power {position:absolute;z-index:4;pointer-events:auto;left:50%;top:52.94%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .035);width:calc(var(--stereo-unit) * .53);height:calc(var(--stereo-unit) * .25);min-width:38px;min-height:18px;margin:0;padding:0 calc(var(--stereo-unit) * .035);border:calc(var(--stereo-unit) * .012) solid #be3647;border-radius:999px;background:linear-gradient(#581724,#340e17) #48131e;color:#ffcbd0;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 1px #f78d9c66;font:850 max(8px,calc(var(--stereo-unit) * .105))/1 system-ui;white-space:nowrap}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] {background:linear-gradient(#ee394b,#ad0e25) #ce1b31;color:#fff7ed;border-color:#ff7a86;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 2px #ffc9cf99}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power i {width:calc(var(--stereo-unit) * .085);height:calc(var(--stereo-unit) * .085);min-width:5px;min-height:5px;border:1px solid #a44855;background:#4c1020;box-shadow:inset 0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] i {background:#ffd2d6;border-color:#ff7785;box-shadow:0 0 calc(var(--stereo-unit) * .045) #ff405b}
+
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:auto;right:0}
+#sp-prototype .rw-stagebox-hardware .mx-stereo-power:not(.rw-panel-fullscreen *) {min-width:44px;min-height:44px}
 /* build-inline:end stageplot-routing-workspace-v2.css */
 </style>
 <style>
@@ -9681,13 +9706,13 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     const photo='<image href="'+href+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/>';
     return '<svg class="sp-stagebox-picture" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><defs><clipPath id="'+id+'">'+masks+'</clipPath><filter id="'+id+'-off" color-interpolation-filters="sRGB"><feColorMatrix values="0 .8 .2 0 0  0 .8 .2 0 0  0 .8 .2 0 0  0 0 0 1 0"/></filter></defs>'+photo+'<g clip-path="url(#'+id+')"><g filter="url(#'+id+'-off)">'+photo+'</g></g></svg>';
   }
-  function surface(type,renderPort,directions=['inputs','outputs']){
+  function surface(type,renderPort,directions=['inputs','outputs'],decoration={}){
     const m=get(type);if(!m)return '';
     const [x,y,w,h]=m.viewBox,percent=n=>Number(n.toFixed(4));
-    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
+    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'"'+(decoration.portAttributes?.(direction,index+1)||'')+' style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
     // Keep the circular instrument overlay and its edge badges readable.
-    const minWidth=Math.ceil(w/m.diameter*56);
-    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
+    const minWidth=Math.ceil(w/m.diameter*72);
+    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+(decoration.overlay||'')+sockets+'</div></div>';
   }
   const api=Object.freeze({models,mixers,get,capacities,picture,artwork,surface});
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
@@ -10541,7 +10566,44 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     }
     return {banks,bankSocket,groups,at,staleMono};
   }
-  return {localMixer,preampKey,normalizePreampPower,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
+  // Resolve linked mixer strips to physical preamps, including source splits.
+  // A malformed/incomplete stereo group must never couple unrelated sockets.
+  function linkedPreampSockets(routing,boxes,device,port){
+    if(!device||typeof device.id!=='string'||!device.id||device.id==='@local'&&!device.type||!Number.isInteger(device.inputs)||!Number.isInteger(port)||port<1||port>device.inputs)return [];
+    routing=object(routing);
+    const original={device:preampKey(device),port},key=socket=>JSON.stringify([socket.device,socket.port]);
+    const devices=new Map([...(Array.isArray(boxes)?boxes:[]),localMixer(routing),device].map(item=>[item.id,item]));
+    const physical=patch=>{
+      const target=devices.get(patch?.id);
+      return target&&Number.isInteger(patch.port)&&patch.port>=1&&patch.port<=target.inputs?{device:preampKey(target),port:patch.port}:null;
+    };
+    const inventory=mixerInventory({...routing,inputs:Array.isArray(routing.inputs)?routing.inputs:[]},Array.isArray(boxes)?boxes:[]);
+    const sockets=new Map([[key(original),original]]),stereo=new Map(),links=new Map();
+    const collect=(row,socket)=>{
+      const side=/^Stereo ([LR])$/.exec(row.mode||'')?.[1];
+      if(!socket||!row.stereoGroup||!side)return;
+      const id=key(socket);sockets.set(id,socket);
+      if(!stereo.has(row.stereoGroup))stereo.set(row.stereoGroup,{L:new Set(),R:new Set()});
+      stereo.get(row.stereoGroup)[side].add(id);
+    };
+    for(const group of inventory.groups.values()){
+      const socket=physical(group.patch);if(!socket)continue;
+      for(const row of group.rows)collect(row,socket);
+    }
+    // A link can be created before sources are assigned. Its vacant strips still
+    // share the physical inputs selected by their channel banks or User In slots.
+    for(const row of routing.inputs||[])if(row.mixerVacant&&!row.mixerSourceId&&row.x32?.kind!=='aux')collect(row,physical(inventory.bankSocket(row.number)));
+    for(const pair of stereo.values()){
+      if(pair.L.size!==1||pair.R.size!==1)continue;
+      const [left]=pair.L,[right]=pair.R;if(left===right)continue;
+      if(!links.has(left))links.set(left,new Set());if(!links.has(right))links.set(right,new Set());
+      links.get(left).add(right);links.get(right).add(left);
+    }
+    const selected=new Set([key(original)]);
+    for(const id of selected)for(const partner of links.get(id)||[])selected.add(partner);
+    return [...selected].map(id=>sockets.get(id));
+  }
+  return {localMixer,preampKey,normalizePreampPower,linkedPreampSockets,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
 });
 /* build-inline:end stageplot-routing-model-v2.js */
 /* build-inline:start stageplot-routing-workspace-v2.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
@@ -10581,20 +10643,58 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     let mixerOpen=true, mixerProject, mixerTab='channels', mixerChannel=1, mixerSignal='', mixerDevice='', mixerPort=null, bankEditor=null, addingBox=false;
     const zoomByModel = new Map();
     const zoomSteps = [1, 1.5, 2, 3, 4];
-    function preampButton(device,port){
-      const key=global.StageplotRoutingModel.preampKey(device);
-      const active=state.routing.preampPower?.some(entry=>entry.device===key&&entry.port===port)===true;
-      const label=device.name+' · IN '+port+' · 48 V';
-      return '<button type="button" class="rw-preamp"'+attrs({'data-rw-preamp':port,'data-device':device.id,'data-model':device.type,'aria-pressed':String(active),'aria-label':label,title:label+(active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i><span aria-hidden="true">48 V</span></button>';
+    function preampSockets(device,port){
+      return global.StageplotRoutingModel.linkedPreampSockets(state.routing,state.boxes,device,port);
+    }
+    function preampButton(device,port,ports){
+      const sockets=preampSockets(device,port),powered=socket=>state.routing.preampPower?.some(entry=>entry.device===socket.device&&entry.port===socket.port)===true;
+      const active=sockets.length>0&&sockets.every(powered),mixed=!active&&sockets.some(powered);
+      const label=device.name+' · IN '+(ports?ports.join(' + '):port)+' · 48 V'+(sockets.length>1?' · gemeinsam für '+sockets.length+' Kanäle':'');
+      return '<button type="button" class="rw-preamp'+(ports?' mx-stereo-power':'')+'"'+attrs({'data-rw-preamp':port,'data-rw-preamp-pair':ports?.join('|'),'data-device':device.id,'data-model':device.type,'aria-pressed':mixed?'mixed':String(active),'aria-label':label,title:label+(mixed?' · Teilweise ein':active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i><span aria-hidden="true">48 V</span></button>';
+    }
+    const stereoChain='<svg viewBox="0 0 32 22" aria-hidden="true"><path d="M14 5H9a6 6 0 0 0 0 12h5M18 5h5a6 6 0 0 1 0 12h-5M11 11h10" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function stereoSurfacePairs(model,device){
+      if(!device)return [];
+      const inventory=global.StageplotRoutingModel.mixerInventory(state.routing,state.boxes),key=global.StageplotRoutingModel.preampKey(device),used=new Set(),pairs=[];
+      for(let port=1;port<=device.inputs;port++){
+        if(used.has(port))continue;
+        const row=physicalOrigin(inventory.at(device.id,port));if(!row?.stereoGroup)continue;
+        const sockets=preampSockets(device,port);if(sockets.length!==2||sockets.some(socket=>socket.device!==key))continue;
+        const ports=sockets.map(socket=>socket.port).sort((a,b)=>a-b),points=ports.map(n=>model.ports.inputs[n-1]);
+        if(points.some(point=>!point))continue;
+        const dx=Math.abs(points[0][0]-points[1][0]),dy=Math.abs(points[0][1]-points[1][1]);
+        // A shared face follows neighbouring physical jacks, including reversed numbering.
+        // Distant/cross-device pairs retain their joint power action without covering other jacks.
+        if(dy>model.diameter*.25||dx<model.diameter*.9||dx>model.diameter*1.7)continue;
+        const x=Math.min(points[0][0],points[1][0]),y=(points[0][1]+points[1][1])/2;
+        const neighbours=model.ports.inputs.filter((point,index)=>!ports.includes(index+1)&&Math.abs(point[1]-y)<model.diameter*.25);
+        const gap=Math.min(...neighbours.map(([px])=>Math.min(Math.abs(px-x),Math.abs(px-x-dx))));
+        const radius=Math.min(.565,gap/model.diameter/2-.03);
+        ports.forEach(n=>used.add(n));pairs.push({id:device.id+':'+ports.join(':'),ports,x,y,distance:dx,radius});
+      }
+      return pairs;
+    }
+    function stereoPairOverlay(model,device,pair){
+      const d=model.diameter,s=pair.distance/d,r=pair.radius,a=r/Math.SQRT2,b=r*.5,c=r*Math.sqrt(3)/2,f=n=>Number(n.toFixed(6));
+      const path='M '+f(b)+' '+f(-c)+' A '+r+' '+r+' 0 1 0 '+f(a)+' '+f(a)+
+        ' C '+f(a+.22)+' '+f(a-.22)+' '+f(s-a-.22)+' '+f(a-.22)+' '+f(s-a)+' '+f(a)+
+        ' A '+r+' '+r+' 0 1 0 '+f(s-b)+' '+f(-c)+
+        ' C '+f(s-b-.10)+' '+f(-c+.06)+' '+f(s/2+.14)+' '+f(-r)+' '+f(s/2)+' '+f(-r)+
+        ' C '+f(s/2-.14)+' '+f(-r)+' '+f(b+.10)+' '+f(-c+.06)+' '+f(b)+' '+f(-c)+' Z';
+      const [vx,vy,vw,vh]=model.viewBox,w=s+1.28,h=1.36;
+      const style='left:'+f((pair.x-.64*d-vx)/vw*100)+'%;top:'+f((pair.y-.72*d-vy)/vh*100)+'%;width:'+f(w*d/vw*100)+'%;height:'+f(h*d/vh*100)+'%;--stereo-unit:calc(100cqw * '+f(d/vw)+');--stereo-link-top:'+f((.72-r+.022)/h*100)+'%;--stereo-link-font:max('+(r<.56?'8px':'9px')+',calc(var(--stereo-unit) * '+(r<.56?'.095':'.105')+'))';
+      return '<div class="mx-stereo-pair"'+attrs({'data-rw-stereo-ports':pair.ports.join('|'),'data-stereo-device':device.id,style})+'><svg class="mx-stereo-frame" viewBox="-.64 -.72 '+f(w)+' '+h+'" preserveAspectRatio="none" aria-hidden="true"><path d="'+path+'" fill="#102e19" stroke="#15231a" stroke-width=".095"/><path d="'+path+'" fill="#102e19" stroke="#caff20" stroke-width=".026"/></svg><div class="mx-stereo-link" aria-label="Stereolink">'+stereoChain+'<span>STEREO</span></div>'+preampButton(device,pair.ports[0],pair.ports)+'</div>';
     }
     function zoomableSurface(type, renderPort, directions, deviceId) {
-      const device=mixerDevices().find(item=>item.id===deviceId);
-      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'?preampButton(device,port):'');
+      const device=mixerDevices().find(item=>item.id===deviceId),model=global.StageplotStageboxes.get(type);
+      const pairs=directions?.includes('inputs')===false?[]:stereoSurfacePairs(model,device),byPort=new Map(pairs.flatMap(pair=>pair.ports.map(port=>[port,pair])));
+      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'&&!byPort.has(port)?preampButton(device,port):'');
+      const decoration={portAttributes:(direction,port)=>direction==='inputs'&&byPort.has(port)?attrs({'data-stereo-pair':byPort.get(port).id,'data-stereo-position':model.ports.inputs[port-1][0]===byPort.get(port).x?'left':'right'}):'',overlay:pairs.map(pair=>stereoPairOverlay(model,device,pair)).join('')};
       const scale = zoomByModel.get(type) || 1;
       const control = (action, label, symbol, disabled) => '<button type="button"'+attrs({'data-panel-zoom':action,'aria-label':label,title:label})+(disabled?' disabled':'')+'>'+symbol+'</button>';
       return '<div class="rw-zoom-panel" data-zoom-model="'+esc(type)+'"'+attrs({'data-panel-device':deviceId})+' style="--panel-scale:'+scale+'"><div class="rw-panel-controls" role="group" aria-label="Buchsenansicht zoomen">'+
         control('out','Ansicht verkleinern','−',scale===1)+'<output aria-live="polite">'+Math.round(scale*100)+' %</output>'+
-        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions)+'</div>';
+        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions,decoration)+'</div>';
     }
     function gridSurface(device,port) {
       const grid=Array.from({length:device.inputs},(_,i)=>port(i+1)).join('');
@@ -10613,7 +10713,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       dialog.setAttribute('aria-label', name + ' · Buchsenansicht');
       dialog.style.setProperty('--device-ratio', model ? model.viewBox[2] / model.viewBox[3] : 3);
       dialog.innerHTML = '<header><div class="rw-full-devices" role="group" aria-label="Gerät wählen">'+choices+'</div><button type="button" data-panel-collapse>Vollbild schließen</button></header><div class="rw-full-frame"></div>';
-      const previousScroll = viewport.scrollLeft;
+      const previousScroll = viewport.scrollLeft, previousTop = viewport.scrollTop;
       expandedView = {deviceId:current?.id,model:panel.dataset.zoomModel, picker:!!panel.closest('.mx-picker')};
       panel.append(dialog);
       dialog.lastElementChild.append(viewport);
@@ -10632,6 +10732,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         panel.append(viewport);
         dialog.remove();
         viewport.scrollLeft = previousScroll;
+        viewport.scrollTop = previousTop;
         panel.querySelector('[data-panel-expand]').focus({preventScroll:true});
       }
       dialog.querySelector('[data-panel-collapse]').onclick = close;
@@ -10641,8 +10742,12 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (!expandedView || expandedView.picker !== inPicker) return;
       const panel = [...host.querySelectorAll('.rw-zoom-panel')].find(el=>
         el.dataset.zoomModel===expandedView.model && el.dataset.panelDevice===expandedView.deviceId && !!el.closest('.mx-picker')===inPicker);
-      if (panel) expandPanel(panel);
-      else expandedView=null;
+      if (panel) {
+        const viewport=panel.querySelector('.sp-stagebox-device-scroll');
+        const left=expandedView.resetScroll?0:(expandedView.scroll?.left??viewport.scrollLeft),top=expandedView.resetScroll?0:(expandedView.scroll?.top??viewport.scrollTop);
+        expandPanel(panel);
+        viewport.scrollLeft=left;viewport.scrollTop=top;
+      } else expandedView=null;
     }
     function zoomSurface(control) {
       const panel=control.closest('.rw-zoom-panel'), model=panel.dataset.zoomModel;
@@ -10697,7 +10802,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const type=source?.type||match?.id||socketAliases.find(([re])=>re.test(text))?.[1];
       const glyph=socketInstrumentArt(type,source,drum);
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
+      return '<span class="mx-socket-badge"'+attrs({'data-stereo-side':side||undefined})+' aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">STEREO</span>':'')+'</span>';
     }
     const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];
@@ -11835,7 +11940,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (destroyed) return;
       const previousTab=host.dataset.tab, outerScroller=host.closest('#sp-routing'), outerScroll=outerScroller?.scrollTop||0;
       if(previousTab)tabScrolls.set(previousTab,{main:host.querySelector('.rw-main')?.scrollTop||0,outer:outerScroll});
-      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>el.scrollLeft);
+      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>({left:el.scrollLeft,top:el.scrollTop}));
+      const fullscreenViewport=host.querySelector('.rw-panel-fullscreen .sp-stagebox-device-scroll');
+      if(expandedView&&fullscreenViewport)expandedView.scroll={left:fullscreenViewport.scrollLeft,top:fullscreenViewport.scrollTop};
       const focus = preserveFocus(), mainScroll = host.querySelector('.rw-main')?.scrollTop || 0, listScroll = host.querySelector('.rw-source-list')?.scrollTop || 0, outputScroll = host.querySelector('.rw-output-port-list')?.scrollTop || 0, flowScroll = host.querySelector('.rw-flow-scroll')?.scrollLeft || 0;
       state = api.getState() || {}; state.routing = state.routing || state.stage?.routing || {inputs:[],outputs:[]};
       localMixer=global.StageplotRoutingModel.localMixer(state.routing);
@@ -11855,7 +11962,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
       if (host.querySelector('.rw-flow-scroll')) host.querySelector('.rw-flow-scroll').scrollLeft = flowScroll;
-      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]||0;});
+      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]?.left||0;el.scrollTop=deviceScrolls[i]?.top||0;});
       if(host.querySelector('.mx-scroll'))host.querySelector('.mx-scroll').scrollTop=mixerScroll;
       const dialog = host.querySelector('[data-rw-di-dialog]');
       if (dialog) {
@@ -11896,6 +12003,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         if(!next || next.id===expandedView.deviceId)return;
         expandedView.deviceId=next.id;
         expandedView.model=next.type;
+        expandedView.resetScroll=true;
         if(expandedView.picker)sourcePicker.deviceId=next.id;
         else {
           mixerOpen=true;
@@ -17967,7 +18075,7 @@ function routingSocketIcon(value){
   if(!frame)return '';
   // Reuse the generated local image, with a body-and-neck crop for the small
   // circular overlay rather than the object's rotated metric stage frame.
-  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.5);
+  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.15);
   return '<svg viewBox="'+[x-w*.06,y+h-cropHeight,w*1.12,cropHeight].join(' ')+'" aria-hidden="true"><image href="stageplot-assets/objects/'+esc(frame.asset)+'" width="'+frame.imageWidth+'" height="'+frame.imageHeight+'"/></svg>';
 }
 function renderRouting(){
@@ -18388,13 +18496,20 @@ function dispatchRoutingWorkspace(action){
     if(['completeMixerStereo','insertMixerSignal','transferMixerSignal','transferToMixerSocket'].includes(action.type))initializeMixerPatch(routing);
     switch(action.type){
       case 'setPreampPower':{
-        const device=action.device==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(box=>box.id===action.device);
+        const boxes=allRoutingStageboxes(),local=StageplotRoutingModel.localMixer(routing);
+        const device=action.device==='@local'?local:boxes.find(box=>box.id===action.device);
         if(!device||device.type!==action.model||!Number.isInteger(action.port)||action.port<1||action.port>device.inputs)
           throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
-        if(objects.find(o=>o.id===device.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
-        const key=StageplotRoutingModel.preampKey(device);
-        const active=(routing.preampPower||[]).filter(entry=>entry.device!==key||entry.port!==action.port);
-        if(action.enabled===true)active.push({device:key,port:action.port});
+        const sockets=StageplotRoutingModel.linkedPreampSockets(routing,boxes,device,action.port);
+        const devices=new Map([...boxes,local].map(item=>[StageplotRoutingModel.preampKey(item),item]));
+        for(const socket of sockets){
+          const target=devices.get(socket.device);
+          if(!target||socket.port<1||socket.port>target.inputs)throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
+          if(objects.find(o=>o.id===target.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
+        }
+        const affected=new Set(sockets.map(socket=>JSON.stringify([socket.device,socket.port])));
+        const active=(routing.preampPower||[]).filter(entry=>!affected.has(JSON.stringify([entry.device,entry.port])));
+        if(action.enabled===true)active.push(...sockets);
         routing.preampPower=active;
         break;
       }

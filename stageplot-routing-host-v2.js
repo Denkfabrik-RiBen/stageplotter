@@ -253,7 +253,7 @@ function routingSocketIcon(value){
   if(!frame)return '';
   // Reuse the generated local image, with a body-and-neck crop for the small
   // circular overlay rather than the object's rotated metric stage frame.
-  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.5);
+  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.15);
   return '<svg viewBox="'+[x-w*.06,y+h-cropHeight,w*1.12,cropHeight].join(' ')+'" aria-hidden="true"><image href="stageplot-assets/objects/'+esc(frame.asset)+'" width="'+frame.imageWidth+'" height="'+frame.imageHeight+'"/></svg>';
 }
 function renderRouting(){
@@ -674,13 +674,20 @@ function dispatchRoutingWorkspace(action){
     if(['completeMixerStereo','insertMixerSignal','transferMixerSignal','transferToMixerSocket'].includes(action.type))initializeMixerPatch(routing);
     switch(action.type){
       case 'setPreampPower':{
-        const device=action.device==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(box=>box.id===action.device);
+        const boxes=allRoutingStageboxes(),local=StageplotRoutingModel.localMixer(routing);
+        const device=action.device==='@local'?local:boxes.find(box=>box.id===action.device);
         if(!device||device.type!==action.model||!Number.isInteger(action.port)||action.port<1||action.port>device.inputs)
           throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
-        if(objects.find(o=>o.id===device.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
-        const key=StageplotRoutingModel.preampKey(device);
-        const active=(routing.preampPower||[]).filter(entry=>entry.device!==key||entry.port!==action.port);
-        if(action.enabled===true)active.push({device:key,port:action.port});
+        const sockets=StageplotRoutingModel.linkedPreampSockets(routing,boxes,device,action.port);
+        const devices=new Map([...boxes,local].map(item=>[StageplotRoutingModel.preampKey(item),item]));
+        for(const socket of sockets){
+          const target=devices.get(socket.device);
+          if(!target||socket.port<1||socket.port>target.inputs)throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
+          if(objects.find(o=>o.id===target.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
+        }
+        const affected=new Set(sockets.map(socket=>JSON.stringify([socket.device,socket.port])));
+        const active=(routing.preampPower||[]).filter(entry=>!affected.has(JSON.stringify([entry.device,entry.port])));
+        if(action.enabled===true)active.push(...sockets);
         routing.preampPower=active;
         break;
       }

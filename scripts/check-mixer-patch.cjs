@@ -40,6 +40,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     };
     const dragSocket=async(from,to,expectedPair)=>{
       await socket(from).scrollIntoViewIfNeeded();
+      await socket(to).scrollIntoViewIfNeeded();
       const a=await socket(from).boundingBox(),b=await socket(to).boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();
       await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:10});

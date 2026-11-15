@@ -756,8 +756,8 @@
   font:750 clamp(8px,16cqw,13px)/1 system-ui;white-space:nowrap;cursor:pointer;
 }
 #sp-prototype .rw-preamp i {flex:none;width:clamp(4px,11cqw,8px);height:clamp(4px,11cqw,8px);border:1px solid #8a9990;border-radius:50%;background:#39463f}
-#sp-prototype .rw-preamp[aria-pressed=true] {background:#67321d!important;color:#fff0d8!important;border-color:#ffb46f!important}
-#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ffb46f;border-color:#ffe4be;box-shadow:0 0 3px #ffb46f}
+#sp-prototype .rw-preamp[aria-pressed=true] {background:#b81930;color:#fff4ed;border-color:#ff6576}
+#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ff6576;border-color:#ffdce0;box-shadow:0 0 3px #ff344e}
 #sp-prototype .rw-preamp:hover,#sp-prototype .rw-preamp:focus-visible {outline:2px solid #c9f500;outline-offset:1px}
 #sp-prototype .mx-output-caption {display:block;position:absolute;bottom:90%;left:50%;transform:translateX(-50%);width:max-content;max-width:115%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#252a2b;color:#eee;border-radius:3px;padding:1px 3px;font:650 clamp(8px,19cqw,16px)/1.1 system-ui;pointer-events:none}
 #sp-prototype .mx-generic-jack {position:relative}
@@ -774,3 +774,28 @@
 @media(max-width:780px) {
   #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
 }
+
+/* Variant B: one sculpted double ring for the two physical stereo inputs. */
+#sp-prototype .rw-zoom-panel .sp-stagebox-device {container-type:inline-size}
+#sp-prototype .mx-stereo-pair {position:absolute;pointer-events:none}
+#sp-prototype .mx-stereo-frame {position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0;filter:drop-shadow(0 2px 2px #0008)}
+#sp-prototype .mx-stereo-link {position:absolute;z-index:2;left:50%;top:var(--stereo-link-top,13%);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .025);color:#faf7e6;white-space:nowrap;font:850 var(--stereo-link-font,max(9px,calc(var(--stereo-unit) * .105)))/1 system-ui;letter-spacing:calc(var(--stereo-unit) * .003)}
+#sp-prototype .mx-stereo-link svg {display:block;width:calc(var(--stereo-unit) * .22);height:calc(var(--stereo-unit) * .15)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port {border:0!important;outline:none;box-shadow:none!important;background:transparent!important}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port:focus-visible {outline:2px solid white;outline-offset:2px}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-socket-badge {border:1px solid #f7faec;background:radial-gradient(circle at 38% 26%,#fffdf0,#edecd9 86%);box-shadow:inset 0 0 0 1px #ffffffb3,0 0 0 1px #91a083;color:#082c17}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] b {top:2%;left:15%;right:auto;width:70%;height:36%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#07351b;font:850 44cqw/.9 system-ui}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-socket-glyph {top:44%;height:28%;width:52%;font-size:31cqw}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-signal-caption {top:73%;left:10%;width:80%;font:800 max(9px,11cqw)/1.04 system-ui}
+#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-link-symbol {top:-12%;font-size:max(7px,10cqw)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-link-symbol {display:none}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:0;top:14%;width:23%;height:23%;font:750 14cqw/1 system-ui;background:#123a23;border:1px solid #f8f9eb;box-shadow:0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power {position:absolute;z-index:4;pointer-events:auto;left:50%;top:52.94%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .035);width:calc(var(--stereo-unit) * .53);height:calc(var(--stereo-unit) * .25);min-width:38px;min-height:18px;margin:0;padding:0 calc(var(--stereo-unit) * .035);border:calc(var(--stereo-unit) * .012) solid #be3647;border-radius:999px;background:linear-gradient(#581724,#340e17) #48131e;color:#ffcbd0;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 1px #f78d9c66;font:850 max(8px,calc(var(--stereo-unit) * .105))/1 system-ui;white-space:nowrap}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] {background:linear-gradient(#ee394b,#ad0e25) #ce1b31;color:#fff7ed;border-color:#ff7a86;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 2px #ffc9cf99}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power i {width:calc(var(--stereo-unit) * .085);height:calc(var(--stereo-unit) * .085);min-width:5px;min-height:5px;border:1px solid #a44855;background:#4c1020;box-shadow:inset 0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] i {background:#ffd2d6;border-color:#ff7785;box-shadow:0 0 calc(var(--stereo-unit) * .045) #ff405b}
+
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:auto;right:0}
+#sp-prototype .rw-stagebox-hardware .mx-stereo-power:not(.rw-panel-fullscreen *) {min-width:44px;min-height:44px}
