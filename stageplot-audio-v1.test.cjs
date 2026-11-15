@@ -142,7 +142,7 @@ assert.equal(ctx.StageplotMics.catalog.filter(m=>m.photo).length,ctx.StageplotMi
 const photoFiles=[...new Set(photoSources.map(p=>p.file))];assert.equal(photoFiles.length,new Set(ctx.StageplotMics.catalog.map(m=>m.photo)).size);assert(photoFiles.reduce((sum,file)=>sum+fs.statSync('stageplot-assets/mics/'+file).size,0)<2500000,'All photo downloads together stay below 2.5 MB.');
 assert.notEqual(ctx.audioMicPhoto('Telefunken M80-SH'),ctx.audioMicPhoto('Telefunken M80'),'Short and full-length versions have their own original photos.');
 assert.notEqual(ctx.audioMicPhoto('Sennheiser MD 421'),ctx.audioMicPhoto('Sennheiser MD 421 II'),'Legacy models have their own photo.');
-const micCatalog=ctx.StageplotMics.catalog;assert(micCatalog.some(mic=>mic.name==='Shure SM58'));assert.equal(ctx.audioMicBrand('sE Electronics V7'),'sE Electronics');assert.equal(ctx.audioMicBrand('Audio-Technica ATM230'),'Audio-Technica');
+const micCatalog=ctx.StageplotMics.catalog;assert(micCatalog.some(mic=>mic.name==='Shure SM58'));assert.equal(ctx.StageplotMics.brand('sE Electronics V7'),'sE Electronics');assert.equal(ctx.StageplotMics.brand('Audio-Technica ATM230'),'Audio-Technica');
 for(const name of ['Snare Top','Kick In','Hi-Hat','Drums · OH L','Congas','Gitarre','Lead Vocals'])for(const model of ctx.audioMicSuggestions(name))assert(micCatalog.some(mic=>mic.name===model),model+' is selectable for '+name);
 assert(ctx.audioMicSuggestions('Snare Top').includes('Shure SM57'));assert(ctx.audioMicSuggestions('Lead Vocals').includes('sE Electronics V7'));
 const dialogMarkup=html.slice(html.indexOf('<dialog id="sp-channel-dialog"'),html.indexOf('<dialog id="sp-audio-connect-dialog"'));

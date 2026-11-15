@@ -187,6 +187,7 @@
       <div class="sp-plan-control"><button class="sp-plan-switch" type="button" id="sp-upgrade-open" role="switch" aria-checked="false" aria-label="Kostenlose Pro-Beta aktivieren"><span class="sp-plan-standard">Standard</span><span class="sp-plan-switch-track" aria-hidden="true"><span></span></span><span class="sp-plan-pro">Pro-Beta</span></button></div>
     </div>
     <div class="sp-dashboard-section-head"><div><h2>Vorhandene Projekte</h2><span id="sp-project-count" class="sp-muted"></span></div><label class="sp-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m13 13 4 4" stroke="currentColor" stroke-width="1.4"/></svg><input id="sp-project-search" type="search" placeholder="Projekt suchen …" aria-label="Projekt suchen"></label></div>
+    <p id="sp-project-damaged" class="sp-warning" role="status" hidden></p>
     <div id="sp-project-grid" class="sp-project-grid"></div>
   </section>
 
@@ -15022,14 +15023,6 @@ function createStageplotSymbolV3(type, options = {}) {
     for(let i=0;i<3;i++){const a=(30+i*120)*Math.PI/180,xx=x+Math.cos(a)*7.3,yy=y+Math.sin(a)*7.3;rod(x,y,xx,yy,.52);circle(xx,yy,.56,'#555',.2);}
     circle(x,y,1.05,'#777',.3);end();
   };
-  const drum = (x,y,r,snare=false) => {
-    group('',snare?'snare':'tom');
-    const lugCount=snare?10:r<7.5?6:8;
-    for(let i=0;i<lugCount;i++){const a=i*Math.PI*2/lugCount,deg=i*360/lugCount;group('translate('+f(x+Math.cos(a)*(r+.18))+' '+f(y+Math.sin(a)*(r+.18))+') rotate('+deg+')');rect(-.42,-.58,.84,1.16,'#d4d4d4',.22,.12,'#363636');end();}
-    circle(x,y,r,'#fafafa',.82);circle(x,y,r-.72,'#fff',.35);circle(x,y,r-1.35,'none',.16,'#dadada');
-    if(snare){rect(x+r-.28,y-.72,1.25,1.44,'#777',.25,.18);circle(x,y,r*.64,'none',.16,'#e6e6e6');}
-    end();
-  };
   const cymbal = (x,y,r,hat=false,variant='crash') => {
     group('',hat?'hihat':'cymbal');if(variant!=='splash'){out+='<g data-part="cymbal-stand-legs" data-fixed-drum-hardware="true">';feet(x,y,13.5,15,.58,.4);end();}
     if(hat)circle(x,y+.7,r,'#bcbcbc',.5);
@@ -15058,56 +15051,6 @@ function createStageplotSymbolV3(type, options = {}) {
       if(variant==='china'){circle(x,y,r*.86,'none',.55,'#8f8f8f');path('M'+f(x-r*.86)+' '+y+'Q'+x+' '+f(y-r*.16)+' '+f(x+r*.86)+' '+y,'none',.35,'#aaa');}
     }
     if(variant!=='clapstack'){const bell=variant==='ride'?r*.23:variant==='china'?r*.16:r*.18;ellipse(x,y,bell,bell*.82,'#e7e7e7',.4);circle(x,y,.85,'#444',.2);line(x-1.3,y-.4,x+1.3,y+.4,.45);}end();
-  };
-  const pedal = (x,y,angle=0,part='kick-pedal') => {
-    group('translate('+x+' '+y+') rotate('+angle+')',part);
-    // Toe/clamp at y=0; heel toward the seated player at negative y.
-    path('M-3.2-1H3.2L3.8-12Q3.7-15 0-16Q-3.7-15-3.8-12Z','#b9b9b9',.65);
-    path('M-2.2-3H2.2L2.4-11Q0-14-2.4-11Z','#ddd',.35);
-    for(const yy of [-5,-7.5,-10])path('M-1.5 '+yy+'L0 '+(yy+1)+'L1.5 '+yy,'none',.35);
-    rect(-2.8,-16,5.6,2,'#777',.4,.6);
-    rect(-4,-1.5,8,2,'#666',.45,.4);
-    if(part==='kick-pedal'){rod(0,-1,0,3,1);ellipse(0,3.5,2,1.2,'#eee',.5);}
-    end();
-  };
-  const kick = (x,y,w,h) => {
-    group('','kick');
-    path('M'+x+' '+y+'Q'+(x+w/2)+' '+(y-2)+' '+(x+w)+' '+y+'V'+(y+h)+'Q'+(x+w/2)+' '+(y+h+2)+' '+x+' '+(y+h)+'Z','#f1f1f1',.85);
-    for(const yy of [y+1,y+3,y+h-3,y+h-1])path('M'+x+' '+yy+'Q'+(x+w/2)+' '+(yy-1.6)+' '+(x+w)+' '+yy,'none',.55);
-    for(const xx of [x+2.5,x+w-2.5]){line(xx,y+4,xx,y+h-4,.5,'#eee');rect(xx-.9,y+5,1.8,4,'#777',.3,.3);rect(xx-.9,y+h-9,1.8,4,'#777',.3,.3);}
-    rect(x+w/2-1.5,y+6,3,4,'#666',.35,.6);
-    pedal(x+w/2,y);
-    rod(x+2,y+h-5,x-3,y+h+2,1);rod(x+w-2,y+h-5,x+w+3,y+h+2,1);end();
-  };
-  const kickTop = (x,y,r,doublePedal=false,leftHanded=false) => {
-    group('','kick-top');
-    for(let i=0;i<10;i++){const a=i*Math.PI/5;group('translate('+f(x+Math.cos(a)*(r+.2))+' '+f(y+Math.sin(a)*(r+.2))+') rotate('+(i*36)+')');rect(-.44,-.65,.88,1.3,'#d1d1d1',.22,.12,'#333');end();}
-    circle(x,y,r,'#fafafa',.92);circle(x,y,r-.78,'#fff',.38);circle(x,y,r-1.45,'none',.16,'#d8d8d8');circle(x,y,r*.2,'none',.18,'#e1e1e1');
-    pedal(x,y-r+1,0);if(doublePedal)pedal(x+(leftHanded?-7:7),y-r+1,leftHanded?14:-14,'kick-pedal-double');
-    end();
-  };
-  const kickOverhead = (x,y,w,h,doublePedal=false,leftHanded=false) => {
-    group('','kick-overhead');
-    group('','kick-shell-top');
-    rect(x-w/2,y-h/2,w,h,'#eeeeec',.85,2.3,'#333');
-    for(const xx of [x-w*.27,x,x+w*.27])line(xx,y-h/2+2.2,xx,y+h/2-2.2,.16,'#d2d2cf');
-    for(const yy of [y-h*.18,y+h*.18])path('M'+f(x-w/2+1)+' '+f(yy)+'Q'+x+' '+f(yy+.65)+' '+f(x+w/2-1)+' '+f(yy),'none',.18,'#d3d3d0');
-    end();
-    group('','kick-head-edges');
-    for(const [yy,sign] of [[y-h/2,1],[y+h/2,-1]]){
-      path('M'+f(x-w/2+1)+' '+f(yy)+'Q'+x+' '+f(yy-sign*1.25)+' '+f(x+w/2-1)+' '+f(yy),'none',.95,'#333');
-      path('M'+f(x-w/2+1.5)+' '+f(yy+sign*1.8)+'Q'+x+' '+f(yy+sign*.65)+' '+f(x+w/2-1.5)+' '+f(yy+sign*1.8),'none',.5,'#777');
-    }
-    end();
-    for(const side of [-1,1])for(const offset of [-.32,-.1,.13,.35]){
-      const xx=x+side*(w/2-.5),yy=y+offset*h;group('translate('+f(xx)+' '+f(yy)+') rotate('+(side<0?90:-90)+')','kick-lug');rect(-.44,-.65,.88,1.3,'#bdbdb9',.22,.12,'#333');end();
-    }
-    group('','kick-tom-mount');rect(x-5.2,y-h*.29,10.4,4.6,'#c7c7c3',.5,.7);circle(x-2.6,y-h*.27,.85,'#555',.25);circle(x+2.6,y-h*.27,.85,'#555',.25);end();
-    group('','kick-spurs');
-    for(const side of [-1,1]){const sx=x+side*(w/2-.7),sy=y-h*.2;rod(sx,sy,sx+side*4.1,sy+2.4,1);ellipse(sx+side*4.5,sy+2.7,1.15,.75,'#444',.25);}
-    end();
-    pedal(x,y+h/2+.2,180);if(doublePedal)pedal(x+(leftHanded?-7:7),y+h/2+.5,leftHanded?194:166,'kick-pedal-double');
-    end();
   };
   const bongos = (x,y) => {
     group('','bongos');
@@ -15252,22 +15195,6 @@ function createStageplotSymbolV3(type, options = {}) {
       }
       end();
     }
-  }else if(type==='drums'||type.startsWith('drums-')){
-    group('translate(0 6)');
-    group('translate(64 11)','drummer-throne');
-    feet(0,0,10,30);circle(0,0,8.6,'#555',.8);circle(0,0,7.4,'none',.4,'#aaa');end();
-    // Kick is in front of the player's right foot (audience-left); pedal faces the throne.
-    kick(36,48,28,23);
-    pedal(84,35,-25,'hihat-pedal');
-    drum(26,36,10.3);drum(44,57,8.5);drum(63,56,7.5);
-    // Main snare directly in front of the throne, between both feet.
-    feet(64,36,10.2,20);drum(64,36,9.3,true);
-    cymbal(86,37,9,true,'hihat');
-    // Cymbals sit close to the shells, with the slight overlaps seen from overhead.
-    cymbal(22,64,14.3,false,'ride');
-    cymbal(84,62,11.8,false,'crash');
-    if(large){cymbal(10,43,9.2,false,'crash');cymbal(108,57,11,false,'crash');pad(106,34);}
-    end();
   }else if(type.startsWith('keys-')){
     const stage4=type==='keys-stage4',hammond=type==='keys-hammond',hammondB3=type==='keys-hammond-b3',electro=type==='keys-electro',bassStation=type==='keys-bassstation2',moog=type==='keys-moog-sub37',kronos=type.startsWith('keys-kronos3-'),sv1=type.startsWith('keys-sv1-');
     const depth=bassStation?179:hammondB3?178:moog?165:kronos?(type.endsWith('-61')?102:type.endsWith('-73')?89:76):sv1?(type.endsWith('-73')?91:77):hammond?101:electro?83:stage4?82:90;
@@ -17112,10 +17039,9 @@ function createStageplotSymbolV3(type, options = {}) {
       if(type==='foh'){const f=o.foh||{};Object.assign(item,{width:finite(o.width,.3,30)?o.width:3,depth:finite(o.depth,.3,20)?o.depth:2,foh:{table:f.table===true,barrier:f.barrier===true,sun:f.sun===true,rain:f.rain===true}});}
       if(type==='stage-stairs')item.steps=Math.max(1,Math.min(24,Math.round(Number(o.steps)||5)));
       if(byId[type].stageAccess)Object.assign(item,{width:finite(o.width,.3,30)?o.width:byId[type].w,depth:finite(o.depth,.3,20)?o.depth:byId[type].d});
-      if(type==='riser'){
-        if(!finite(o.width,.25,30)||!finite(o.depth,.25,20)||!finite(o.height,5,240))throw new Error('Ungültige Riser-Maße.');
-        Object.assign(item,{width:o.width,depth:o.depth,height:o.height});
-      }
+      // Like FOH and stage access, a riser with missing or out-of-range sizes falls back
+      // to its catalog footprint and standard height, so one field never rejects the whole plan.
+      if(type==='riser')Object.assign(item,{width:finite(o.width,.25,30)?o.width:byId[type].w,depth:finite(o.depth,.25,20)?o.depth:byId[type].d,height:finite(o.height,5,240)?o.height:40});
       return item;
     });
     s.extraStairs=normalizeExtraStairs(source.extraStairs,s);s.cables=normalizeCables(source.cables,idMap,list);s.project=cleanProject(source.project,s.title);s.project.name=s.title;
@@ -17325,6 +17251,8 @@ function createStageplotSymbolV3(type, options = {}) {
   const isSampleProject=()=>stage?.title==='Beispiel-Aufbau'&&!activeSetupId&&!activeDraftId;
   function dashboardProjects(){
     let setups=[],drafts=[];try{setups=readSetupLibrary(window.localStorage);}catch(error){}try{drafts=readDraftLibrary(window.localStorage).entries;}catch(error){}
+    const damaged=readDraftLibrary.damaged?.length||0,notice=$('sp-project-damaged');
+    if(notice){notice.hidden=!damaged;notice.innerHTML=damaged?(damaged===1?'Ein Projekt konnte':damaged+' Projekte konnten')+' nicht gelesen werden. Die gespeicherten Daten bleiben unverändert erhalten. <button class="sp-button" type="button" data-damaged-backup>Rohdaten sichern</button>':'';}
     const entries=setups.map(entry=>({...entry,kind:'setup',draft:false,draftId:null})),setupIds=new Set(setups.map(entry=>entry.id)),bySetup=new Map();
     for(const draftEntry of drafts){
       if(draftEntry.sourceSetupId&&setupIds.has(draftEntry.sourceSetupId)){const list=bySetup.get(draftEntry.sourceSetupId)||[];list.push(draftEntry);bySetup.set(draftEntry.sourceSetupId,list);}
@@ -17555,6 +17483,10 @@ function createStageplotSymbolV3(type, options = {}) {
   $('sp-project-delete-input').addEventListener('input',()=>{$('sp-project-delete-accept').disabled=!pendingProjectDelete||$('sp-project-delete-input').value!==pendingProjectDelete.name;});
   $('sp-project-delete-cancel').addEventListener('click',closeProjectDeleteDialog);$('sp-project-delete-dialog').addEventListener('cancel',()=>{pendingProjectDelete=null;});
   $('sp-project-delete-form').addEventListener('submit',e=>{e.preventDefault();if(!pendingProjectDelete||$('sp-project-delete-input').value!==pendingProjectDelete.name)return;const id=pendingProjectDelete.id;closeProjectDeleteDialog();deleteDashboardProject(id);});
+  $('sp-project-damaged').addEventListener('click',e=>{
+    if(!e.target.closest('[data-damaged-backup]'))return;
+    downloadBlob(new Blob([JSON.stringify({version:1,entries:readDraftLibrary.damaged||[]},null,2)],{type:'application/json'}),'stageplot-beschaedigte-projekte.json');say('Rohdaten der nicht lesbaren Projekte gesichert');
+  });
   $('sp-project-grid').addEventListener('click',e=>{
     const identity=e.target.closest('[data-project-id-copy]');if(identity){copyProjectIdentity(identity.dataset.projectIdCopy,identity);return;}
     const button=e.target.closest('[data-project-open],[data-project-settings],[data-project-share],[data-project-download],[data-project-delete],[data-project-add]');
@@ -19058,19 +18990,6 @@ $('sp-x32-remove').addEventListener('click',()=>{
 });
 /* build-inline:end stageplot-x32-host-v1.js */
 
-  function renderLegacyRouting(){
-    if(!stage)return;syncRoutingFromStage(false,false);
-    for(const direction of ['inputs','outputs']){$('sp-'+(direction==='inputs'?'input':'output')+'-count').textContent=stage.routing[direction].length;$('sp-'+(direction==='inputs'?'input':'output')+'-tab').setAttribute('aria-selected',String(routingTab===direction));}
-    const stageboxMode=routingTab==='stageboxes';$('sp-routing').dataset.stageboxMode=String(stageboxMode);$('sp-stagebox-tab').setAttribute('aria-selected',String(stageboxMode));$('sp-stagebox-count').textContent=allRoutingStageboxes().length;root.querySelector('.sp-routing-table-wrap').hidden=stageboxMode;$('sp-stagebox-view').hidden=!stageboxMode;
-    for(const id of ['sp-routing-csv-import','sp-routing-csv'])$(id).hidden=stageboxMode;
-    $('sp-routing-summary').textContent=stage.routing.inputs.length+' Inputs · '+stage.routing.outputs.length+' Outputs';$('sp-routing-status').textContent='Instrument → Abnahme → Stagebox-Buchse → Pultkanal. Details über Bearbeiten. Sortieren behält Kanalnummern bei.';
-    if(stageboxMode){renderAudioFind();renderStageboxView();$('sp-routing-status').textContent='Freie Buchse: Signal zuordnen. Belegte Buchse: Details ansehen oder ändern.';return;}
-    const rows=stage.routing[routingTab],boxes=new Map(routingStageboxes(routingTab).map(box=>[box.id,box]));
-    $('sp-routing').dataset.audioDirection=routingTab;const headers=root.querySelector('.sp-routing-table thead tr').children;headers[1].textContent=routingTab==='inputs'?'CH':'OUT';headers[2].textContent=routingTab==='inputs'?'Signal / Quelle':'Ziel / Signal';
-    $('sp-routing-rows').innerHTML=audioRoutingRows(rows,routingTab);
-    $('sp-routing-empty').hidden=rows.length>0;renderAudioFind();
-
-  }
   function setChannelPillValue(id,value){
     const input=$(id),group=root.querySelector('[data-channel-pill-group="'+id+'"]');if(!input||!group)return;input.value=value;
     group.querySelectorAll('[data-channel-value]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.channelValue===String(value))));
@@ -19232,11 +19151,6 @@ function audioInputConnector(row,pickup){
   if(['DI','Mic'].includes(pickup))return 'XLR';if(pickup==='Digital'){const source=routeSourceObject(row),connector=source?objectIo(source).outputs.connector:row.connector;return ['Dante','MADI','USB'].includes(connector)?connector:'Digital';}
   const source=routeSourceObject(row);if(source?.type==='percussion')return generatedInputSpecs().find(spec=>spec.sourceKey===row.sourceKey)?.connector||row.connector||'XLR';return source?objectIo(source).outputs.connector:row.connector||'XLR';
 }
-function audioPatchButton(row,direction){
-  const source=routeSourceObject(row);if(row.connector==='Dante'&&source?.type==='laptop')return '<button class="sp-audio-patch-button" type="button" data-playback-open="'+esc(source.id)+'" aria-label="'+esc(row.instrument+' · Dante-Übergabe bearbeiten')+'">'+esc(playbackNetworkLocation(row))+'</button>';
-  const status=audioPatchStatus(row,direction),label=status==='unpatched'?'Anschließen':stageboxRouteLocation(row,direction)+(status==='review'?' · prüfen':'');
-  return '<button class="sp-audio-patch-button" type="button" data-audio-patch="'+row.id+'" data-patch-status="'+status+'" aria-label="'+esc(row.instrument+' · '+label)+'">'+esc(label)+'</button>';
-}
 function showAudioEditorPanel(name,{focus=false}={}){
   if(!['signal','chain','patch','more'].includes(name))name='signal';
   for(const button of $('sp-audio-editor-tabs').querySelectorAll('[data-audio-tab]')){
@@ -19395,11 +19309,6 @@ function moveAudioInstrument(rows,id,direction){
   const at=direction==='up'?rest.findIndex(row=>audioObjectKey(row)===neighbor):rest.findLastIndex(row=>audioObjectKey(row)===neighbor)+1;rest.splice(at,0,...group);return rest;
 }
 
-function audioRoutingRows(rows,direction){
-  return rows.map((row,index)=>{const object=routeSourceObject(row),first=index===0||audioObjectKey(rows[index-1])!==audioObjectKey(row),heading=first?'<div class="sp-route-instrument"><span>'+esc(object?.label||object&&byId[object.type]?.short||'Weitere Signale')+'</span><button type="button" data-route-object-move="up" data-route-object-id="'+row.id+'" aria-label="Instrumentgruppe nach oben">↑</button><button type="button" data-route-object-move="down" data-route-object-id="'+row.id+'" aria-label="Instrumentgruppe nach unten">↓</button></div>':'';const stereo=Boolean(row.stereoGroup),patch=stageboxRouteLocation(row,direction),kind=direction==='inputs'?({Mic:'Mikrofon',DI:'DI-Box',Direct:'Direkt / Line',Digital:'Digital'}[row.pickup]||row.signalType):({monitor:'Monitor',iem:'IEM',line:'Line'}[audioKind(row)]),members=(row.linkedSources||[]).length;
-    return '<tr tabindex="0" data-route-row="'+row.id+'" data-audio-stereo="'+stereo+'"><td><button class="sp-route-drag-handle" type="button" draggable="true" data-route-drag="'+row.id+'" aria-label="'+esc(row.instrument)+' verschieben" title="'+(stereo?'Stereopaar':'Signal')+' verschieben">⠿</button></td><td><button class="sp-route-number" type="button" data-route-number="'+row.id+'" aria-label="Kanalnummer für '+esc(row.instrument||'Signal')+' bearbeiten"><small class="sp-route-mobile-ch">'+(direction==='inputs'?'CH':'OUT')+'</small>'+(row.number||'—')+'</button></td><td>'+heading+'<strong>'+esc(row.instrument||'Unbenannt')+'</strong><small class="sp-route-mobile-meta">'+esc([stereo?row.mode:'Mono',row.microphone||kind].filter(Boolean).join(' · '))+'</small>'+(routeSourceObject(row)?.type==='laptop'?'<small>'+esc(playbackSourceHint(row))+'</small>':'')+(members?'<small>'+members+' weitere Bühnenobjekte im Signalweg</small>':'')+(routeFrequency(row)?'<small>Funk: '+esc(routeFrequency(row))+'</small>':'')+'</td><td>'+esc(stereo?row.mode:'Mono')+'</td><td>'+kind+'</td><td>'+esc(row.microphone||kind)+(row.phantom?' · 48 V':'')+'</td><td>'+(direction==='inputs'&&row.connector!=='Dante'?'<button class="sp-routing-phantom" type="button" data-route-phantom="'+row.id+'" aria-pressed="'+row.phantom+'">48V</button>':'—')+'</td><td>'+audioPatchButton(row,direction)+'</td><td data-route-notes="'+Boolean(row.notes)+'">'+esc(row.notes||'—')+'</td><td><button class="sp-button" type="button" data-route-edit="'+row.id+'">Bearbeiten</button></td></tr>';
-  }).join('');
-}
 function moveAudioGroup(rows,sourceId,targetId,placement='before'){
   const source=rows.find(row=>row.id===sourceId),target=rows.find(row=>row.id===targetId);if(!source||!target)return rows.slice();
   const moving=audioGroup(rows,source),targets=audioGroup(rows,target),ids=new Set(moving.map(row=>row.id));if(ids.has(targetId))return rows.slice();
@@ -19530,7 +19439,6 @@ function audioPatchSections(){
 }
 // Every microphone entry point uses the same identities, photos and picker.
 function audioMicPhoto(name){return StageplotMics.photo(name);}
-function audioMicBrand(name){return StageplotMics.brand(name);}
 function audioMicSuggestions(name){return StageplotMics.suggestions(name);}
 let audioCustomModel=false,audioQuickPatch=null,audioPickupModels={},audioLastPickup='Mic',audioMicPicker=null,audioMicPickerReset=true;
 function renderAudioMicPicker(){
@@ -20268,9 +20176,6 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     const direction=routingTab,boxes=routingStageboxes(direction),stamp=Date.now().toString(36);
     return rows.map(cells=>Object.fromEntries(keys.map((key,column)=>[key,cells[column]??'']).filter(([key])=>key))).filter(row=>String(row.instrument||'').trim()).map((row,index)=>{const box=boxes.find(item=>String(row.stagebox||'').trim().startsWith(item.name)),number=Number(row.number);return normalizeRouteChannel({id:'route-'+direction+'-csv-'+(index+1)+'-'+stamp,sourceKey:'',number:Number.isFinite(number)&&number>0?number:null,instrument:String(row.instrument||'').trim(),mode:row.mode,signalType:row.signalType,microphone:row.microphone,phantom:/^(48v|ja|yes|true|x|1)$/i.test(String(row.phantom||'').trim()),stagebox:box?.id||'',stageboxPort:null,notes:row.notes,frequencyBand:row.frequencyBand,manual:true},index,direction);});
   }
-  function exportRoutingCsv(){
-    if(!stage)return;const rows=[routingHeaders,...routingExportRows(routingTab)],csv='\ufeff'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n')+'\r\n';downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),exportModel.safeFilename(stage.title+'-'+routingTab,{extension:'csv'}));say('Routing als CSV exportiert');
-  }
   const xmlEsc=value=>safeSpreadsheetValue(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
   function xlsxSheet(rows){return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.map((row,r)=>'<row r="'+(r+1)+'">'+row.map((value,c)=>{const ref=String.fromCharCode(65+c)+(r+1);if(typeof value==='number'&&Number.isFinite(value))return '<c r="'+ref+'"><v>'+value+'</v></c>';return '<c r="'+ref+'" t="inlineStr"><is><t>'+xmlEsc(value)+'</t></is></c>';}).join('')+'</row>').join('')+'</sheetData></worksheet>';}
   const crcTable=(()=>{const table=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;table[n]=c>>>0;}return table;})();
@@ -20447,7 +20352,6 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
   $('sp-print-page').addEventListener('click',()=>printReport('stage'));
   $('sp-print-complete').addEventListener('click',()=>printReport('complete'));
   $('sp-routing-pdf').addEventListener('click',()=>{show('print');setExportIntent('technical');setPdfPreset('plan');$('sp-print-inputs').checked=true;$('sp-print-routing').checked=true;renderPrint();});
-  $('sp-routing-csv').addEventListener('click',exportRoutingCsv);
   $('sp-routing-xlsx').addEventListener('click',exportRoutingXlsx);
   $('sp-routing-csv-import').addEventListener('click',()=>$('sp-routing-csv-file').click());
   $('sp-routing-csv-file').addEventListener('change',async()=>{
@@ -20959,7 +20863,12 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     d.zOrder=(d.zOrder||[]).filter(partId=>partId!==id);drumSelectedPart=null;refreshDrumDialog();recordDrumHistory(before);
   }
   const drumPreviewHost=$('sp-drum-preview'),drumPaletteHost=$('sp-drum-palette');
-  drumPaletteHost.insertAdjacentHTML('beforeend','<h3>Percussion &amp; Gesang</h3>'+percussionModel.catalog.filter(c=>!['kick','snare','throne'].includes(c.id)).map(c=>'<button class="sp-drum-library-item" type="button" data-drum-add="extra-'+c.id+'"><svg viewBox="-50 -50 100 100" width="48" height="48" aria-hidden="true">'+percussionModel.imageMarkup(percussionModel.part(c.id,'p1'))+'</svg><span><strong>'+esc(c.name)+'</strong></span></button>').join(''));
+  // SVG images have no lazy loading: build the percussion palette when the designer first opens,
+  // so an app start does not download every percussion image.
+  function ensureDrumPalette(){
+    if(drumPaletteHost.dataset.percussionReady)return;drumPaletteHost.dataset.percussionReady='true';
+    drumPaletteHost.insertAdjacentHTML('beforeend','<h3>Percussion &amp; Gesang</h3>'+percussionModel.catalog.filter(c=>!['kick','snare','throne'].includes(c.id)).map(c=>'<button class="sp-drum-library-item" type="button" data-drum-add="extra-'+c.id+'"><svg viewBox="-50 -50 100 100" width="48" height="48" aria-hidden="true">'+percussionModel.imageMarkup(percussionModel.part(c.id,'p1'))+'</svg><span><strong>'+esc(c.name)+'</strong></span></button>').join(''));
+  }
   $('sp-drum-hardware').addEventListener('change',e=>{const key=e.target.dataset.drumExtraField,p=drumDraft?.extras?.parts.find(p=>'extra-'+p.id===drumSelectedPart);if(!p||!['label','width','depth'].includes(key)||!e.target.validity.valid)return;const before=drumStateSnapshot();p[key]=key==='label'?e.target.value:e.target.valueAsNumber/100;refreshDrumDialog();recordDrumHistory(before);});
   $('sp-drum-hardware').addEventListener('click',e=>{const pickup=e.target.closest('[data-drum-cajon-pickup]'),crash=e.target.closest('[data-drum-cajon-crash]'),p=drumDraft?.extras?.parts.find(p=>'extra-'+p.id===drumSelectedPart);if(!p)return;if(pickup){const before=drumStateSnapshot();p.pickup=pickup.dataset.drumCajonPickup;refreshDrumDialog();recordDrumHistory(before);}if(crash){const layout=drumModel.drumLayout(drumDraftType,drumDraft),part=layout.parts.find(p=>p.id===drumSelectedPart);addDrumPart('crash',drumStoredPoint({x:part.x+(crash.dataset.drumCajonCrash==='left'?25:-25),y:part.y+8},layout));}});
   function rotateDrumPart(id,amount){
@@ -21067,7 +20976,7 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     const o=objects.find(v=>v.id===selected);if(!o||o.locked||!drumModel.isDrums(o.type))return;
     drumDialogReturnFocus=e?.currentTarget||$('sp-drums-open');
     cancelPlacement(false);finishEdit();spaceHeld=false;syncViewControls();drumView=null;drumViewPan=null;drumObjectId=o.id;drumDraftType='drums';drumDraft=StageplotMics.hydrateDrums(drumModel.normalizeDrums(o.drums),o.id,stage.routing);drumLaptopPatch={};$('sp-drum-patch-error').hidden=true;drumMicBaseline=clone(drumDraft);drumSelectedPart=null;drumPartDrag=null;drumPendingKind=null;drumHoverPart=null;activeDrumDesignId=null;drumDesignOverwriteId=null;drumHistory=[];drumFuture=[];drumEditBefore=null;
-    $('sp-drum-design-name').value=o.label&&o.label!==byId[o.type].short?o.label:'Mein Drumset';$('sp-drum-design-save').textContent='Als Vorlage speichern';$('sp-drum-hardware').replaceChildren();loadDrumDesignLibrary();drumDesignStatus('');refreshDrumDialog();setDrumMobilePanel('canvas');syncDrumHistory();$('sp-drum-dialog').showModal();
+    $('sp-drum-design-name').value=o.label&&o.label!==byId[o.type].short?o.label:'Mein Drumset';$('sp-drum-design-save').textContent='Als Vorlage speichern';$('sp-drum-hardware').replaceChildren();loadDrumDesignLibrary();drumDesignStatus('');refreshDrumDialog();setDrumMobilePanel('canvas');syncDrumHistory();ensureDrumPalette();$('sp-drum-dialog').showModal();
   }
   for(const id of ['sp-drums-open','sp-drum-hover-open'])$(id).addEventListener('click',openSelectedDrumDesigner);
   $('sp-stagebox-hover-open').addEventListener('click',()=>{const object=objects.find(item=>item.id===selected);if(object&&stageboxCapacity[object.type])openStageboxIo(object.id);});
@@ -22292,7 +22201,7 @@ $('sp-rotation-knob').addEventListener('keydown',event=>{
   }
   function duplicateSelectedStairs(){
     const source=stairState(stage,selected);if(!source)return;
-    change(()=>{stage.extraStairs??=[];let id;do{id='stair-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);}while(stage.extraStairs.some(record=>record.id===id));const copy={id,stairs:source.stairs,stairsSteps:Math.max(1,Math.min(24,Math.round(Number(source.stairsSteps)||3))),stairsOffset:Number(source.stairsOffset)||.5,stairsAlong:Number(source.stairsAlong)||.5,stairsWidth:Number(source.stairsWidth)||1.2,stairsDepth:Number(source.stairsDepth)||.9,stairsSteps:source.stairsSteps||3},length=copy.stairs.startsWith('side-')?stage.d:stage.w;copy.stairsAlong=Math.max(copy.stairsWidth/(2*length),Math.min(1-copy.stairsWidth/(2*length),copy.stairsAlong+copy.stairsWidth/length+.04));copy.stairsOffset=copy.stairsAlong;stage.extraStairs.push(copy);selected=stairSelectionId(copy);},'Treppe dupliziert');
+    change(()=>{stage.extraStairs??=[];let id;do{id='stair-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);}while(stage.extraStairs.some(record=>record.id===id));const copy={id,stairs:source.stairs,stairsSteps:Math.max(1,Math.min(24,Math.round(Number(source.stairsSteps)||3))),stairsOffset:Number(source.stairsOffset)||.5,stairsAlong:Number(source.stairsAlong)||.5,stairsWidth:Number(source.stairsWidth)||1.2,stairsDepth:Number(source.stairsDepth)||.9},length=copy.stairs.startsWith('side-')?stage.d:stage.w;copy.stairsAlong=Math.max(copy.stairsWidth/(2*length),Math.min(1-copy.stairsWidth/(2*length),copy.stairsAlong+copy.stairsWidth/length+.04));copy.stairsOffset=copy.stairsAlong;stage.extraStairs.push(copy);selected=stairSelectionId(copy);},'Treppe dupliziert');
   }
   $('sp-stairs-remove').addEventListener('click',removeSelectedStairs);$('sp-stairs-popover-remove').addEventListener('click',removeSelectedStairs);$('sp-stairs-duplicate').addEventListener('click',duplicateSelectedStairs);
   for(const [id,key,min,max] of [['sp-stairs-steps-popover','stairsSteps',1,24],['sp-stairs-width-popover','stairsWidth',.6,30],['sp-stairs-depth-popover','stairsDepth',.45,3]]){
@@ -22448,13 +22357,16 @@ $('sp-rotation-knob').addEventListener('keydown',event=>{
   }
   function readDraftLibrary(storage){
     const raw=storage.getItem(draftStorageKey);if(raw===null)return {entries:[],lastId:null};
-    const data=JSON.parse(raw),ids=new Set();
+    const data=JSON.parse(raw),ids=new Set(),damaged=[];
     if(!data||data.version!==1||!Array.isArray(data.entries))throw new Error('Entwurfsspeicher kann nicht gelesen werden.');
     const latestBySetup=new Map();for(const entry of data.entries){if(entry?.sourceSetupId&&(!latestBySetup.has(entry.sourceSetupId)||entry.savedAt>latestBySetup.get(entry.sourceSetupId).savedAt))latestBySetup.set(entry.sourceSetupId,entry);}
-    const entries=data.entries.map(entry=>{
+    // One unreadable project must never hide the others. Its stored data stays
+    // untouched and is written back unchanged by writeDraftLibrary.
+    const entries=data.entries.flatMap(entry=>{try{return [readEntry(entry)];}catch(error){damaged.push(entry);return [];}});
+    function readEntry(entry){
       if(!entry||typeof entry.id!=='string'||!/^draft-[a-z0-9-]+$/.test(entry.id)||ids.has(entry.id)||typeof entry.revision!=='string'||!/^[a-z0-9-]{1,100}$/.test(entry.revision)||typeof entry.name!=='string'||!entry.name.trim()||entry.name.length>60||!Number.isFinite(entry.savedAt)||entry.savedAt<0||entry.savedAt>8640000000000000)throw new Error('Ein gespeicherter Entwurf ist beschädigt.');
-      ids.add(entry.id);
       let sourceSetupId=typeof entry.sourceSetupId==='string'&&/^setup-[a-z0-9-]+$/.test(entry.sourceSetupId)?entry.sourceSetupId:null;const document=normalizeSetupDocument(entry.document),latest=sourceSetupId&&latestBySetup.get(sourceSetupId);
+      ids.add(entry.id);
       if(latest&&latest!==entry){
         // Older working copies are already separate dashboard projects. Detach
         // them once so their identity never follows a later save of the original.
@@ -22464,13 +22376,17 @@ $('sp-rotation-knob').addEventListener('keydown',event=>{
         sourceSetupId=null;
       }else document.stage.projectId=projectIdentity(document.stage.projectId,sourceSetupId||entry.id);
       return {id:entry.id,revision:entry.revision,name:entry.name,savedAt:entry.savedAt,sourceSetupId,document};
-    });
-    if(data.lastId!==null&&!ids.has(data.lastId))throw new Error('Der letzte Entwurf ist beschädigt.');
-    return {entries,lastId:data.lastId};
+    }
+    let lastId=data.lastId;
+    if(lastId!==null&&!ids.has(lastId)){if(!damaged.length)throw new Error('Der letzte Entwurf ist beschädigt.');lastId=null;}
+    readDraftLibrary.raw=raw;readDraftLibrary.damaged=damaged;
+    return {entries,lastId,damaged};
   }
   function writeDraftLibrary(storage,data){
     // Drafts use their own atomic key; named setups are never changed by autosave.
-    storage.setItem(draftStorageKey,JSON.stringify({version:1,entries:data.entries,lastId:data.lastId}));
+    // Unreadable entries found by the last read of this exact stored state are kept verbatim.
+    if(storage.getItem(draftStorageKey)!==readDraftLibrary.raw){try{readDraftLibrary(storage);}catch(error){readDraftLibrary.damaged=[];}}
+    storage.setItem(draftStorageKey,JSON.stringify({version:1,entries:[...data.entries,...(readDraftLibrary.damaged||[])],lastId:data.lastId}));
   }
   function readWorkspace(storage){
     const raw=storage.getItem(workspaceStorageKey);if(raw===null||raw==='')return null;

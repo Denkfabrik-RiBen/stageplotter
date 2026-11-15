@@ -8,6 +8,8 @@ const modifier=process.platform==='darwin'?'Meta':'Control';
     const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
     page.setDefaultTimeout(10000);page.on('pageerror',error=>errors.push(error.message));
     await page.goto(process.env.APP_URL||'http://127.0.0.1:8872/');
+    await page.waitForLoadState('load');
+    assert.deepEqual(await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>entry.name).filter(name=>name.includes('/stageplot-assets/percussion/'))),[],'An empty start downloads no percussion images');
     await page.locator('[data-project-add]').first().click();await page.locator('#sp-np-band').fill('Editor UX QA');await page.locator('#sp-np-create').click();
     await page.waitForFunction(()=>localStorage.getItem('stageplot-studio:workspace:v1'));
     await page.evaluate(()=>{
@@ -19,6 +21,7 @@ const modifier=process.platform==='darwin'?'Meta':'Control';
     await page.reload();await page.locator('.sp-steps [data-view="editor"]').click();
     await page.locator('#sp-editor-floor [data-object][aria-label="UX Drums"]').first().click();await page.locator('#sp-object-menu-open').click();
     await page.locator('#sp-object-menu').getByRole('button',{name:'Drum Designer',exact:true}).click();
+    assert(await page.locator('#sp-drum-palette [data-drum-add^="extra-"]').count()>10,'Percussion palette is built when the designer opens');
     const templates=page.locator('#sp-drum-template-details');
     assert.equal(await templates.evaluate(el=>el.open),false,'Reusable templates start collapsed');
     await page.locator('[data-drum-part="side"]').first().click({force:true});

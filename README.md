@@ -20,7 +20,7 @@ Die Online-Freigabe benötigt die Einrichtung aus [ACCOUNT_SETUP.md](ACCOUNT_SET
 
 `npm run check` prüft alle Laufzeitmodule und eingebetteten Skripte. `npm test` prüft den Build-Abgleich und die 51 Funktionstestgruppen. Für Browserprüfungen einmal `npm ci` und `npx playwright install chromium webkit` ausführen, danach `npm run test:browser` und `BROWSER=webkit npm run test:browser`. Ohne `APP_URL` startet und beendet der Lauf seinen eigenen lokalen Vorschau-Server. Screenshots und die PDF-Gegenprobe mit Schlagzeug und Jazzmaster liegen in `test-results/`. GitHub Actions prüft Chromium und WebKit; beide müssen vor dem Deployment erfolgreich sein. Details: [Mobile QA](MOBILE_QA.md).
 
-Einzelne Browserabläufe lassen sich gezielt wiederholen, etwa mit `npm run test:browser -- check-editor-ux.cjs check-routing-list-ux.cjs`. Ohne Dateinamen laufen alle 23 Prüfungen.
+Einzelne Browserabläufe lassen sich gezielt wiederholen, etwa mit `npm run test:browser -- check-editor-ux.cjs check-routing-list-ux.cjs`. Ohne Dateinamen laufen alle 24 Prüfungen.
 
 ## Funktionen
 

@@ -230,14 +230,6 @@ function createStageplotSymbolV3(type, options = {}) {
     for(let i=0;i<3;i++){const a=(30+i*120)*Math.PI/180,xx=x+Math.cos(a)*7.3,yy=y+Math.sin(a)*7.3;rod(x,y,xx,yy,.52);circle(xx,yy,.56,'#555',.2);}
     circle(x,y,1.05,'#777',.3);end();
   };
-  const drum = (x,y,r,snare=false) => {
-    group('',snare?'snare':'tom');
-    const lugCount=snare?10:r<7.5?6:8;
-    for(let i=0;i<lugCount;i++){const a=i*Math.PI*2/lugCount,deg=i*360/lugCount;group('translate('+f(x+Math.cos(a)*(r+.18))+' '+f(y+Math.sin(a)*(r+.18))+') rotate('+deg+')');rect(-.42,-.58,.84,1.16,'#d4d4d4',.22,.12,'#363636');end();}
-    circle(x,y,r,'#fafafa',.82);circle(x,y,r-.72,'#fff',.35);circle(x,y,r-1.35,'none',.16,'#dadada');
-    if(snare){rect(x+r-.28,y-.72,1.25,1.44,'#777',.25,.18);circle(x,y,r*.64,'none',.16,'#e6e6e6');}
-    end();
-  };
   const cymbal = (x,y,r,hat=false,variant='crash') => {
     group('',hat?'hihat':'cymbal');if(variant!=='splash'){out+='<g data-part="cymbal-stand-legs" data-fixed-drum-hardware="true">';feet(x,y,13.5,15,.58,.4);end();}
     if(hat)circle(x,y+.7,r,'#bcbcbc',.5);
@@ -266,56 +258,6 @@ function createStageplotSymbolV3(type, options = {}) {
       if(variant==='china'){circle(x,y,r*.86,'none',.55,'#8f8f8f');path('M'+f(x-r*.86)+' '+y+'Q'+x+' '+f(y-r*.16)+' '+f(x+r*.86)+' '+y,'none',.35,'#aaa');}
     }
     if(variant!=='clapstack'){const bell=variant==='ride'?r*.23:variant==='china'?r*.16:r*.18;ellipse(x,y,bell,bell*.82,'#e7e7e7',.4);circle(x,y,.85,'#444',.2);line(x-1.3,y-.4,x+1.3,y+.4,.45);}end();
-  };
-  const pedal = (x,y,angle=0,part='kick-pedal') => {
-    group('translate('+x+' '+y+') rotate('+angle+')',part);
-    // Toe/clamp at y=0; heel toward the seated player at negative y.
-    path('M-3.2-1H3.2L3.8-12Q3.7-15 0-16Q-3.7-15-3.8-12Z','#b9b9b9',.65);
-    path('M-2.2-3H2.2L2.4-11Q0-14-2.4-11Z','#ddd',.35);
-    for(const yy of [-5,-7.5,-10])path('M-1.5 '+yy+'L0 '+(yy+1)+'L1.5 '+yy,'none',.35);
-    rect(-2.8,-16,5.6,2,'#777',.4,.6);
-    rect(-4,-1.5,8,2,'#666',.45,.4);
-    if(part==='kick-pedal'){rod(0,-1,0,3,1);ellipse(0,3.5,2,1.2,'#eee',.5);}
-    end();
-  };
-  const kick = (x,y,w,h) => {
-    group('','kick');
-    path('M'+x+' '+y+'Q'+(x+w/2)+' '+(y-2)+' '+(x+w)+' '+y+'V'+(y+h)+'Q'+(x+w/2)+' '+(y+h+2)+' '+x+' '+(y+h)+'Z','#f1f1f1',.85);
-    for(const yy of [y+1,y+3,y+h-3,y+h-1])path('M'+x+' '+yy+'Q'+(x+w/2)+' '+(yy-1.6)+' '+(x+w)+' '+yy,'none',.55);
-    for(const xx of [x+2.5,x+w-2.5]){line(xx,y+4,xx,y+h-4,.5,'#eee');rect(xx-.9,y+5,1.8,4,'#777',.3,.3);rect(xx-.9,y+h-9,1.8,4,'#777',.3,.3);}
-    rect(x+w/2-1.5,y+6,3,4,'#666',.35,.6);
-    pedal(x+w/2,y);
-    rod(x+2,y+h-5,x-3,y+h+2,1);rod(x+w-2,y+h-5,x+w+3,y+h+2,1);end();
-  };
-  const kickTop = (x,y,r,doublePedal=false,leftHanded=false) => {
-    group('','kick-top');
-    for(let i=0;i<10;i++){const a=i*Math.PI/5;group('translate('+f(x+Math.cos(a)*(r+.2))+' '+f(y+Math.sin(a)*(r+.2))+') rotate('+(i*36)+')');rect(-.44,-.65,.88,1.3,'#d1d1d1',.22,.12,'#333');end();}
-    circle(x,y,r,'#fafafa',.92);circle(x,y,r-.78,'#fff',.38);circle(x,y,r-1.45,'none',.16,'#d8d8d8');circle(x,y,r*.2,'none',.18,'#e1e1e1');
-    pedal(x,y-r+1,0);if(doublePedal)pedal(x+(leftHanded?-7:7),y-r+1,leftHanded?14:-14,'kick-pedal-double');
-    end();
-  };
-  const kickOverhead = (x,y,w,h,doublePedal=false,leftHanded=false) => {
-    group('','kick-overhead');
-    group('','kick-shell-top');
-    rect(x-w/2,y-h/2,w,h,'#eeeeec',.85,2.3,'#333');
-    for(const xx of [x-w*.27,x,x+w*.27])line(xx,y-h/2+2.2,xx,y+h/2-2.2,.16,'#d2d2cf');
-    for(const yy of [y-h*.18,y+h*.18])path('M'+f(x-w/2+1)+' '+f(yy)+'Q'+x+' '+f(yy+.65)+' '+f(x+w/2-1)+' '+f(yy),'none',.18,'#d3d3d0');
-    end();
-    group('','kick-head-edges');
-    for(const [yy,sign] of [[y-h/2,1],[y+h/2,-1]]){
-      path('M'+f(x-w/2+1)+' '+f(yy)+'Q'+x+' '+f(yy-sign*1.25)+' '+f(x+w/2-1)+' '+f(yy),'none',.95,'#333');
-      path('M'+f(x-w/2+1.5)+' '+f(yy+sign*1.8)+'Q'+x+' '+f(yy+sign*.65)+' '+f(x+w/2-1.5)+' '+f(yy+sign*1.8),'none',.5,'#777');
-    }
-    end();
-    for(const side of [-1,1])for(const offset of [-.32,-.1,.13,.35]){
-      const xx=x+side*(w/2-.5),yy=y+offset*h;group('translate('+f(xx)+' '+f(yy)+') rotate('+(side<0?90:-90)+')','kick-lug');rect(-.44,-.65,.88,1.3,'#bdbdb9',.22,.12,'#333');end();
-    }
-    group('','kick-tom-mount');rect(x-5.2,y-h*.29,10.4,4.6,'#c7c7c3',.5,.7);circle(x-2.6,y-h*.27,.85,'#555',.25);circle(x+2.6,y-h*.27,.85,'#555',.25);end();
-    group('','kick-spurs');
-    for(const side of [-1,1]){const sx=x+side*(w/2-.7),sy=y-h*.2;rod(sx,sy,sx+side*4.1,sy+2.4,1);ellipse(sx+side*4.5,sy+2.7,1.15,.75,'#444',.25);}
-    end();
-    pedal(x,y+h/2+.2,180);if(doublePedal)pedal(x+(leftHanded?-7:7),y+h/2+.5,leftHanded?194:166,'kick-pedal-double');
-    end();
   };
   const bongos = (x,y) => {
     group('','bongos');
@@ -460,22 +402,6 @@ function createStageplotSymbolV3(type, options = {}) {
       }
       end();
     }
-  }else if(type==='drums'||type.startsWith('drums-')){
-    group('translate(0 6)');
-    group('translate(64 11)','drummer-throne');
-    feet(0,0,10,30);circle(0,0,8.6,'#555',.8);circle(0,0,7.4,'none',.4,'#aaa');end();
-    // Kick is in front of the player's right foot (audience-left); pedal faces the throne.
-    kick(36,48,28,23);
-    pedal(84,35,-25,'hihat-pedal');
-    drum(26,36,10.3);drum(44,57,8.5);drum(63,56,7.5);
-    // Main snare directly in front of the throne, between both feet.
-    feet(64,36,10.2,20);drum(64,36,9.3,true);
-    cymbal(86,37,9,true,'hihat');
-    // Cymbals sit close to the shells, with the slight overlaps seen from overhead.
-    cymbal(22,64,14.3,false,'ride');
-    cymbal(84,62,11.8,false,'crash');
-    if(large){cymbal(10,43,9.2,false,'crash');cymbal(108,57,11,false,'crash');pad(106,34);}
-    end();
   }else if(type.startsWith('keys-')){
     const stage4=type==='keys-stage4',hammond=type==='keys-hammond',hammondB3=type==='keys-hammond-b3',electro=type==='keys-electro',bassStation=type==='keys-bassstation2',moog=type==='keys-moog-sub37',kronos=type.startsWith('keys-kronos3-'),sv1=type.startsWith('keys-sv1-');
     const depth=bassStation?179:hammondB3?178:moog?165:kronos?(type.endsWith('-61')?102:type.endsWith('-73')?89:76):sv1?(type.endsWith('-73')?91:77):hammond?101:electro?83:stage4?82:90;
