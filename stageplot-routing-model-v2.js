@@ -344,5 +344,42 @@
     }
     return {banks,bankSocket,groups,at,staleMono};
   }
-  return {localMixer,preampKey,normalizePreampPower,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
+  // Resolve linked mixer strips to physical preamps, including source splits.
+  // A malformed/incomplete stereo group must never couple unrelated sockets.
+  function linkedPreampSockets(routing,boxes,device,port){
+    if(!device||typeof device.id!=='string'||!device.id||device.id==='@local'&&!device.type||!Number.isInteger(device.inputs)||!Number.isInteger(port)||port<1||port>device.inputs)return [];
+    routing=object(routing);
+    const original={device:preampKey(device),port},key=socket=>JSON.stringify([socket.device,socket.port]);
+    const devices=new Map([...(Array.isArray(boxes)?boxes:[]),localMixer(routing),device].map(item=>[item.id,item]));
+    const physical=patch=>{
+      const target=devices.get(patch?.id);
+      return target&&Number.isInteger(patch.port)&&patch.port>=1&&patch.port<=target.inputs?{device:preampKey(target),port:patch.port}:null;
+    };
+    const inventory=mixerInventory({...routing,inputs:Array.isArray(routing.inputs)?routing.inputs:[]},Array.isArray(boxes)?boxes:[]);
+    const sockets=new Map([[key(original),original]]),stereo=new Map(),links=new Map();
+    const collect=(row,socket)=>{
+      const side=/^Stereo ([LR])$/.exec(row.mode||'')?.[1];
+      if(!socket||!row.stereoGroup||!side)return;
+      const id=key(socket);sockets.set(id,socket);
+      if(!stereo.has(row.stereoGroup))stereo.set(row.stereoGroup,{L:new Set(),R:new Set()});
+      stereo.get(row.stereoGroup)[side].add(id);
+    };
+    for(const group of inventory.groups.values()){
+      const socket=physical(group.patch);if(!socket)continue;
+      for(const row of group.rows)collect(row,socket);
+    }
+    // A link can be created before sources are assigned. Its vacant strips still
+    // share the physical inputs selected by their channel banks or User In slots.
+    for(const row of routing.inputs||[])if(row.mixerVacant&&!row.mixerSourceId&&row.x32?.kind!=='aux')collect(row,physical(inventory.bankSocket(row.number)));
+    for(const pair of stereo.values()){
+      if(pair.L.size!==1||pair.R.size!==1)continue;
+      const [left]=pair.L,[right]=pair.R;if(left===right)continue;
+      if(!links.has(left))links.set(left,new Set());if(!links.has(right))links.set(right,new Set());
+      links.get(left).add(right);links.get(right).add(left);
+    }
+    const selected=new Set([key(original)]);
+    for(const id of selected)for(const partner of links.get(id)||[])selected.add(partner);
+    return [...selected].map(id=>sockets.get(id));
+  }
+  return {localMixer,preampKey,normalizePreampPower,linkedPreampSockets,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
 });

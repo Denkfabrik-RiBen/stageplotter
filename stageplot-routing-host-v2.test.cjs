@@ -26,7 +26,7 @@ function harness(list=[]){
   ctx.undo=()=>ctx.undoCalls++;ctx.autoAssignRouting=()=>ctx.autoCalls++;
   vm.createContext(ctx);
   vm.runInContext(audio.slice(0,audio.indexOf("$('sp-audio-object').addEventListener")),ctx);
-  vm.runInContext(['bounds','rectanglesOverlap','outside','normalizeRouteChannel','normalizeRouting','parseIoValue','defaultObjectIo','normalizeObjectIo','objectOutputPortKey','objectOutputBaseName','objectOutputSignal','generatedInputSpecs','generatedOutputSpecs','reconcileRouteList','syncRoutingFromStage','routingStageboxes','routeSourceObject','keepHistory','detachConnectionsForObject'].map(extract).join('\n'),ctx);
+  vm.runInContext(['bounds','rectanglesOverlap','outside','normalizeRouteChannel','normalizeRouting','parseIoValue','defaultObjectIo','normalizeObjectIo','objectOutputPortKey','objectOutputBaseName','objectOutputSignal','generatedInputSpecs','generatedOutputSpecs','reconcileRouteList','syncRoutingFromStage','routingStageboxes','allRoutingStageboxes','routeSourceObject','keepHistory','detachConnectionsForObject'].map(extract).join('\n'),ctx);
   for(const name of ['normalizeIemConfig','routeNeedsDi','routeStageboxCompatible','routeSpec','ioValueText','parseOutsValue','ioAliasText','normalizeIoAliasList','objectIo','ioAliasAt'])vm.runInContext(html.match(new RegExp('^  const '+name+'=[^\\n]+','m'))[0],ctx);
   vm.runInContext(host,ctx);vm.runInContext('renderRouting=()=>{renders++};',ctx);
   ctx.syncRoutingFromStage(false,false);return ctx;
@@ -450,5 +450,85 @@ test('Number swap keeps source and socket identities; insertion shifts only late
  assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-b').number,1);assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-a').number,2);
  c.dispatchRoutingWorkspace({type:'insertChannel',at:2});assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-a').number,3);assert.equal(c.stage.routing.inputs.find(r=>r.id==='route-b').number,1);assert.equal(c.stage.routing.inputs.find(r=>r.instrument==='Neues Signal').number,2);
 });
+const physicalInput=(c,id,number,side,patch={})=>c.normalizeRouteChannel({id,sourceKey:'',instrument:id,manual:true,edited:true,number,pickup:'Mic',connector:'XLR',signalType:'Mic',mode:side?'Stereo '+side:'Mono',stereoGroup:side?'physical-pair':'',phantom:side==='L',...patch},number-1,'inputs');
+const physicalPower=c=>clone(c.stage.routing.preampPower||[]).sort((a,b)=>a.device.localeCompare(b.device)||a.port-b.port);
+
+test('Physical 48 V changes both linked local preamps in one undo while preserving signal requirements',()=>{
+  const c=harness();
+  c.stage.routing.inputs=[physicalInput(c,'route-left',1,'L',{localPort:1}),physicalInput(c,'route-right',2,'R',{localPort:2})];
+  c.stage.routing.preampPower=[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:9},{device:'@local/xr18',port:5}];
+  const before=c.snapshot();
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'@local',model:'x32-local',port:2,enabled:true});
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:2},{device:'@local/x32-local',port:9},{device:'@local/xr18',port:5}]);
+  assert.equal(c.history.length,1);assert.equal(c.history[0],before,'One undo restores both original physical states, including a mixed state');assert.equal(c.saves,1);
+  assert.deepEqual(clone(c.stage.routing.inputs.map(row=>row.phantom)),[true,false],'Physical 48 V does not rewrite microphone/DI requirements');
+  const loaded=c.normalizeRouting(clone(c.stage.routing));c.stage.routing=loaded;
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:2},{device:'@local/x32-local',port:9},{device:'@local/xr18',port:5}],'Existing preampPower entries survive the normal save/load schema');
+  const powered=c.snapshot();
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'@local',model:'x32-local',port:1,enabled:false});
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:9},{device:'@local/xr18',port:5}]);
+  assert.equal(c.history.length,2);assert.equal(c.history[1],powered);assert.equal(c.saves,2);
+  assert.deepEqual(clone(c.stage.routing.inputs.map(row=>[row.instrument,row.number,row.phantom])),[['route-left',1,true],['route-right',2,false]]);
+});
+
+test('Shared physical power follows User In and duplicate strips without touching stale or mono sockets',()=>{
+  const c=harness([fixture('box','stagebox-8')]);
+  const left=physicalInput(c,'route-left',1,'L',{localPort:1}),right=physicalInput(c,'route-right',2,'R',{localPort:2});
+  const duplicate={...clone(left),id:'route-left-copy',number:3,mixerSourceId:left.id};
+  c.stage.routing.inputs=[duplicate,left,right,physicalInput(c,'route-mono',4,'',{localPort:4})];
+  c.stage.routing.mixerBanks=Array.from({length:4},(_,i)=>({id:'@user',first:i*8+1}));
+  c.stage.routing.userInputs=Array(32).fill(null);c.stage.routing.userInputs[0]={id:'box',port:6};c.stage.routing.userInputs[1]={id:'box',port:7};c.stage.routing.userInputs[2]={id:'box',port:6};c.stage.routing.userInputs[3]={id:'@local',port:4};
+  c.stage.routing.preampPower=[{device:'@local/x32-local',port:1},{device:'box',port:8}];
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'box',model:'stagebox-8',port:7,enabled:true});
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:1},{device:'box',port:6},{device:'box',port:7},{device:'box',port:8}]);
+  assert.equal(c.stage.routing.preampPower.filter(entry=>entry.device==='box'&&entry.port===6).length,1);
+  assert.equal(c.history.length,1);assert.equal(c.saves,1);
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'@local',model:'x32-local',port:4,enabled:true});
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:4},{device:'box',port:6},{device:'box',port:7},{device:'box',port:8}],'Mono physical power stays independent of stereo controls');
+});
+
+test('A locked stereo partner rejects physical power atomically from either end',()=>{
+  const c=harness([fixture('box-a','stagebox-8'),fixture('box-b','stagebox-8')]);
+  c.stage.routing.inputs=[physicalInput(c,'route-left',1,'L',{stagebox:'box-a',stageboxPort:3}),physicalInput(c,'route-right',2,'R',{stagebox:'box-b',stageboxPort:4})];
+  c.objects.find(object=>object.id==='box-b').locked=true;
+  let before=c.snapshot();
+  assert.throws(()=>c.dispatchRoutingWorkspace({type:'setPreampPower',device:'box-a',model:'stagebox-8',port:3,enabled:true}),/gesperrt/);
+  assert.equal(c.snapshot(),before);assert.equal(c.history.length,0);assert.equal(c.saves,0);
+  c.objects.find(object=>object.id==='box-b').locked=false;
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'box-a',model:'stagebox-8',port:3,enabled:true});
+  assert.deepEqual(physicalPower(c),[{device:'box-a',port:3},{device:'box-b',port:4}]);
+  c.objects.find(object=>object.id==='box-a').locked=true;before=c.snapshot();
+  assert.throws(()=>c.dispatchRoutingWorkspace({type:'setPreampPower',device:'box-b',model:'stagebox-8',port:4,enabled:false}),/gesperrt/);
+  assert.equal(c.snapshot(),before);assert.equal(c.history.length,1);assert.equal(c.saves,1);
+  c.objects.find(object=>object.id==='box-a').locked=false;
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'box-b',model:'stagebox-8',port:4,enabled:false});
+  assert.deepEqual(physicalPower(c),[]);assert.equal(c.history.length,2);assert.equal(c.saves,2);
+});
+
+test('Readonly and failed persistence cannot partially change a linked physical power pair',()=>{
+  const c=harness();
+  c.stage.routing.inputs=[physicalInput(c,'route-left',1,'L',{localPort:1}),physicalInput(c,'route-right',2,'R',{localPort:2})];
+  const action={type:'setPreampPower',device:'@local',model:'x32-local',port:1,enabled:true},before=c.snapshot();
+  c.sharedReadOnly=true;
+  assert.throws(()=>c.dispatchRoutingWorkspace(action),/schreibgeschützt/);assert.equal(c.snapshot(),before);assert.equal(c.saves,0);
+  c.sharedReadOnly=false;c.saveError=true;c.future=['redo-entry'];
+  assert.throws(()=>c.dispatchRoutingWorkspace(action),/Speichern/);
+  assert.equal(c.snapshot(),before);assert.equal(c.history.length,0);assert.deepEqual(clone(c.future),['redo-entry']);
+  c.saveError=false;
+  assert.throws(()=>c.dispatchRoutingWorkspace({...action,model:'old-model'}),/nicht verfügbar/);
+  assert.throws(()=>c.dispatchRoutingWorkspace({...action,port:33}),/nicht verfügbar/);
+  assert.equal(c.snapshot(),before);assert.equal(c.history.length,0);
+});
+
+test('Linking empty mixer strips couples their bank preamps before sources are assigned',()=>{
+  const c=harness();
+  c.dispatchRoutingWorkspace({type:'linkMixerChannels',first:1});
+  assert(c.stage.routing.inputs.every(row=>row.mixerVacant));
+  const before=c.snapshot(),history=c.history.length,saves=c.saves;
+  c.dispatchRoutingWorkspace({type:'setPreampPower',device:'@local',model:'x32-local',port:2,enabled:true});
+  assert.deepEqual(physicalPower(c),[{device:'@local/x32-local',port:1},{device:'@local/x32-local',port:2}]);
+  assert.equal(c.history.length,history+1);assert.equal(c.history.at(-1),before);assert.equal(c.saves,saves+1);
+});
+
 if(runFailures.length)throw Error(runFailures.length+' routing host tests failed: '+runFailures.join('; '));
-console.log('PASS ROUTING HOST: actual dispatch, atomic patch conflicts, undo rollback, readonly/lock guards, shared DI capacity, custom DI defaults, combo sockets, migration/remapping and monitoring formats.');
+console.log('PASS ROUTING HOST: actual dispatch, atomic linked physical 48 V, patch conflicts, undo rollback, readonly/lock guards, shared DI capacity, custom DI defaults, combo sockets, migration/remapping and monitoring formats.');

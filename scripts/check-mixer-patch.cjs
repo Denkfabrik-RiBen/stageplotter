@@ -34,8 +34,13 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const ch=n=>page.locator('[data-rw-mixer-channel="'+n+'"]');
     const click=async(key,value)=>page.locator('[data-rw-'+key+'="'+value+'"]').click();
     const socket=n=>page.locator('[data-rw-mixer-port="'+n+'"]');
+    const glyphAsset=async n=>{
+      const image=socket(n).locator('.mx-socket-glyph').locator('img,image').first();
+      return await image.getAttribute('src')||await image.getAttribute('href');
+    };
     const dragSocket=async(from,to,expectedPair)=>{
       await socket(from).scrollIntoViewIfNeeded();
+      await socket(to).scrollIntoViewIfNeeded();
       const a=await socket(from).boundingBox(),b=await socket(to).boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();
       await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:10});
@@ -115,7 +120,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-device','station-1');await click('mixer-port',1);
     assert.match(await page.locator('.mx-picker h2').innerText(),/SD8 · IN 1 → CH 8/);
     await click('mixer-pick','route-signal-0');
-    assert.match(await page.locator('[data-rw-mixer-port="1"] .mx-socket-glyph img').getAttribute('src'),/kick-overhead/);
+    assert.match(await glyphAsset(1),/kick-overhead/);
     assert.match(await patch(8).innerText(),/SD8 · IN 1/);
     await page.waitForFunction(()=>JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.inputs[0].stageboxPort===1);
     await open();
@@ -125,7 +130,9 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     for(const [n,side] of [[11,'L'],[12,'R']]){
       const badge=page.locator('[data-rw-mixer-port="'+n+'"] .mx-socket-badge');
       assert.equal(await badge.locator('b').innerText(),side);
-      assert.equal(await badge.locator('.mx-socket-glyph').innerText(),'🎹');
+      const glyph=badge.locator('.mx-socket-glyph');
+      assert(await glyph.isVisible());
+      assert(await glyph.evaluate(element=>element.textContent.includes('🎹')||!!element.querySelector('img,svg')),'Keyboard uses a visible instrument thumbnail');
     }
     // Fixed IN 9 must target CH 9 even while the stereo source is selected on CH 11.
     await ch(11).click();await page.keyboard.press('Escape');
@@ -156,9 +163,11 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const leftBadge=page.locator('[data-rw-mixer-port="11"] .mx-socket-badge b');
     const sideSize=()=>leftBadge.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
     const beforeSize=await sideSize();
+    const beforeSocket=await socket(11).boundingBox();
     await zoom.getByRole('button',{name:'Ansicht vergrößern'}).click({clickCount:1});
     await zoom.getByRole('button',{name:'Ansicht vergrößern'}).click();
-    assert.equal(await sideSize(),beforeSize*2);
+    assert((await socket(11).boundingBox()).width>=beforeSocket.width*1.95,'Zoom doubles the physical input target');
+    assert((await sideSize())>=beforeSize,'Stereo markers remain readable while zooming');
     await leftBadge.scrollIntoViewIfNeeded();
     await page.locator('.mx-right .rw-zoom-panel').screenshot({path:artifactPath('mixer-buchsen-zoom.png')});
     await zoom.locator('[data-panel-expand]').click();
@@ -166,9 +175,16 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const screen=await fullscreen.boundingBox();
     assert.equal(screen.width,1440);
     assert.equal(screen.height,900);
-    const panelArea=await fullscreen.locator('.sp-stagebox-device').boundingBox();
+    const hardwareViewport=fullscreen.locator('.sp-stagebox-device-scroll');
+    const panelArea=await hardwareViewport.boundingBox();
     assert(panelArea.x>=0 && panelArea.x+panelArea.width<=1440 && panelArea.y+panelArea.height<=900);
     assert.equal(await fullscreen.locator('[data-rw-mixer-port]').count(),32);
+    assert(await fullscreen.locator('[data-rw-mixer-port]').evaluateAll(inputs=>inputs.every(input=>input.getBoundingClientRect().width>=43)),'Fullscreen keeps the inputs readable');
+    for(const n of [1,32]){
+      await socket(n).scrollIntoViewIfNeeded();
+      const input=await socket(n).boundingBox(),viewport=await hardwareViewport.boundingBox();
+      assert(input.x>=viewport.x-1 && input.x+input.width<=viewport.x+viewport.width+1 && input.y>=viewport.y-1 && input.y+input.height<=viewport.y+viewport.height+1,'Fullscreen input '+n+' can be reached by scrolling');
+    }
     await fullscreen.locator('[data-full-device="station-1"]').click();
     assert.equal(await fullscreen.locator('[data-rw-mixer-port]').count(),8);
     await fullscreen.locator('[data-rw-mixer-port="1"]').click();
@@ -211,7 +227,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-user-slot',9);
     await click('mixer-user-device','station-1');
     const kickJack=page.locator('.mx-picker [data-rw-mixer-user-port="1"]');
-    assert.equal(await kickJack.locator('.mx-port-name').innerText(),'Kick Out');
+    assert.equal(await kickJack.locator('.mx-signal-caption').innerText(),'Kick Out');
     assert(await kickJack.isDisabled());
     assert(await page.locator('.mx-picker [data-rw-mixer-user-port="2"] .mx-port-free').isVisible());
     await page.keyboard.press('Escape');
@@ -361,7 +377,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-port',5);
     await click('mixer-pick','route-signal-2');
     const patched=page.locator('[data-rw-mixer-port="5"]');
-    assert.match(await patched.locator('.mx-socket-glyph img').getAttribute('src'),/hihat/);
+    assert.match(await glyphAsset(5),/hihat/);
     await click('mixer-port',5);await click('mixer-pick','route-stereo-2');
     await click('mixer-operation','switch');
     assert.match(await patched.getAttribute('aria-label'),/Vocal/);
@@ -474,7 +490,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     for(const reload of [false,true]){
       if(reload){await open();await click('mixer-device','station-1');}
       assert.match(await ch(5).innerText(),/Rack Tom/);
-      assert.match(await socket(5).locator('.mx-socket-glyph img').getAttribute('src'),/rack-tom/);
+      assert.match(await glyphAsset(5),/rack-tom/);
       assert.match(await socket(6).getAttribute('aria-label'),/Electric Guitar/);
     }
     await page.setViewportSize({width:390,height:740});

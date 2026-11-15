@@ -811,10 +811,19 @@
         <div class="sp-shortcut-grid"><span>Ansicht verschieben</span><kbd>Leertaste</kbd><span>Objekt verschieben</span><kbd>← ↑ ↓ →</kbd><span>Objektmenü öffnen</span><span>··· / Rechtsklick / ⇧ F10</span><span>Objektmenü am Handy</span><span>Lange drücken</span><span>Drehen</span><kbd>R / ⇧ R</kbd><span>Am Handy drehen</span><span>Zwei Finger am Objekt</span><span>Am Handy zoomen</span><span>Zwei Finger auf freier Fläche</span><span>Löschen</span><kbd>Backspace</kbd><span>Zoom</span><kbd>+ / − / 0</kbd><span>Canvas-Fokus</span><kbd>F</kbd><span>Mehrfachauswahl</span><kbd>⌘/Ctrl + Klick</kbd><span>Beschriftung bearbeiten</span><kbd>Doppelklick</kbd><span>Alle Objekte auswählen</span><kbd>⌘/Ctrl A</kbd><span>Auswahl duplizieren</span><kbd>⌘/Ctrl D</kbd><span>Rückgängig</span><kbd>⌘/Ctrl Z</kbd><span>Speichern</span><kbd>⌘/Ctrl S</kbd><span>Hilfe</span><kbd>?</kbd><span>Platzierung abbrechen</span><kbd>Esc</kbd></div>
       </section>
       <section class="sp-help-section sp-release-notes" aria-labelledby="sp-release-title">
-        <div class="sp-release-heading"><div><h3 id="sp-release-title">Release Notes</h3><p class="sp-muted">Änderungen nach Datum zusammengefasst.</p></div><span class="sp-version-badge" data-release-version="0.1.0-beta.32">v0.1.0-beta.32</span></div>
+        <div class="sp-release-heading"><div><h3 id="sp-release-title">Release Notes</h3><p class="sp-muted">Änderungen nach Datum zusammengefasst.</p></div><span class="sp-version-badge" data-release-version="0.1.0-beta.33">v0.1.0-beta.33</span></div>
         <div class="sp-release-list">
           <article class="sp-release-card" data-current="true">
-            <header><div><strong>v0.1.0-beta.32</strong><span>Aktuell</span></div><time datetime="2026-11-14">14. November 2026</time></header>
+            <header><div><strong>v0.1.0-beta.33</strong><span>Aktuell</span></div><time datetime="2026-11-16">16. November 2026</time></header>
+            <h4>Mixer-Signale, Stereo-Paare und 48 V</h4>
+            <ul>
+              <li><strong>Signalbilder:</strong> Kleine Instrumentbilder und lesbare Signalnamen direkt an den belegten Eingangsbuchsen. Die Darstellung passt sich dem Gerät, Zoom und Vollbild an.</li>
+              <li><strong>Stereo und 48 V:</strong> Benachbarte Stereo-Eingänge erscheinen als gemeinsamer Doppelring mit großen L/R-Markierungen und STEREO-Kennzeichnung. Die rote 48-V-Taste schaltet beide physischen Eingänge gemeinsam. Der Zustand wird mit dem Projekt gespeichert; ein Rückgängig-Schritt stellt beide Eingänge wieder her. Beim Schalten bleibt die Vollbildansicht an ihrer Position.</li>
+              <li><strong>Generische Stageboxen:</strong> Modelle mit 8, 16 oder 32 Eingängen zeigen kompakte Karten mit Instrumentbild, Signalname und Stereo-Markierung. Die Karten in Mixer und User In passen sich auch schmalen Bildschirmen an, ohne andere Karten oder 48-V-Tasten zu überlagern.</li>
+            </ul>
+          </article>
+          <article class="sp-release-card">
+            <header><div><strong>v0.1.0-beta.32</strong></div><time datetime="2026-11-14">14. November 2026</time></header>
             <h4>Mixer- und Stagebox-Routing</h4><ul><li>Block-Patch oder User In pro Achterblock wählen. Signale lassen sich an den Buchsen zuweisen und ziehen. Die Geräteansicht zeigt die Belegung und Stereopaare. Die 48-V-Einstellung lässt sich für jeden Mikrofoneingang im Projekt speichern.</li></ul>
             <h4>Kanalplanung, PDF und Drumdesigner</h4><ul><li>Nach Kanalnummer sortierte Input-Liste mit direktem Tauschen und gezieltem Einfügen. Import und Export direkt in der Liste öffnen.</li><li>PDF-Tabellen mit Schriftgröße und Zeilenabstand; überhohe Tabellenzeilen werden auf Folgeseiten fortgesetzt.</li><li>Sidesnares von 6 bis 14 Zoll, freie Drehung über einen Drehkreis und Laptop-L/R im Drumdesigner.</li></ul><h4>X32-Szenen im Routing</h4>
             <ul><li>Ein Wizard führt durch Inputauswahl, Pult- oder Stagebox-Anschluss, Busverwendung und Ausgangsziele. Passende Stageboxen lassen sich direkt hinzufügen und ihre Buchsen im Gerätebild anklicken. Die I/O-Liste zeigt Inputs, Busse, Matrizen, Effekte und aufgelöste Ausgangswege getrennt. Offene Zuordnungen bleiben sichtbar. Klangbearbeitung und Ausgangs-Patch bleiben erhalten; die Originalszene wird lokal mit dem Projekt gesichert.</li></ul>
@@ -936,7 +945,7 @@
         </div>
       </section>
     </div>
-    <p class="sp-help-foot">Stageplot Studio v0.1.0-beta.32 · 2D · lokal und offline</p>
+    <p class="sp-help-foot">Stageplot Studio v0.1.0-beta.33 · 2D · lokal und offline</p>
   </dialog>
   <dialog id="sp-account-dialog" class="sp-clear-dialog sp-account-dialog" aria-labelledby="sp-account-title">
     <div class="sp-dialog-heading"><div><span class="sp-eyebrow">DEIN EQUIPMENT · DEINE PROJEKTE</span><h2 id="sp-account-title">Account &amp; Inventar</h2></div><button type="button" class="sp-button" id="sp-account-close" aria-label="Account und Inventar schließen">×</button></div>
@@ -7727,14 +7736,6 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .mx-console-grid svg {display:block;width:100%;height:60px}
 #sp-prototype .mx-console-grid button[aria-pressed=true] {border:2px solid var(--rw-accent)}
 
-/* Local input numbers come from the measured port map, independently of the panel artwork. */
-#sp-prototype .sp-stagebox-image-port[data-device="@local"]:is([data-rw-mixer-port],[data-rw-mixer-user-port])::after {
-  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  padding:1px 3px; border-radius:3px; background:#13191ddb; color:white;
-  font:700 clamp(9px,.72vw,12px)/1.15 system-ui; pointer-events:none;
-}
-#sp-prototype .sp-stagebox-image-port[data-device="@local"][data-rw-mixer-port]::after {content:attr(data-rw-mixer-port)}
-#sp-prototype .sp-stagebox-image-port[data-device="@local"][data-rw-mixer-user-port]::after {content:attr(data-rw-mixer-user-port)}
 #sp-prototype .mx-socket-glyph {font-size:14px}
 
 #sp-prototype .rw-zoom-panel {min-width:0;max-width:100%}
@@ -7742,23 +7743,15 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .rw-panel-controls button {width:36px;height:34px;min-height:0;padding:0;border-radius:6px;font:700 20px/1 system-ui}
 #sp-prototype .rw-panel-controls output {min-width:5ch;text-align:center;font:600 13px/1 system-ui;font-variant-numeric:tabular-nums}
 #sp-prototype .rw-zoom-panel .sp-stagebox-device {width:calc(100% * var(--panel-scale))}
-#sp-prototype .rw-zoom-panel .mx-socket-glyph {width:calc(21px * var(--panel-scale));height:calc(16px * var(--panel-scale));font-size:calc(14px * var(--panel-scale))}
-#sp-prototype .rw-zoom-panel .mx-socket-badge b {font-size:calc(11px * var(--panel-scale))}
-#sp-prototype .rw-zoom-panel .mx-socket-badge {gap:calc(1px * var(--panel-scale));padding:calc(1px * var(--panel-scale)) calc(2px * var(--panel-scale))}
-#sp-prototype .rw-zoom-panel .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {top:50%;transform:translate(-50%,-50%);min-width:0}
-#sp-prototype .rw-zoom-panel .mx-socket-badge:has(b) {padding-right:calc(6px * var(--panel-scale))}
-#sp-prototype .rw-zoom-panel .mx-socket-badge b {position:absolute;right:0;bottom:0;border-radius:2px;padding:0 1px;color:#fff;background:#1a2620}
 
 #sp-prototype .rw-panel-controls [data-panel-expand] {width:auto;padding:0 10px;font:600 14px/1 system-ui}
 #sp-prototype dialog.rw-panel-fullscreen[open] {position:fixed;inset:0;box-sizing:border-box;margin:0;width:100%;height:100dvh;max-width:none;max-height:none;padding:12px;border:0;border-radius:0;background:var(--sp-panel,#fff);color:var(--sp-ink,#18211a);display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px}
 #sp-prototype .rw-panel-fullscreen header {display:flex;align-items:center;justify-content:space-between;gap:12px}
 #sp-prototype .rw-full-frame {container-type:size;display:grid;place-items:center;min-width:0;min-height:0}
-#sp-prototype .rw-panel-fullscreen .sp-stagebox-device-scroll {padding:0;overflow:visible;width:min(100cqw,calc(96cqh * var(--device-ratio)));background:transparent}
-#sp-prototype .rw-panel-fullscreen .sp-stagebox-device {min-width:0!important;width:100%}
+/* Preserve readable socket targets at every window size, including short windows. */
+#sp-prototype .rw-panel-fullscreen .sp-stagebox-device-scroll {padding:16px 4px 28px;overflow:auto;max-height:100%;width:min(100cqw,calc(96cqh * var(--device-ratio)));background:transparent}
+#sp-prototype .rw-panel-fullscreen .sp-stagebox-device {min-width:var(--jack-min-width)!important;width:100%}
 #sp-prototype .rw-panel-fullscreen .sp-stagebox-hotspot {container-type:inline-size}
-#sp-prototype .rw-panel-fullscreen .mx-socket-badge {--panel-scale:1;width:100%;max-width:100%;height:clamp(12px,54cqw,38px);padding:1px;gap:1px;bottom:100%}
-#sp-prototype .rw-panel-fullscreen .mx-socket-glyph {width:100%;height:100%;font-size:clamp(10px,46cqw,32px)}
-#sp-prototype .rw-panel-fullscreen .mx-socket-badge b {position:static;flex:none;font-size:clamp(9px,33cqw,23px)}
 #sp-prototype .rw-full-devices {display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;padding:3px}
 #sp-prototype .rw-full-devices button,#sp-prototype [data-panel-collapse] {flex:none;white-space:nowrap}
 #sp-prototype .rw-full-devices button[aria-pressed=true] {background:#c2f448;color:#18200b;border-color:#748d30}
@@ -7774,52 +7767,103 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .sp-stagebox-image-port .mx-port-name {position:absolute;left:50%;bottom:58%;transform:translateX(-50%);z-index:2}
 #sp-prototype .sp-stagebox-image-port .mx-port-free {position:absolute;top:0;right:0}
 
-/* Project labels and physical preamp controls share the measured jack positions. */
+/* Circular signal medallions sit directly on the measured socket face. */
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot {container-type:inline-size}
 #sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge {
-  display:flex;align-items:center;justify-content:center;gap:2px;width:112%;max-width:none;height:auto;
-  bottom:96%;padding:2px 3px;box-sizing:border-box;border-radius:4px;background:#202425;color:#fff;
-  box-shadow:0 0 0 1px #ffffff40;font:650 clamp(9px,21cqw,19px)/1.05 system-ui;
+  position:absolute;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);
+  display:block;width:94%;height:94%;max-width:none;box-sizing:border-box;padding:0;
+  border:1px solid #aebbae;border-radius:50%;background:radial-gradient(circle at 35% 25%,#fffef8,#e9eee5 78%);
+  color:#21382c;box-shadow:inset 0 0 0 2px #ffffffb3,0 2px 5px #0006;
+  font:700 clamp(9px,14cqw,24px)/1.04 system-ui;
 }
-#sp-prototype .rw-zoom-panel .mx-socket-badge .mx-socket-glyph {flex:0 0 25%;width:25%;height:clamp(10px,26cqw,25px);font-size:clamp(9px,22cqw,20px);filter:grayscale(1)}
-#sp-prototype .mx-socket-glyph img {filter:drop-shadow(0 0 1px white);background:#eceeea;border-radius:2px}
-#sp-prototype .mx-signal-caption {min-width:0;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-#sp-prototype .rw-zoom-panel .mx-socket-badge b {position:static;color:#cbf9dd;background:transparent;padding:0;font-size:.9em}
-#sp-prototype .mx-link-symbol {font-size:.85em;color:#cbf9dd}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge .mx-socket-glyph {
+  position:absolute;left:50%;top:26%;transform:translateX(-50%);display:grid;place-items:center;
+  width:58%;height:33%;min-width:0;font-size:clamp(19px,39cqw,38px);color:#29483a;filter:drop-shadow(0 1px 1px #16291a24);
+}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-initials {font:750 clamp(12px,24cqw,28px)/1 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-glyph :is(img,svg) {display:block;width:100%;height:100%;object-fit:contain;background:transparent;border-radius:0}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-signal-caption {
+  position:absolute;left:11%;top:61%;width:78%;min-width:0;text-align:center;line-height:1.04;
+  overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge b,
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-link-symbol {
+  position:absolute;right:-3%;top:-8%;display:grid;place-items:center;
+  width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);padding:0;border:1px solid #edf6e8;border-radius:50%;
+  color:#f6ffec;background:#45693a;box-shadow:0 1px 2px #0005;font:800 clamp(9px,20cqw,28px)/1 system-ui;
+}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-link-symbol {top:-3%;left:50%;right:auto;transform:translateX(-50%);width:auto;height:auto;padding:1px 3px;border-radius:8px;font:750 clamp(7px,13cqw,18px)/1.1 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {
+  position:absolute;z-index:1;left:0;top:-2%;transform:none;display:grid;place-items:center;
+  width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);min-width:0;padding:0;border:1px solid #edf4e8;border-radius:50%;
+  background:#293e33;color:#fff;box-shadow:0 1px 2px #0005;
+  font:700 clamp(8px,17cqw,26px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;
+}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port:not(:has(.mx-socket-badge)) .mx-input-number {top:50%;left:50%;transform:translate(-50%,-50%)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port[data-rw-mixer-user-port] .mx-signal-caption {display:-webkit-box}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot>.rw-preamp {
-  position:absolute;left:-8%;bottom:-6%;width:36%;height:36%;min-width:0;min-height:0;
-  display:grid;place-items:center;border:0;border-radius:50%;padding:0;background:transparent;cursor:pointer;
+  position:absolute;z-index:2;left:50%;top:96%;bottom:auto;transform:translateX(-50%);
+  display:flex;align-items:center;justify-content:center;gap:3px;width:clamp(34px,64cqw,74px);height:clamp(14px,23cqw,26px);
+  min-width:0;min-height:14px;padding:0 3px;border:1px solid #8e9e90;border-radius:999px;
+  background:#e8eee4;color:#3c5143;box-shadow:0 1px 2px #0005;
+  font:750 clamp(8px,16cqw,13px)/1 system-ui;white-space:nowrap;cursor:pointer;
 }
-#sp-prototype .rw-preamp i {width:clamp(5px,14cqw,12px);height:clamp(5px,14cqw,12px);border:1px solid #89908c;border-radius:50%;background:#252a28;box-shadow:0 0 0 1px #111}
-#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ff3934;border-color:#ffa092;box-shadow:0 0 4px 1px #d02523}
-#sp-prototype .rw-preamp:hover i,#sp-prototype .rw-preamp:focus-visible i {outline:2px solid #fff}
+#sp-prototype .rw-preamp i {flex:none;width:clamp(4px,11cqw,8px);height:clamp(4px,11cqw,8px);border:1px solid #8a9990;border-radius:50%;background:#39463f}
+#sp-prototype .rw-preamp[aria-pressed=true] {background:#b81930;color:#fff4ed;border-color:#ff6576}
+#sp-prototype .rw-preamp[aria-pressed=true] i {background:#ff6576;border-color:#ffdce0;box-shadow:0 0 3px #ff344e}
+#sp-prototype .rw-preamp:hover,#sp-prototype .rw-preamp:focus-visible {outline:2px solid #c9f500;outline-offset:1px}
 #sp-prototype .mx-output-caption {display:block;position:absolute;bottom:90%;left:50%;transform:translateX(-50%);width:max-content;max-width:115%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#252a2b;color:#eee;border-radius:3px;padding:1px 3px;font:650 clamp(8px,19cqw,16px)/1.1 system-ui;pointer-events:none}
-#sp-prototype [data-rw-mixer-user-port] .mx-signal-caption {display:none}
-#sp-prototype .mx-generic-jack {position:relative}
-#sp-prototype .mx-generic-jack>.rw-preamp {position:absolute;right:1px;bottom:1px;padding:3px;border:0;background:transparent;min-height:20px;min-width:20px}
-#sp-prototype .rw-zoom-panel .mx-socket-badge b {font-size:calc(11px * var(--panel-scale,1))}
-#sp-prototype .rw-panel-fullscreen .mx-socket-badge b {font-size:clamp(9px,24cqw,18px)}
-#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge {
-  display:grid;grid-template-columns:auto auto auto;justify-content:center;align-content:center;
-  row-gap:0;column-gap:1px;bottom:74%;width:116%;padding:1px 0;
-}
-#sp-prototype .rw-zoom-panel .mx-signal-caption {grid-column:1/-1;grid-row:2;text-align:center;line-height:1.1}
-#sp-prototype .rw-zoom-panel .mx-socket-badge .mx-socket-glyph {width:clamp(10px,28cqw,26px);justify-self:center}
-#sp-prototype .rw-zoom-panel .mx-socket-badge b,
-#sp-prototype .rw-zoom-panel .mx-link-symbol {grid-row:1}
-#sp-prototype .rw-zoom-panel [data-rw-mixer-user-port] .mx-socket-badge {bottom:95%}
+/* Generic stageboxes use responsive cards, independently of the photo overlays. */
+#sp-prototype .mx-local {grid-template-columns:repeat(auto-fit,minmax(min(110px,100%),1fr))}
+#sp-prototype .mx-generic-jack {position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
+#sp-prototype .mx-local .mx-local-port {display:grid;justify-items:stretch;align-content:start;gap:6px;width:100%;min-width:0;min-height:64px;white-space:normal;overflow-wrap:anywhere}
+#sp-prototype .mx-generic-jack > .mx-local-port {flex:1}
+#sp-prototype .mx-local-port .mx-socket-badge {display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:4px;width:100%;padding:5px}
+#sp-prototype .mx-local-port .mx-socket-glyph {grid-column:1;grid-row:1;width:28px;height:28px;font-size:18px}
+#sp-prototype .mx-local-port .mx-socket-initials {font:750 12px/1 system-ui}
+#sp-prototype .mx-local-port .mx-signal-caption {grid-column:2;grid-row:1;min-width:0;overflow-wrap:anywhere;font:650 11px/1.25 system-ui;text-align:left}
+#sp-prototype .mx-local-port .mx-socket-badge b {grid-column:1;grid-row:2;color:var(--rw-accent);font:800 12px/1.2 system-ui}
+#sp-prototype .mx-local-port .mx-link-symbol {grid-column:2;grid-row:2;color:var(--rw-accent);font:750 10px/1.2 system-ui;text-align:left}
+#sp-prototype .mx-local-port .mx-port-name {display:none}
+#sp-prototype .mx-generic-jack>.rw-preamp {display:flex;align-items:center;justify-content:center;gap:3px;min-height:24px;width:100%;padding:3px;border:1px solid var(--rw-border);border-radius:4px;background:var(--rw-soft);color:var(--rw-ink);font:650 10px/1 system-ui}
 #sp-prototype .mx-right .sp-stagebox-device:not(.rw-panel-fullscreen *) {min-width:calc(var(--jack-min-width) * var(--panel-scale,1))!important}
 
-/* Keep the lamp and the socket independently touchable in the stagebox overview. */
+/* The stagebox overview retains larger touch targets for its separate controls. */
 #sp-prototype .rw-stagebox-hardware .sp-stagebox-device:not(.rw-panel-fullscreen *) {
   min-width:calc(var(--jack-min-width) * 2 * var(--panel-scale,1))!important;
 }
 #sp-prototype .rw-stagebox-hardware .sp-stagebox-hotspot:not(.rw-panel-fullscreen *)>.rw-preamp {
-  min-width:44px;min-height:44px;left:-12%;bottom:-12%;
+  min-width:44px;min-height:44px;top:96%;
 }
 @media(max-width:780px) {
   #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
 }
+
+/* Variant B: one sculpted double ring for the two physical stereo inputs. */
+#sp-prototype .rw-zoom-panel .sp-stagebox-device {container-type:inline-size}
+#sp-prototype .mx-stereo-pair {position:absolute;pointer-events:none}
+#sp-prototype .mx-stereo-frame {position:absolute;inset:0;width:100%;height:100%;overflow:visible;z-index:0;filter:drop-shadow(0 2px 2px #0008)}
+#sp-prototype .mx-stereo-link {position:absolute;z-index:2;left:50%;top:var(--stereo-link-top,13%);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .025);color:#faf7e6;white-space:nowrap;font:850 var(--stereo-link-font,max(9px,calc(var(--stereo-unit) * .105)))/1 system-ui;letter-spacing:calc(var(--stereo-unit) * .003)}
+#sp-prototype .mx-stereo-link svg {display:block;width:calc(var(--stereo-unit) * .22);height:calc(var(--stereo-unit) * .15)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port {border:0!important;outline:none;box-shadow:none!important;background:transparent!important}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port:focus-visible {outline:2px solid white;outline-offset:2px}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-socket-badge {border:1px solid #f7faec;background:radial-gradient(circle at 38% 26%,#fffdf0,#edecd9 86%);box-shadow:inset 0 0 0 1px #ffffffb3,0 0 0 1px #91a083;color:#082c17}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] b {top:2%;left:15%;right:auto;width:70%;height:36%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#07351b;font:850 44cqw/.9 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-socket-glyph {top:44%;height:28%;width:52%;font-size:31cqw}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-signal-caption {top:73%;left:10%;width:80%;font:800 max(9px,11cqw)/1.04 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-link-symbol {top:-12%;font-size:max(7px,10cqw)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-link-symbol {display:none}
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:0;top:14%;width:23%;height:23%;font:750 14cqw/1 system-ui;background:#123a23;border:1px solid #f8f9eb;box-shadow:0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power {position:absolute;z-index:4;pointer-events:auto;left:50%;top:52.94%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:calc(var(--stereo-unit) * .035);width:calc(var(--stereo-unit) * .53);height:calc(var(--stereo-unit) * .25);min-width:38px;min-height:18px;margin:0;padding:0 calc(var(--stereo-unit) * .035);border:calc(var(--stereo-unit) * .012) solid #be3647;border-radius:999px;background:linear-gradient(#581724,#340e17) #48131e;color:#ffcbd0;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 1px #f78d9c66;font:850 max(8px,calc(var(--stereo-unit) * .105))/1 system-ui;white-space:nowrap}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] {background:linear-gradient(#ee394b,#ad0e25) #ce1b31;color:#fff7ed;border-color:#ff7a86;box-shadow:0 0 0 calc(var(--stereo-unit) * .018) #102e19,0 1px 3px #0009,inset 0 1px 2px #ffc9cf99}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power i {width:calc(var(--stereo-unit) * .085);height:calc(var(--stereo-unit) * .085);min-width:5px;min-height:5px;border:1px solid #a44855;background:#4c1020;box-shadow:inset 0 1px 2px #0008}
+#sp-prototype .rw-zoom-panel .mx-stereo-pair .rw-preamp.mx-stereo-power[aria-pressed="true"] i {background:#ffd2d6;border-color:#ff7785;box-shadow:0 0 calc(var(--stereo-unit) * .045) #ff405b}
+
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-position="right"] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:auto;right:0}
+#sp-prototype .rw-stagebox-hardware .mx-stereo-power:not(.rw-panel-fullscreen *) {min-width:44px;min-height:44px}
 /* build-inline:end stageplot-routing-workspace-v2.css */
 </style>
 <style>
@@ -9694,13 +9738,13 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     const photo='<image href="'+href+'" width="'+m.frame[0]+'" height="'+m.frame[1]+'" preserveAspectRatio="none"/>';
     return '<svg class="sp-stagebox-picture" viewBox="'+m.viewBox.join(' ')+'" aria-hidden="true" data-stagebox-image="'+m.type+'"><defs><clipPath id="'+id+'">'+masks+'</clipPath><filter id="'+id+'-off" color-interpolation-filters="sRGB"><feColorMatrix values="0 .8 .2 0 0  0 .8 .2 0 0  0 .8 .2 0 0  0 0 0 1 0"/></filter></defs>'+photo+'<g clip-path="url(#'+id+')"><g filter="url(#'+id+'-off)">'+photo+'</g></g></svg>';
   }
-  function surface(type,renderPort,directions=['inputs','outputs']){
+  function surface(type,renderPort,directions=['inputs','outputs'],decoration={}){
     const m=get(type);if(!m)return '';
     const [x,y,w,h]=m.viewBox,percent=n=>Number(n.toFixed(4));
-    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
-    // Min width preserves a 44px target even on the densest 16-column rack.
-    const minWidth=Math.ceil(w/m.diameter*44);
-    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
+    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'"'+(decoration.portAttributes?.(direction,index+1)||'')+' style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
+    // Keep the circular instrument overlay and its edge badges readable.
+    const minWidth=Math.ceil(w/m.diameter*72);
+    return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+(decoration.overlay||'')+sockets+'</div></div>';
   }
   const api=Object.freeze({models,mixers,get,capacities,picture,artwork,surface});
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
@@ -10554,7 +10598,44 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     }
     return {banks,bankSocket,groups,at,staleMono};
   }
-  return {localMixer,preampKey,normalizePreampPower,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
+  // Resolve linked mixer strips to physical preamps, including source splits.
+  // A malformed/incomplete stereo group must never couple unrelated sockets.
+  function linkedPreampSockets(routing,boxes,device,port){
+    if(!device||typeof device.id!=='string'||!device.id||device.id==='@local'&&!device.type||!Number.isInteger(device.inputs)||!Number.isInteger(port)||port<1||port>device.inputs)return [];
+    routing=object(routing);
+    const original={device:preampKey(device),port},key=socket=>JSON.stringify([socket.device,socket.port]);
+    const devices=new Map([...(Array.isArray(boxes)?boxes:[]),localMixer(routing),device].map(item=>[item.id,item]));
+    const physical=patch=>{
+      const target=devices.get(patch?.id);
+      return target&&Number.isInteger(patch.port)&&patch.port>=1&&patch.port<=target.inputs?{device:preampKey(target),port:patch.port}:null;
+    };
+    const inventory=mixerInventory({...routing,inputs:Array.isArray(routing.inputs)?routing.inputs:[]},Array.isArray(boxes)?boxes:[]);
+    const sockets=new Map([[key(original),original]]),stereo=new Map(),links=new Map();
+    const collect=(row,socket)=>{
+      const side=/^Stereo ([LR])$/.exec(row.mode||'')?.[1];
+      if(!socket||!row.stereoGroup||!side)return;
+      const id=key(socket);sockets.set(id,socket);
+      if(!stereo.has(row.stereoGroup))stereo.set(row.stereoGroup,{L:new Set(),R:new Set()});
+      stereo.get(row.stereoGroup)[side].add(id);
+    };
+    for(const group of inventory.groups.values()){
+      const socket=physical(group.patch);if(!socket)continue;
+      for(const row of group.rows)collect(row,socket);
+    }
+    // A link can be created before sources are assigned. Its vacant strips still
+    // share the physical inputs selected by their channel banks or User In slots.
+    for(const row of routing.inputs||[])if(row.mixerVacant&&!row.mixerSourceId&&row.x32?.kind!=='aux')collect(row,physical(inventory.bankSocket(row.number)));
+    for(const pair of stereo.values()){
+      if(pair.L.size!==1||pair.R.size!==1)continue;
+      const [left]=pair.L,[right]=pair.R;if(left===right)continue;
+      if(!links.has(left))links.set(left,new Set());if(!links.has(right))links.set(right,new Set());
+      links.get(left).add(right);links.get(right).add(left);
+    }
+    const selected=new Set([key(original)]);
+    for(const id of selected)for(const partner of links.get(id)||[])selected.add(partner);
+    return [...selected].map(id=>sockets.get(id));
+  }
+  return {localMixer,preampKey,normalizePreampPower,linkedPreampSockets,explicitSocket,writeMixerSocket,mixerSourceId,mixerInventory,mixerInsertPlan,mixerStereoPlan,diModels,normalizeDevices,rowExtras,ensure,createDevice,updateDevice,assignDevice,clearDevice,occupancy,additionalPickup,removeInput};
 });
 /* build-inline:end stageplot-routing-model-v2.js */
 /* build-inline:start stageplot-routing-workspace-v2.js — generiert via scripts/build-inline.cjs, nicht hier editieren */
@@ -10594,20 +10675,58 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
     let mixerOpen=true, mixerProject, mixerTab='channels', mixerChannel=1, mixerSignal='', mixerDevice='', mixerPort=null, bankEditor=null, addingBox=false;
     const zoomByModel = new Map();
     const zoomSteps = [1, 1.5, 2, 3, 4];
-    function preampButton(device,port){
-      const key=global.StageplotRoutingModel.preampKey(device);
-      const active=state.routing.preampPower?.some(entry=>entry.device===key&&entry.port===port)===true;
-      const label=device.name+' · IN '+port+' · 48 V';
-      return '<button type="button" class="rw-preamp"'+attrs({'data-rw-preamp':port,'data-device':device.id,'data-model':device.type,'aria-pressed':String(active),'aria-label':label,title:label+(active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i></button>';
+    function preampSockets(device,port){
+      return global.StageplotRoutingModel.linkedPreampSockets(state.routing,state.boxes,device,port);
+    }
+    function preampButton(device,port,ports){
+      const sockets=preampSockets(device,port),powered=socket=>state.routing.preampPower?.some(entry=>entry.device===socket.device&&entry.port===socket.port)===true;
+      const active=sockets.length>0&&sockets.every(powered),mixed=!active&&sockets.some(powered);
+      const label=device.name+' · IN '+(ports?ports.join(' + '):port)+' · 48 V'+(sockets.length>1?' · gemeinsam für '+sockets.length+' Kanäle':'');
+      return '<button type="button" class="rw-preamp'+(ports?' mx-stereo-power':'')+'"'+attrs({'data-rw-preamp':port,'data-rw-preamp-pair':ports?.join('|'),'data-device':device.id,'data-model':device.type,'aria-pressed':mixed?'mixed':String(active),'aria-label':label,title:label+(mixed?' · Teilweise ein':active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i><span aria-hidden="true">48 V</span></button>';
+    }
+    const stereoChain='<svg viewBox="0 0 32 22" aria-hidden="true"><path d="M14 5H9a6 6 0 0 0 0 12h5M18 5h5a6 6 0 0 1 0 12h-5M11 11h10" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function stereoSurfacePairs(model,device){
+      if(!device)return [];
+      const inventory=global.StageplotRoutingModel.mixerInventory(state.routing,state.boxes),key=global.StageplotRoutingModel.preampKey(device),used=new Set(),pairs=[];
+      for(let port=1;port<=device.inputs;port++){
+        if(used.has(port))continue;
+        const row=physicalOrigin(inventory.at(device.id,port));if(!row?.stereoGroup)continue;
+        const sockets=preampSockets(device,port);if(sockets.length!==2||sockets.some(socket=>socket.device!==key))continue;
+        const ports=sockets.map(socket=>socket.port).sort((a,b)=>a-b),points=ports.map(n=>model.ports.inputs[n-1]);
+        if(points.some(point=>!point))continue;
+        const dx=Math.abs(points[0][0]-points[1][0]),dy=Math.abs(points[0][1]-points[1][1]);
+        // A shared face follows neighbouring physical jacks, including reversed numbering.
+        // Distant/cross-device pairs retain their joint power action without covering other jacks.
+        if(dy>model.diameter*.25||dx<model.diameter*.9||dx>model.diameter*1.7)continue;
+        const x=Math.min(points[0][0],points[1][0]),y=(points[0][1]+points[1][1])/2;
+        const neighbours=model.ports.inputs.filter((point,index)=>!ports.includes(index+1)&&Math.abs(point[1]-y)<model.diameter*.25);
+        const gap=Math.min(...neighbours.map(([px])=>Math.min(Math.abs(px-x),Math.abs(px-x-dx))));
+        const radius=Math.min(.565,gap/model.diameter/2-.03);
+        ports.forEach(n=>used.add(n));pairs.push({id:device.id+':'+ports.join(':'),ports,x,y,distance:dx,radius});
+      }
+      return pairs;
+    }
+    function stereoPairOverlay(model,device,pair){
+      const d=model.diameter,s=pair.distance/d,r=pair.radius,a=r/Math.SQRT2,b=r*.5,c=r*Math.sqrt(3)/2,f=n=>Number(n.toFixed(6));
+      const path='M '+f(b)+' '+f(-c)+' A '+r+' '+r+' 0 1 0 '+f(a)+' '+f(a)+
+        ' C '+f(a+.22)+' '+f(a-.22)+' '+f(s-a-.22)+' '+f(a-.22)+' '+f(s-a)+' '+f(a)+
+        ' A '+r+' '+r+' 0 1 0 '+f(s-b)+' '+f(-c)+
+        ' C '+f(s-b-.10)+' '+f(-c+.06)+' '+f(s/2+.14)+' '+f(-r)+' '+f(s/2)+' '+f(-r)+
+        ' C '+f(s/2-.14)+' '+f(-r)+' '+f(b+.10)+' '+f(-c+.06)+' '+f(b)+' '+f(-c)+' Z';
+      const [vx,vy,vw,vh]=model.viewBox,w=s+1.28,h=1.36;
+      const style='left:'+f((pair.x-.64*d-vx)/vw*100)+'%;top:'+f((pair.y-.72*d-vy)/vh*100)+'%;width:'+f(w*d/vw*100)+'%;height:'+f(h*d/vh*100)+'%;--stereo-unit:calc(100cqw * '+f(d/vw)+');--stereo-link-top:'+f((.72-r+.022)/h*100)+'%;--stereo-link-font:max('+(r<.56?'8px':'9px')+',calc(var(--stereo-unit) * '+(r<.56?'.095':'.105')+'))';
+      return '<div class="mx-stereo-pair"'+attrs({'data-rw-stereo-ports':pair.ports.join('|'),'data-stereo-device':device.id,style})+'><svg class="mx-stereo-frame" viewBox="-.64 -.72 '+f(w)+' '+h+'" preserveAspectRatio="none" aria-hidden="true"><path d="'+path+'" fill="#102e19" stroke="#15231a" stroke-width=".095"/><path d="'+path+'" fill="#102e19" stroke="#caff20" stroke-width=".026"/></svg><div class="mx-stereo-link" aria-label="Stereolink">'+stereoChain+'<span>STEREO</span></div>'+preampButton(device,pair.ports[0],pair.ports)+'</div>';
     }
     function zoomableSurface(type, renderPort, directions, deviceId) {
-      const device=mixerDevices().find(item=>item.id===deviceId);
-      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'?preampButton(device,port):'');
+      const device=mixerDevices().find(item=>item.id===deviceId),model=global.StageplotStageboxes.get(type);
+      const pairs=directions?.includes('inputs')===false?[]:stereoSurfacePairs(model,device),byPort=new Map(pairs.flatMap(pair=>pair.ports.map(port=>[port,pair])));
+      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'&&!byPort.has(port)?preampButton(device,port):'');
+      const decoration={portAttributes:(direction,port)=>direction==='inputs'&&byPort.has(port)?attrs({'data-stereo-pair':byPort.get(port).id,'data-stereo-position':model.ports.inputs[port-1][0]===byPort.get(port).x?'left':'right'}):'',overlay:pairs.map(pair=>stereoPairOverlay(model,device,pair)).join('')};
       const scale = zoomByModel.get(type) || 1;
       const control = (action, label, symbol, disabled) => '<button type="button"'+attrs({'data-panel-zoom':action,'aria-label':label,title:label})+(disabled?' disabled':'')+'>'+symbol+'</button>';
       return '<div class="rw-zoom-panel" data-zoom-model="'+esc(type)+'"'+attrs({'data-panel-device':deviceId})+' style="--panel-scale:'+scale+'"><div class="rw-panel-controls" role="group" aria-label="Buchsenansicht zoomen">'+
         control('out','Ansicht verkleinern','−',scale===1)+'<output aria-live="polite">'+Math.round(scale*100)+' %</output>'+
-        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions)+'</div>';
+        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions,decoration)+'</div>';
     }
     function gridSurface(device,port) {
       const grid=Array.from({length:device.inputs},(_,i)=>port(i+1)).join('');
@@ -10626,7 +10745,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       dialog.setAttribute('aria-label', name + ' · Buchsenansicht');
       dialog.style.setProperty('--device-ratio', model ? model.viewBox[2] / model.viewBox[3] : 3);
       dialog.innerHTML = '<header><div class="rw-full-devices" role="group" aria-label="Gerät wählen">'+choices+'</div><button type="button" data-panel-collapse>Vollbild schließen</button></header><div class="rw-full-frame"></div>';
-      const previousScroll = viewport.scrollLeft;
+      const previousScroll = viewport.scrollLeft, previousTop = viewport.scrollTop;
       expandedView = {deviceId:current?.id,model:panel.dataset.zoomModel, picker:!!panel.closest('.mx-picker')};
       panel.append(dialog);
       dialog.lastElementChild.append(viewport);
@@ -10645,6 +10764,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         panel.append(viewport);
         dialog.remove();
         viewport.scrollLeft = previousScroll;
+        viewport.scrollTop = previousTop;
         panel.querySelector('[data-panel-expand]').focus({preventScroll:true});
       }
       dialog.querySelector('[data-panel-collapse]').onclick = close;
@@ -10654,8 +10774,12 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (!expandedView || expandedView.picker !== inPicker) return;
       const panel = [...host.querySelectorAll('.rw-zoom-panel')].find(el=>
         el.dataset.zoomModel===expandedView.model && el.dataset.panelDevice===expandedView.deviceId && !!el.closest('.mx-picker')===inPicker);
-      if (panel) expandPanel(panel);
-      else expandedView=null;
+      if (panel) {
+        const viewport=panel.querySelector('.sp-stagebox-device-scroll');
+        const left=expandedView.resetScroll?0:(expandedView.scroll?.left??viewport.scrollLeft),top=expandedView.resetScroll?0:(expandedView.scroll?.top??viewport.scrollTop);
+        expandPanel(panel);
+        viewport.scrollLeft=left;viewport.scrollTop=top;
+      } else expandedView=null;
     }
     function zoomSurface(control) {
       const panel=control.closest('.rw-zoom-panel'), model=panel.dataset.zoomModel;
@@ -10686,10 +10810,20 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       [/sax/,'saxophone'],[/geige/,'violin'],[/playback|clicktrack/,'laptop']
     ];
     const drumBadges=[
-      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png'],[/snare/,'snare.webp'],
-      [/hi[ -]?hat/,'hihat-overhead-v2.png'],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
+      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png',{width:512,height:543,crop:[0,0,512,320]}],[/snare/,'snare.webp'],
+      [/hi[ -]?hat/,'hihat-overhead-v2.png',{width:313,height:512,crop:[0,0,313,310]}],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
       [/ride/,'ride.webp'],[/crash|overhead/,'crash.webp']
     ];
+    function socketInstrumentArt(type,source,drum){
+      if(drum){
+        const frame=drum[2],file='stageplot-assets/drums/'+drum[1];
+        return frame?'<svg viewBox="'+frame.crop.join(' ')+'" aria-hidden="true"><image href="'+file+'" width="'+frame.width+'" height="'+frame.height+'"/></svg>':'<img src="'+file+'" alt="">';
+      }
+      const thumbnail=api.socketIcon?.(source?{...source,angle:0}:type);
+      if(thumbnail)return thumbnail;
+      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
+      return compactSymbol||(type?icon(source?{...source,angle:0}:type):'');
+    }
     function socketBadge(row){
       if(!row)return '';
       const name=row.instrument||row.generatedInstrument||'Signal', text=normalized(name);
@@ -10698,12 +10832,11 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       const match=!source&&!drum&&Object.values(state.catalog||{}).filter(c=>c.instrument!==false).find(c=>
         [c.id,c.name,c.short].some(label=>label&&normalized(baseName(name)).trim()===normalized(label)));
       const type=source?.type||match?.id||socketAliases.find(([re])=>re.test(text))?.[1];
-      // Stageplan keyboards are drawn from above and become a thin line at socket size.
-      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
-      const glyph=compactSymbol|| (drum?'<img src="stageplot-assets/drums/'+drum[1]+'" alt="">':type?icon(source||type):'');
+      const glyph=socketInstrumentArt(type,source,drum);
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">⚭</span>':'')+'</span>';
+      return '<span class="mx-socket-badge"'+attrs({'data-stereo-side':side||undefined})+' aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">STEREO</span>':'')+'</span>';
     }
+    const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];
     let sourcePicker=null;
     const transferNames={move:'Verschieben',duplicate:'Duplizieren',switch:'Tauschen'};
@@ -10834,7 +10967,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
           const label='IN '+n+' · '+(occupied?row.instrument:'Frei');
           const name=occupied?row.instrument.split(' · ').filter(part=>part!=='L'&&part!=='R').pop():'';
           const marker=occupied?'<span class="mx-port-name">'+esc(name||row.instrument)+'</span>':'<span class="mx-port-free" aria-hidden="true">+</span>';
-          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+marker+(overlay?'':'IN '+n)+'</button>';
+          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+(overlay?socketNumber(n)+(occupied?'':marker):marker+'IN '+n)+'</button>';
         };
         const hardware=overlay?zoomableSurface(device.type,(_,n)=>port(n),['inputs'],device.id):gridSurface(device,port);
         return '<dialog class="mx-picker" aria-labelledby="mx-picker-title"><header><h2 id="mx-picker-title">User In '+userSlot+' · Buchse für CH '+userSlot+'</h2><button data-rw-mixer-close aria-label="Schließen">×</button></header><div class="mx-devices">'+devices.map(item=>mixerChoice(item.name,'mixer-user-device',item.id,device.id===item.id)).join('')+'</div><div class="mx-port-key"><span>＋ Frei</span><span>● Belegt</span></div>'+hardware+(error?'<p role="alert">'+esc(error)+'</p>':'')+'</dialog>';
@@ -10947,7 +11080,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         const origin=physicalOrigin(group),names=origin?.instrument||'';
         const split=splitLabel(group);
         const label=['IN '+n,names||'Frei',split].filter(Boolean).join(' · ');
-        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?'':'IN '+n)+'</button>';
+        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?socketNumber(n):'IN '+n)+'</button>';
       };
       const hardware=overlay?zoomableSurface(selected.type,(direction,n)=>{
         if(direction==='inputs')return socket(n);
@@ -11839,7 +11972,9 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (destroyed) return;
       const previousTab=host.dataset.tab, outerScroller=host.closest('#sp-routing'), outerScroll=outerScroller?.scrollTop||0;
       if(previousTab)tabScrolls.set(previousTab,{main:host.querySelector('.rw-main')?.scrollTop||0,outer:outerScroll});
-      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>el.scrollLeft);
+      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>({left:el.scrollLeft,top:el.scrollTop}));
+      const fullscreenViewport=host.querySelector('.rw-panel-fullscreen .sp-stagebox-device-scroll');
+      if(expandedView&&fullscreenViewport)expandedView.scroll={left:fullscreenViewport.scrollLeft,top:fullscreenViewport.scrollTop};
       const focus = preserveFocus(), mainScroll = host.querySelector('.rw-main')?.scrollTop || 0, listScroll = host.querySelector('.rw-source-list')?.scrollTop || 0, outputScroll = host.querySelector('.rw-output-port-list')?.scrollTop || 0, flowScroll = host.querySelector('.rw-flow-scroll')?.scrollLeft || 0;
       state = api.getState() || {}; state.routing = state.routing || state.stage?.routing || {inputs:[],outputs:[]};
       localMixer=global.StageplotRoutingModel.localMixer(state.routing);
@@ -11859,7 +11994,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
       if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
       if (host.querySelector('.rw-flow-scroll')) host.querySelector('.rw-flow-scroll').scrollLeft = flowScroll;
-      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]||0;});
+      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]?.left||0;el.scrollTop=deviceScrolls[i]?.top||0;});
       if(host.querySelector('.mx-scroll'))host.querySelector('.mx-scroll').scrollTop=mixerScroll;
       const dialog = host.querySelector('[data-rw-di-dialog]');
       if (dialog) {
@@ -11900,6 +12035,7 @@ if(typeof module!=='undefined')module.exports=StageplotObjectMenu;
         if(!next || next.id===expandedView.deviceId)return;
         expandedView.deviceId=next.id;
         expandedView.model=next.type;
+        expandedView.resetScroll=true;
         if(expandedView.picker)sourcePicker.deviceId=next.id;
         else {
           mixerOpen=true;
@@ -17964,10 +18100,20 @@ function drawRoutingStage(host,ids=[]){
     node.style.opacity=active||!selectedIds.size?'1':'.62';
   }
 }
+function routingSocketIcon(value){
+  const o=typeof value==='string'?{type:value}:value;if(!o||!byId[o.type])return '';
+  const c=objectCatalog(o),type=c.art||c.id;
+  const frame=stageplotStringFrame(type)||stageplotBassFrame(type)||stageplotAcousticFrame(type);
+  if(!frame)return '';
+  // Reuse the generated local image, with a body-and-neck crop for the small
+  // circular overlay rather than the object's rotated metric stage frame.
+  const [x,y,w,h]=frame.viewBox,cropHeight=Math.min(h,w*1.15);
+  return '<svg viewBox="'+[x-w*.06,y+h-cropHeight,w*1.12,cropHeight].join(' ')+'" aria-hidden="true"><image href="stageplot-assets/objects/'+esc(frame.asset)+'" width="'+frame.imageWidth+'" height="'+frame.imageHeight+'"/></svg>';
+}
 function renderRouting(){
   if(!stage)return;syncRoutingFromStage(false,false);
   const host=$('sp-routing-workspace-v2');if(!host)return;
-  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
+  if(!routingWorkspaceV2)routingWorkspaceV2=StageplotRoutingWorkspace.create(host,{getState:routingWorkspaceState,socketIcon:routingSocketIcon,objectIcon:value=>{const o=typeof value==='string'?objects.find(o=>o.type===value)||{type:value}:value;return o&&byId[o.type]?icon(objectCatalog(o),o):'';},microphoneIcon:name=>{const photo=StageplotMics.photo(name);return photo?'<img src="'+esc(photo)+'" alt="'+esc(name)+'" loading="lazy">':'';},renderStage:drawRoutingStage,dispatch:dispatchRoutingWorkspace,announce:say});
   $('sp-routing').dataset.workspaceV2='true';routingWorkspaceV2.render();
 }
 function openRoutingSource(direction,rowId){
@@ -18382,13 +18528,20 @@ function dispatchRoutingWorkspace(action){
     if(['completeMixerStereo','insertMixerSignal','transferMixerSignal','transferToMixerSocket'].includes(action.type))initializeMixerPatch(routing);
     switch(action.type){
       case 'setPreampPower':{
-        const device=action.device==='@local'?StageplotRoutingModel.localMixer(routing):allRoutingStageboxes().find(box=>box.id===action.device);
+        const boxes=allRoutingStageboxes(),local=StageplotRoutingModel.localMixer(routing);
+        const device=action.device==='@local'?local:boxes.find(box=>box.id===action.device);
         if(!device||device.type!==action.model||!Number.isInteger(action.port)||action.port<1||action.port>device.inputs)
           throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
-        if(objects.find(o=>o.id===device.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
-        const key=StageplotRoutingModel.preampKey(device);
-        const active=(routing.preampPower||[]).filter(entry=>entry.device!==key||entry.port!==action.port);
-        if(action.enabled===true)active.push({device:key,port:action.port});
+        const sockets=StageplotRoutingModel.linkedPreampSockets(routing,boxes,device,action.port);
+        const devices=new Map([...boxes,local].map(item=>[StageplotRoutingModel.preampKey(item),item]));
+        for(const socket of sockets){
+          const target=devices.get(socket.device);
+          if(!target||socket.port<1||socket.port>target.inputs)throw Error('Dieser Mikrofoneingang ist nicht verfügbar.');
+          if(objects.find(o=>o.id===target.id)?.locked)throw Error('Diese Stagebox ist gesperrt.');
+        }
+        const affected=new Set(sockets.map(socket=>JSON.stringify([socket.device,socket.port])));
+        const active=(routing.preampPower||[]).filter(entry=>!affected.has(JSON.stringify([entry.device,entry.port])));
+        if(action.enabled===true)active.push(...sockets);
         routing.preampPower=active;
         break;
       }

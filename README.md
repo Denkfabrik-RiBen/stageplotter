@@ -6,7 +6,7 @@ Eigenständiger, offline-first Stageplot-Designer mit Bühneneditor, Drum-, Perc
 
 Die Bausteinbibliothek zeigt acht Kategorien als kompakte Liste und gruppiert Modellvarianten. Die globale Suche findet Objekte und einzelne Modelle. Auf dem Desktop öffnet die Modellauswahl neben der Bibliothek; Favoriten lassen sich dort für einzelne Modelle speichern. Zusätzliche Abschnitte bündeln Zubehör. Auf dem Handy ist die Kategorienliste aufklappbar; Suchtreffer bleiben über der Tastatur erreichbar.
 
-**Aktuelle Version:** v0.1.0-beta.32 · 14. November 2026. Release Notes sind in der App über `?` erreichbar.
+**Aktuelle Version:** v0.1.0-beta.33 · 16. November 2026. Release Notes sind in der App über `?` erreichbar.
 
 Die Routing-Arbeitsfläche zeigt Quellen, Monitoring und Stagebox mit direkt bearbeitbaren Signalwegen ohne Dropdowns. Die Ausgangseinstellungen sind direkt in der Quellenkarte erreichbar: Anzahl, Buchsenart, Namen, Verwendung und Stereo-Paare. Auch Quellen mit null Ausgängen bleiben auswählbar. Abnahmeart und Anschluss stehen als kompakte, ständig sichtbare Tasten in der Abnahmekarte; zusätzliche Bearbeiten-Stifte entfallen. Mono-Quellen teilen bei Bedarf eine physische Stereo-DI; Portbelegung und Signalformat bleiben getrennt. Jede physische DI erscheint je Quelle einmal mit ihren beiden Eingängen; erst bei den Pultkanälen teilen sich die Wege. Mehrere Ausgangspaare wie Piano auf Out 1/2 und Synth auf Out 3/4 nutzen eigene DIs. J48, J48 Stereo und ProD2 zeigen lokale Original-Produktfotos. Die Auswahl öffnet als Popup mit sieben gleich großen Modellkacheln. Vier generische DIs ergänzen die Originalfotos: passiv/aktiv, jeweils Mono/Stereo. Feine Pfeile verbinden die Stationen des Signalwegs. [Bedienung](AUDIO_BEDIENUNG.md).
 
@@ -20,7 +20,7 @@ Die Online-Freigabe benötigt die Einrichtung aus [ACCOUNT_SETUP.md](ACCOUNT_SET
 
 `npm run check` prüft alle Laufzeitmodule und eingebetteten Skripte. `npm test` prüft den Build-Abgleich und die 51 Funktionstestgruppen. Für Browserprüfungen einmal `npm ci` und `npx playwright install chromium webkit` ausführen, danach `npm run test:browser` und `BROWSER=webkit npm run test:browser`. Ohne `APP_URL` startet und beendet der Lauf seinen eigenen lokalen Vorschau-Server. Screenshots und die PDF-Gegenprobe mit Schlagzeug und Jazzmaster liegen in `test-results/`. GitHub Actions prüft Chromium und WebKit; beide müssen vor dem Deployment erfolgreich sein. Details: [Mobile QA](MOBILE_QA.md).
 
-Einzelne Browserabläufe lassen sich gezielt wiederholen, etwa mit `npm run test:browser -- check-editor-ux.cjs check-routing-list-ux.cjs`. Ohne Dateinamen laufen alle 24 Prüfungen.
+Einzelne Browserabläufe lassen sich gezielt wiederholen, etwa mit `npm run test:browser -- check-editor-ux.cjs check-routing-list-ux.cjs`. Ohne Dateinamen laufen alle 25 Prüfungen.
 
 ## Funktionen
 

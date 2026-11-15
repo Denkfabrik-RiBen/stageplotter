@@ -34,20 +34,58 @@
     let mixerOpen=true, mixerProject, mixerTab='channels', mixerChannel=1, mixerSignal='', mixerDevice='', mixerPort=null, bankEditor=null, addingBox=false;
     const zoomByModel = new Map();
     const zoomSteps = [1, 1.5, 2, 3, 4];
-    function preampButton(device,port){
-      const key=global.StageplotRoutingModel.preampKey(device);
-      const active=state.routing.preampPower?.some(entry=>entry.device===key&&entry.port===port)===true;
-      const label=device.name+' · IN '+port+' · 48 V';
-      return '<button type="button" class="rw-preamp"'+attrs({'data-rw-preamp':port,'data-device':device.id,'data-model':device.type,'aria-pressed':String(active),'aria-label':label,title:label+(active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i></button>';
+    function preampSockets(device,port){
+      return global.StageplotRoutingModel.linkedPreampSockets(state.routing,state.boxes,device,port);
+    }
+    function preampButton(device,port,ports){
+      const sockets=preampSockets(device,port),powered=socket=>state.routing.preampPower?.some(entry=>entry.device===socket.device&&entry.port===socket.port)===true;
+      const active=sockets.length>0&&sockets.every(powered),mixed=!active&&sockets.some(powered);
+      const label=device.name+' · IN '+(ports?ports.join(' + '):port)+' · 48 V'+(sockets.length>1?' · gemeinsam für '+sockets.length+' Kanäle':'');
+      return '<button type="button" class="rw-preamp'+(ports?' mx-stereo-power':'')+'"'+attrs({'data-rw-preamp':port,'data-rw-preamp-pair':ports?.join('|'),'data-device':device.id,'data-model':device.type,'aria-pressed':mixed?'mixed':String(active),'aria-label':label,title:label+(mixed?' · Teilweise ein':active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i><span aria-hidden="true">48 V</span></button>';
+    }
+    const stereoChain='<svg viewBox="0 0 32 22" aria-hidden="true"><path d="M14 5H9a6 6 0 0 0 0 12h5M18 5h5a6 6 0 0 1 0 12h-5M11 11h10" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    function stereoSurfacePairs(model,device){
+      if(!device)return [];
+      const inventory=global.StageplotRoutingModel.mixerInventory(state.routing,state.boxes),key=global.StageplotRoutingModel.preampKey(device),used=new Set(),pairs=[];
+      for(let port=1;port<=device.inputs;port++){
+        if(used.has(port))continue;
+        const row=physicalOrigin(inventory.at(device.id,port));if(!row?.stereoGroup)continue;
+        const sockets=preampSockets(device,port);if(sockets.length!==2||sockets.some(socket=>socket.device!==key))continue;
+        const ports=sockets.map(socket=>socket.port).sort((a,b)=>a-b),points=ports.map(n=>model.ports.inputs[n-1]);
+        if(points.some(point=>!point))continue;
+        const dx=Math.abs(points[0][0]-points[1][0]),dy=Math.abs(points[0][1]-points[1][1]);
+        // A shared face follows neighbouring physical jacks, including reversed numbering.
+        // Distant/cross-device pairs retain their joint power action without covering other jacks.
+        if(dy>model.diameter*.25||dx<model.diameter*.9||dx>model.diameter*1.7)continue;
+        const x=Math.min(points[0][0],points[1][0]),y=(points[0][1]+points[1][1])/2;
+        const neighbours=model.ports.inputs.filter((point,index)=>!ports.includes(index+1)&&Math.abs(point[1]-y)<model.diameter*.25);
+        const gap=Math.min(...neighbours.map(([px])=>Math.min(Math.abs(px-x),Math.abs(px-x-dx))));
+        const radius=Math.min(.565,gap/model.diameter/2-.03);
+        ports.forEach(n=>used.add(n));pairs.push({id:device.id+':'+ports.join(':'),ports,x,y,distance:dx,radius});
+      }
+      return pairs;
+    }
+    function stereoPairOverlay(model,device,pair){
+      const d=model.diameter,s=pair.distance/d,r=pair.radius,a=r/Math.SQRT2,b=r*.5,c=r*Math.sqrt(3)/2,f=n=>Number(n.toFixed(6));
+      const path='M '+f(b)+' '+f(-c)+' A '+r+' '+r+' 0 1 0 '+f(a)+' '+f(a)+
+        ' C '+f(a+.22)+' '+f(a-.22)+' '+f(s-a-.22)+' '+f(a-.22)+' '+f(s-a)+' '+f(a)+
+        ' A '+r+' '+r+' 0 1 0 '+f(s-b)+' '+f(-c)+
+        ' C '+f(s-b-.10)+' '+f(-c+.06)+' '+f(s/2+.14)+' '+f(-r)+' '+f(s/2)+' '+f(-r)+
+        ' C '+f(s/2-.14)+' '+f(-r)+' '+f(b+.10)+' '+f(-c+.06)+' '+f(b)+' '+f(-c)+' Z';
+      const [vx,vy,vw,vh]=model.viewBox,w=s+1.28,h=1.36;
+      const style='left:'+f((pair.x-.64*d-vx)/vw*100)+'%;top:'+f((pair.y-.72*d-vy)/vh*100)+'%;width:'+f(w*d/vw*100)+'%;height:'+f(h*d/vh*100)+'%;--stereo-unit:calc(100cqw * '+f(d/vw)+');--stereo-link-top:'+f((.72-r+.022)/h*100)+'%;--stereo-link-font:max('+(r<.56?'8px':'9px')+',calc(var(--stereo-unit) * '+(r<.56?'.095':'.105')+'))';
+      return '<div class="mx-stereo-pair"'+attrs({'data-rw-stereo-ports':pair.ports.join('|'),'data-stereo-device':device.id,style})+'><svg class="mx-stereo-frame" viewBox="-.64 -.72 '+f(w)+' '+h+'" preserveAspectRatio="none" aria-hidden="true"><path d="'+path+'" fill="#102e19" stroke="#15231a" stroke-width=".095"/><path d="'+path+'" fill="#102e19" stroke="#caff20" stroke-width=".026"/></svg><div class="mx-stereo-link" aria-label="Stereolink">'+stereoChain+'<span>STEREO</span></div>'+preampButton(device,pair.ports[0],pair.ports)+'</div>';
     }
     function zoomableSurface(type, renderPort, directions, deviceId) {
-      const device=mixerDevices().find(item=>item.id===deviceId);
-      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'?preampButton(device,port):'');
+      const device=mixerDevices().find(item=>item.id===deviceId),model=global.StageplotStageboxes.get(type);
+      const pairs=directions?.includes('inputs')===false?[]:stereoSurfacePairs(model,device),byPort=new Map(pairs.flatMap(pair=>pair.ports.map(port=>[port,pair])));
+      const renderSocket=(direction,port)=>renderPort(direction,port)+(device&&direction==='inputs'&&!byPort.has(port)?preampButton(device,port):'');
+      const decoration={portAttributes:(direction,port)=>direction==='inputs'&&byPort.has(port)?attrs({'data-stereo-pair':byPort.get(port).id,'data-stereo-position':model.ports.inputs[port-1][0]===byPort.get(port).x?'left':'right'}):'',overlay:pairs.map(pair=>stereoPairOverlay(model,device,pair)).join('')};
       const scale = zoomByModel.get(type) || 1;
       const control = (action, label, symbol, disabled) => '<button type="button"'+attrs({'data-panel-zoom':action,'aria-label':label,title:label})+(disabled?' disabled':'')+'>'+symbol+'</button>';
       return '<div class="rw-zoom-panel" data-zoom-model="'+esc(type)+'"'+attrs({'data-panel-device':deviceId})+' style="--panel-scale:'+scale+'"><div class="rw-panel-controls" role="group" aria-label="Buchsenansicht zoomen">'+
         control('out','Ansicht verkleinern','−',scale===1)+'<output aria-live="polite">'+Math.round(scale*100)+' %</output>'+
-        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions)+'</div>';
+        control('in','Ansicht vergrößern','+',scale===4)+'<button type="button" data-panel-expand aria-haspopup="dialog">⛶ Vollbild</button></div>'+global.StageplotStageboxes.surface(type,renderSocket,directions,decoration)+'</div>';
     }
     function gridSurface(device,port) {
       const grid=Array.from({length:device.inputs},(_,i)=>port(i+1)).join('');
@@ -66,7 +104,7 @@
       dialog.setAttribute('aria-label', name + ' · Buchsenansicht');
       dialog.style.setProperty('--device-ratio', model ? model.viewBox[2] / model.viewBox[3] : 3);
       dialog.innerHTML = '<header><div class="rw-full-devices" role="group" aria-label="Gerät wählen">'+choices+'</div><button type="button" data-panel-collapse>Vollbild schließen</button></header><div class="rw-full-frame"></div>';
-      const previousScroll = viewport.scrollLeft;
+      const previousScroll = viewport.scrollLeft, previousTop = viewport.scrollTop;
       expandedView = {deviceId:current?.id,model:panel.dataset.zoomModel, picker:!!panel.closest('.mx-picker')};
       panel.append(dialog);
       dialog.lastElementChild.append(viewport);
@@ -85,6 +123,7 @@
         panel.append(viewport);
         dialog.remove();
         viewport.scrollLeft = previousScroll;
+        viewport.scrollTop = previousTop;
         panel.querySelector('[data-panel-expand]').focus({preventScroll:true});
       }
       dialog.querySelector('[data-panel-collapse]').onclick = close;
@@ -94,8 +133,12 @@
       if (!expandedView || expandedView.picker !== inPicker) return;
       const panel = [...host.querySelectorAll('.rw-zoom-panel')].find(el=>
         el.dataset.zoomModel===expandedView.model && el.dataset.panelDevice===expandedView.deviceId && !!el.closest('.mx-picker')===inPicker);
-      if (panel) expandPanel(panel);
-      else expandedView=null;
+      if (panel) {
+        const viewport=panel.querySelector('.sp-stagebox-device-scroll');
+        const left=expandedView.resetScroll?0:(expandedView.scroll?.left??viewport.scrollLeft),top=expandedView.resetScroll?0:(expandedView.scroll?.top??viewport.scrollTop);
+        expandPanel(panel);
+        viewport.scrollLeft=left;viewport.scrollTop=top;
+      } else expandedView=null;
     }
     function zoomSurface(control) {
       const panel=control.closest('.rw-zoom-panel'), model=panel.dataset.zoomModel;
@@ -126,10 +169,20 @@
       [/sax/,'saxophone'],[/geige/,'violin'],[/playback|clicktrack/,'laptop']
     ];
     const drumBadges=[
-      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png'],[/snare/,'snare.webp'],
-      [/hi[ -]?hat/,'hihat-overhead-v2.png'],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
+      [/kick|bassdrum|bass drum/,'kick-overhead-v3.png',{width:512,height:543,crop:[0,0,512,320]}],[/snare/,'snare.webp'],
+      [/hi[ -]?hat/,'hihat-overhead-v2.png',{width:313,height:512,crop:[0,0,313,310]}],[/floor[ -]?tom/,'floor-tom.webp'],[/tom/,'rack-tom.webp'],
       [/ride/,'ride.webp'],[/crash|overhead/,'crash.webp']
     ];
+    function socketInstrumentArt(type,source,drum){
+      if(drum){
+        const frame=drum[2],file='stageplot-assets/drums/'+drum[1];
+        return frame?'<svg viewBox="'+frame.crop.join(' ')+'" aria-hidden="true"><image href="'+file+'" width="'+frame.width+'" height="'+frame.height+'"/></svg>':'<img src="'+file+'" alt="">';
+      }
+      const thumbnail=api.socketIcon?.(source?{...source,angle:0}:type);
+      if(thumbnail)return thumbnail;
+      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
+      return compactSymbol||(type?icon(source?{...source,angle:0}:type):'');
+    }
     function socketBadge(row){
       if(!row)return '';
       const name=row.instrument||row.generatedInstrument||'Signal', text=normalized(name);
@@ -138,12 +191,11 @@
       const match=!source&&!drum&&Object.values(state.catalog||{}).filter(c=>c.instrument!==false).find(c=>
         [c.id,c.name,c.short].some(label=>label&&normalized(baseName(name)).trim()===normalized(label)));
       const type=source?.type||match?.id||socketAliases.find(([re])=>re.test(text))?.[1];
-      // Stageplan keyboards are drawn from above and become a thin line at socket size.
-      const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
-      const glyph=compactSymbol|| (drum?'<img src="stageplot-assets/drums/'+drum[1]+'" alt="">':type?icon(source||type):'');
+      const glyph=socketInstrumentArt(type,source,drum);
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">⚭</span>':'')+'</span>';
+      return '<span class="mx-socket-badge"'+attrs({'data-stereo-side':side||undefined})+' aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||'<span class="mx-socket-initials">'+esc(initials||'♪')+'</span>')+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">STEREO</span>':'')+'</span>';
     }
+    const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];
     let sourcePicker=null;
     const transferNames={move:'Verschieben',duplicate:'Duplizieren',switch:'Tauschen'};
@@ -274,7 +326,7 @@
           const label='IN '+n+' · '+(occupied?row.instrument:'Frei');
           const name=occupied?row.instrument.split(' · ').filter(part=>part!=='L'&&part!=='R').pop():'';
           const marker=occupied?'<span class="mx-port-name">'+esc(name||row.instrument)+'</span>':'<span class="mx-port-free" aria-hidden="true">+</span>';
-          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+marker+(overlay?'':'IN '+n)+'</button>';
+          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+(overlay?socketNumber(n)+(occupied?'':marker):marker+'IN '+n)+'</button>';
         };
         const hardware=overlay?zoomableSurface(device.type,(_,n)=>port(n),['inputs'],device.id):gridSurface(device,port);
         return '<dialog class="mx-picker" aria-labelledby="mx-picker-title"><header><h2 id="mx-picker-title">User In '+userSlot+' · Buchse für CH '+userSlot+'</h2><button data-rw-mixer-close aria-label="Schließen">×</button></header><div class="mx-devices">'+devices.map(item=>mixerChoice(item.name,'mixer-user-device',item.id,device.id===item.id)).join('')+'</div><div class="mx-port-key"><span>＋ Frei</span><span>● Belegt</span></div>'+hardware+(error?'<p role="alert">'+esc(error)+'</p>':'')+'</dialog>';
@@ -387,7 +439,7 @@
         const origin=physicalOrigin(group),names=origin?.instrument||'';
         const split=splitLabel(group);
         const label=['IN '+n,names||'Frei',split].filter(Boolean).join(' · ');
-        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?'':'IN '+n)+'</button>';
+        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?socketNumber(n):'IN '+n)+'</button>';
       };
       const hardware=overlay?zoomableSurface(selected.type,(direction,n)=>{
         if(direction==='inputs')return socket(n);
@@ -1279,7 +1331,9 @@
       if (destroyed) return;
       const previousTab=host.dataset.tab, outerScroller=host.closest('#sp-routing'), outerScroll=outerScroller?.scrollTop||0;
       if(previousTab)tabScrolls.set(previousTab,{main:host.querySelector('.rw-main')?.scrollTop||0,outer:outerScroll});
-      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>el.scrollLeft);
+      const deviceScrolls=[...host.querySelectorAll('.sp-stagebox-device-scroll')].map(el=>({left:el.scrollLeft,top:el.scrollTop}));
+      const fullscreenViewport=host.querySelector('.rw-panel-fullscreen .sp-stagebox-device-scroll');
+      if(expandedView&&fullscreenViewport)expandedView.scroll={left:fullscreenViewport.scrollLeft,top:fullscreenViewport.scrollTop};
       const focus = preserveFocus(), mainScroll = host.querySelector('.rw-main')?.scrollTop || 0, listScroll = host.querySelector('.rw-source-list')?.scrollTop || 0, outputScroll = host.querySelector('.rw-output-port-list')?.scrollTop || 0, flowScroll = host.querySelector('.rw-flow-scroll')?.scrollLeft || 0;
       state = api.getState() || {}; state.routing = state.routing || state.stage?.routing || {inputs:[],outputs:[]};
       localMixer=global.StageplotRoutingModel.localMixer(state.routing);
@@ -1299,7 +1353,7 @@
       if (host.querySelector('.rw-source-list')) host.querySelector('.rw-source-list').scrollTop = listScroll;
       if (host.querySelector('.rw-output-port-list')) host.querySelector('.rw-output-port-list').scrollTop = outputScroll;
       if (host.querySelector('.rw-flow-scroll')) host.querySelector('.rw-flow-scroll').scrollLeft = flowScroll;
-      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]||0;});
+      host.querySelectorAll('.sp-stagebox-device-scroll').forEach((el,i)=>{el.scrollLeft=deviceScrolls[i]?.left||0;el.scrollTop=deviceScrolls[i]?.top||0;});
       if(host.querySelector('.mx-scroll'))host.querySelector('.mx-scroll').scrollTop=mixerScroll;
       const dialog = host.querySelector('[data-rw-di-dialog]');
       if (dialog) {
@@ -1340,6 +1394,7 @@
         if(!next || next.id===expandedView.deviceId)return;
         expandedView.deviceId=next.id;
         expandedView.model=next.type;
+        expandedView.resetScroll=true;
         if(expandedView.picker)sourcePicker.deviceId=next.id;
         else {
           mixerOpen=true;
