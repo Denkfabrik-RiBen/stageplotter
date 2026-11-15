@@ -17,11 +17,11 @@ Ben testet den Branch selbst, bevor etwas auf `main` geht. Nicht mergen, keinen 
 | `a3a9808` | `CODE_ANALYSE.md` | – |
 | `bbf5a7f` | Projektliste lädt jeden Entwurf einzeln; unlesbare Einträge bleiben gespeichert; Hinweis mit „Rohdaten sichern“ im Dashboard. Toter Schlagzeug-Zweig (`large`) entfernt. Doppelter Schlüssel `stairsSteps` entfernt. | `npm test`, 24 Browserabläufe (Chromium), eigenes Szenario im Browser |
 | `1d692dd` | Podeste mit fehlenden Maßen bekommen Standardwerte statt das Laden abzubrechen | `npm test`, 24 Browserabläufe (Chromium), eigenes Szenario im Browser |
-| letzter Commit („wip“) | siehe nächster Abschnitt | **nur** `npm run check` und `npm test` |
+| letzter Commit („wip“) | siehe nächster Abschnitt | `npm run check`, `npm test`, alle 24 Browserabläufe in Chromium und WebKit sowie manuelle Kernabläufe |
 
-## Letzter Commit: noch nicht fertig geprüft
+## Letzter Commit: vollständig geprüft, weiterhin nicht veröffentlichen
 
-Die Arbeit wurde mitten in der Abschlussprüfung gestoppt. `npm run check` und `npm test` (51 Gruppen) bestehen. **Die Browser-Suite ist seit diesen Änderungen nicht komplett gelaufen.** Nur `scripts/check-editor-ux.cjs` lief nach der Paletten-Änderung einmal durch, also vor den Löschungen danach.
+Die Abschlussprüfung ist am 15. November nachgeholt: `npm ci`, `npm run check` und `npm test` (51 Gruppen) bestehen. Alle 24 Browserabläufe bestehen in Chromium und WebKit. Direkt in der laufenden App geprüft: Drum Designer öffnen und ein Cowbell aus der erst dann aufgebauten Palette auf die Fläche setzen (danach verworfen), Routing-Werkzeuge und CSV-Export, X32-Szenendialog sowie PDF-Druckfluss. Die automatisierte Routing-Prüfung deckt den CSV-Import zusätzlich mit ab.
 
 Inhalt:
 
@@ -40,14 +40,14 @@ Inhalt:
 
 `routingDirectionLabel` sah in der Analyse tot aus und wurde kurz entfernt. Der aktive CSV-Import nutzt die Funktion. Sie ist wieder drin. Lehre: Die Liste in `CODE_ANALYSE.md` Abschnitt 2.1 ist nur für Funktionen sicher, die **ohne** die Annahme „Listener ist tot“ unerreichbar sind. Nach jedem Löschen ESLint mit `no-undef` über die zusammengeführten Inline-Skripte laufen lassen.
 
-## Aufgaben für Codex
+## Erledigter Abschluss für Codex
 
-In dieser Reihenfolge:
+1. **Abschlussprüfung:** erledigt – `npm ci`, Syntax, 51 Funktionstestgruppen sowie je 24 Browserabläufe in Chromium und WebKit sind grün.
+2. **Manuelle Kernabläufe:** erledigt – Drum-Palette, Percussion-Platzierung mit Abbrechen, Routing-Werkzeuge/CSV-Export, X32-Dialog und PDF-Druckfluss öffnen korrekt.
+3. **Release-Texte:** bewusst offen bis Ben den Branch freigibt. Dann erst In-App-Release-Notes, Versionsbadge, Hilfe-Fußzeile, README, `package.json` und `package-lock.json` auf sichtbare Änderungen angleichen.
+4. **`CODE_ANALYSE.md`:** nachgezogen für 1.4, 1.6, 2.1, 2.2 und die Browser-Abnahme.
 
-1. **Abschlussprüfung nachholen.** `npm ci`, `npm run check`, `npm test`, `npm run test:browser`, `BROWSER=webkit npm run test:browser`. Schlägt etwas fehl, zuerst den letzten Commit verdächtigen.
-2. **Im Browser von Hand prüfen** (`npm run dev`): Drum Designer öffnen und ein Percussion-Teil aus der Palette hinzufügen; Routing öffnen, CSV importieren und exportieren, X32-Dialog öffnen; ein Projekt als PDF exportieren.
-3. **In-App-Release-Notes, Versionsbadge, Hilfe-Fußzeile, README, `package.json`, `package-lock.json`** erst angleichen, wenn Ben den Branch freigibt. Sichtbar für Nutzer sind: Hinweis bei unlesbaren Projekten, Podeste mit Standardmaßen, schnellerer Start.
-4. `CODE_ANALYSE.md` nachziehen: Abschnitt 2.1/2.2 (teilweise erledigt), 1.4 (zwei Skripte gelöscht), 1.6 (erledigt).
+Der Branch bleibt bis zu Bens Test und Freigabe ohne Merge, Pull Request oder Deployment.
 
 ## Offen und bewusst nicht angefasst
 

@@ -1,6 +1,6 @@
 # Code-Analyse
 
-Stand: 14. November 2026, `v0.1.0-beta.32`, Basis-Commit `a3716b7`.
+Stand: 15. November 2026, Branch `claude/confident-franklin-jl5zd8`, Basis-Commit `a3716b7` (`v0.1.0-beta.32`).
 
 Dieser Bericht ändert keinen App-Code. Er listet Fehler, toten Code, verwaiste Dateien und Verbesserungen auf, jeweils mit der Art des Belegs.
 
@@ -11,7 +11,7 @@ Dieser Bericht ändert keinen App-Code. Er listet Fehler, toten Code, verwaiste 
 | `npm run check` | bestanden |
 | `npm test` | 51 Testgruppen bestanden, Build synchron |
 | `npm run test:browser` (Chromium) | 24 Abläufe bestanden |
-| WebKit | nicht gelaufen |
+| `BROWSER=webkit npm run test:browser` | 24 Abläufe bestanden |
 | Eigener Browser-Lauf: ein Projekt mit allen 135 Katalogobjekten, alle fünf Ansichten | 135 von 135 gerendert, keine JavaScript-Ausnahme, keine Konsolenfehler, kein HTTP-Fehler |
 
 Belegarten im Text:
@@ -61,14 +61,16 @@ Die App erreicht den Zweig nicht: Alle drei Aufrufe für Schlagzeuge übergeben 
 
 `stageplot-studio.html:22283` setzt `stairsSteps` zweimal im selben Objektliteral. Der zweite Wert (`source.stairsSteps||3`) überschreibt den ersten, der auf 1 bis 24 begrenzt und gerundet ist. Die Begrenzung wirkt dadurch nicht.
 
-### 1.4 Zwei Browserprüfungen sind kaputt und laufen nirgends (mittel, reproduziert)
+### 1.4 Zwei Browserprüfungen sind kaputt und laufen nirgends (mittel, reproduziert, behoben)
+
+**Behoben auf diesem Branch:** Beide überholten Skripte sind gelöscht. `check-mic-layers.cjs` und `check-mic-head-direction.cjs` decken die aktuelle Mikrofon-Ebenen- und Richtungsdarstellung ab; die vollständigen Browser-Suiten in Chromium und WebKit sind am 15. November durchgelaufen.
 
 | Skript | Ergebnis | Ursache |
 | --- | --- | --- |
-| `scripts/check-iem-monitors.cjs` | Timeout | klickt `#sp-output-tab` der alten Routing-Tabelle, die dauerhaft unsichtbar ist |
-| `scripts/check-boom-microphones.cjs` | `0 !== 3` | eine Zählung liefert 0 statt 3; die Ursache habe ich nicht untersucht |
+| `scripts/check-iem-monitors.cjs` | gelöscht | klickte `#sp-output-tab` der dauerhaft unsichtbaren alten Routing-Tabelle |
+| `scripts/check-boom-microphones.cjs` | gelöscht | erwartete drei `<use>`-Elemente, die es seit der Mikrofon-Ebenen-Überarbeitung nicht mehr gibt |
 
-Beide fehlen in `scripts/run-browser-tests.cjs`. Ebenfalls nicht im Lauf, aber grün: `check-mobile-warning.cjs`, `check-qol.cjs`, `check-touch-rotation.cjs`. Diese drei gehören in die Liste, sonst altern sie genauso.
+Weiter nicht im Lauf, aber grün: `check-mobile-warning.cjs`, `check-qol.cjs`, `check-touch-rotation.cjs`. Diese drei verwenden noch `chromium.launch({channel:'chrome'})`; vor einer Aufnahme in `run-browser-tests.cjs` müssen sie auf `launchBrowser()` umgestellt werden, sonst wären sie in der CI nicht lauffähig.
 
 ### 1.5 Vorschau und Produktion unterscheiden sich (mittel, statisch)
 
@@ -76,9 +78,9 @@ Beide fehlen in `scripts/run-browser-tests.cjs`. Ebenfalls nicht im Lauf, aber g
 
 Der Dokument-Wrapper existiert zweimal, in `build-inline.cjs` und in `stageplot-preview.py`. Der Vorschau fehlt die Meta-Description.
 
-### 1.6 Kleinere Robustheitspunkte (niedrig, statisch)
+### 1.6 Kleinere Robustheitspunkte (niedrig, statisch, teilweise behoben)
 
-- `stageplot-share-v1.js`: `await response.json()` wirft bei einer Nicht-JSON-Antwort (etwa einer HTML-Fehlerseite) einen `SyntaxError`, der als rohe Meldung beim Nutzer landet.
+- **Behoben auf diesem Branch:** `stageplot-share-v1.js` übersetzt Nicht-JSON-Antworten (etwa HTML-Fehlerseiten) in eine verständliche Fehlermeldung. Drei Fälle sichern dies in `stageplot-share-v1.test.cjs` ab.
 - Dort gilt jeder `TypeError` als „Keine Verbindung“, auch ein Programmierfehler.
 
 ### 1.7 Geprüft ohne Befund
@@ -89,7 +91,9 @@ Der Dokument-Wrapper existiert zweimal, in `build-inline.cjs` und in `stageplot-
 
 ## 2. Toter Code
 
-### 2.1 Alte Routing-Oberfläche (größter Posten, reproduziert)
+### 2.1 Alte Routing-Oberfläche (größter Posten, reproduziert, teilweise bereinigt)
+
+**Teilweise bereinigt auf diesem Branch:** `renderLegacyRouting`, `exportRoutingCsv`, ihr CSV-Listener sowie `audioPatchButton`, `audioRoutingRows` und `audioMicBrand` sind entfernt. `routingDirectionLabel` bleibt absichtlich erhalten: Der aktuelle CSV-Import verwendet die Funktion. Markup, weitere alte Listener und deren CSS bleiben ein eigener, größerer Arbeitsschritt.
 
 `renderRouting` setzt immer `data-workspace-v2="true"`. Die Regel in `stageplot-studio.html:6939` blendet dann jedes Kind von `#sp-routing` außer dem Workspace v2 aus. Im Browser bestätigt: alle sieben alten Kinder haben `display:none`.
 
@@ -99,11 +103,10 @@ Daran hängt JavaScript, das niemand mehr auslösen kann. Per AST-Auswertung erm
 
 | Ort | Was |
 | --- | --- |
-| `stageplot-studio.html:19049` | `renderLegacyRouting`, nie aufgerufen |
-| `stageplot-studio.html:17725` | `routingDirectionLabel` |
-| `stageplot-studio.html:20259` | `exportRoutingCsv` (v2 exportiert selbst, `stageplot-routing-host-v2.js:781`) |
+| `stageplot-studio.html` | `renderLegacyRouting` und `exportRoutingCsv` entfernt; v2 exportiert selbst in `stageplot-routing-host-v2.js` |
+| `stageplot-studio.html` | `routingDirectionLabel` bleibt für den aktiven CSV-Import |
 | `stageplot-studio.html:20009` bis 20046, 20437 bis 20440 | 17 Listener auf unsichtbaren Elementen: Tabs, Zeilen-Klick, Drag-and-drop, Reset, PDF, CSV, XLSX |
-| `stageplot-audio-v1.js:42`, 55, 74, 226, 227, 232, 237 | `audioVisibleRows`, `renderAudioFind`, `audioPatchButton`, `audioObjectKey`, `groupAudioInstruments`, `moveAudioInstrument`, `audioRoutingRows` |
+| `stageplot-audio-v1.js` | `audioPatchButton` und `audioRoutingRows` entfernt; `audioVisibleRows`, `renderAudioFind`, `audioObjectKey`, `groupAudioInstruments` und `moveAudioInstrument` bleiben Kandidaten |
 | `stageplot-audio-v1.js:619` bis 694 | 11 Listener auf unsichtbaren Elementen |
 
 Weiter in Gebrauch und nicht zu löschen: `#sp-routing-csv-file` mit seinem `change`-Listener und `parseRoutingCsv`. Workspace v2 klickt das versteckte Dateifeld programmatisch an (`stageplot-studio.html:18435`).
@@ -113,14 +116,14 @@ Zwei Dinge sind beim Aufräumen zu beachten:
 - `stageplot-audio-v1.test.cjs` und `stageplot-playback-v1.test.cjs` prüfen Teile dieses Codes. Die Tests halten ihn künstlich am Leben und müssen mit angepasst werden.
 - Meine Auswertung zählt nur Funktionen, die ausschließlich über die toten Einstiege erreichbar sind. Zugehöriges CSS in `stageplot-audio-v1.css` und im Hauptblock ist nicht mitgezählt.
 
-### 2.2 Einzelne ungenutzte Funktionen und Variablen (statisch)
+### 2.2 Einzelne ungenutzte Funktionen und Variablen (statisch, teilweise bereinigt)
+
+**Bereinigt auf diesem Branch:** `kickTop`, `kickOverhead` und der nach dem Schlagzeugzweig verwaiste Helfer `pedal` sind entfernt.
 
 | Ort | Name |
 | --- | --- |
-| `stageplot-symbols-v3.js:290` | `kickTop` |
-| `stageplot-symbols-v3.js:297` | `kickOverhead` |
-| `stageplot-studio.html:20705` | `drumMicPopupChannel` wird gesetzt, nie gelesen |
-| `stageplot-studio.html:19056`, 19387, 21144, 16824, 16537, 15783, 15157, 9849 | lokale Variablen `boxes`, `patch`, `clone`, `active`, `o`, `height`, `rows`, `slot` ohne Verwendung |
+| `stageplot-studio.html` | `drumMicPopupChannel` wird gesetzt, nie gelesen |
+| `stageplot-studio.html` | lokale Variablen `slot`, `rows`, `height`, `o`, `active` und `clone` ohne Verwendung |
 
 ### 2.3 Totes CSS (Kandidat)
 
@@ -151,20 +154,20 @@ Einschränkung: Der Browser-Lauf hat 154 Asset-Abrufe erfasst, aber nicht jeden 
 
 | Datei | Befund |
 | --- | --- |
-| `scripts/check-iem-monitors.cjs` | kaputt, prüft die alte Routing-Tabelle, nirgends referenziert |
-| `scripts/check-boom-microphones.cjs` | schlägt fehl, nur in `MASSTAB.md` erwähnt |
+| `scripts/check-iem-monitors.cjs` | auf diesem Branch gelöscht; überholte Prüfung der alten Routing-Tabelle |
+| `scripts/check-boom-microphones.cjs` | auf diesem Branch gelöscht; überholte Erwartung an frühere Mikrofon-SVGs |
 | `SESSION_HANDOFF.md` | Stand 7. September, beschreibt `beta.6`, nennt den Branch `codex/feedback-editor-production` und den Pfad `/Users/ben/Downloads/…`. Nennt 18 bzw. 20 Testgruppen. |
-| `README.md` | Zeile 21 nennt 51 Testgruppen, Zeile 220 nennt 40. Zeile 23 nennt 23 Browserprüfungen, es sind 24. Mit 44 kB ist die Datei eher ein Änderungsprotokoll als eine Einführung. |
+| `README.md` | Der aktuelle Browser-Testumfang ist auf 24 korrigiert. Die Datei ist weiterhin eher Änderungsprotokoll als eine Einführung. |
 | `MOBILE_QA.md` | nennt 38 Testgruppen |
-| `CLAUDE.md`, `AGENTS.md`, `SESSION_HANDOFF.md` | zählen fünf bzw. drei Build-Quellen auf. `scripts/build-inline.cjs` bettet 38 Dateien ein. Wer nur die Liste liest, bearbeitet etwa `stageplot-audio-v1.js` ohne `npm run build`. `npm test` fängt das ab, die Anleitung ist trotzdem falsch. |
+| `CLAUDE.md`, `AGENTS.md` | verweisen jetzt auf `MODULES` in `scripts/build-inline.cjs`; `SESSION_HANDOFF.md` bleibt historisch und damit veraltet. |
 
 ## 4. Verbesserungen
 
 Nach Nutzen geordnet.
 
 1. **Bilder der Gitarren, Bässe, Stageboxen und DI-Boxen nach WebP wandeln.** 29 PNGs in `objects/` belegen 34 MB, zehn in `stageboxes/` 17 MB, vier in `di/` 7 MB. Jede Datei hat 1,2 bis 2,1 MB. Die älteren WebP-Assets liegen bei rund 100 kB. Von 87 MB Assets entfallen 67 MB auf PNG. Das betrifft Ladezeit, Offline-Speicher und die Größe exportierter Dateien, weil der Export die Bildbytes einbettet. Die Regel aus `CLAUDE.md` bleibt gewahrt: Es ist eine Formatwandlung bestehender Rasterbilder, keine neue Zeichnung.
-2. **Entwurfsbibliothek fehlertolerant laden** (siehe 1.1).
-3. **Alte Routing-Oberfläche entfernen** (siehe 2.1). Das ist der einzige Abschnitt, in dem toter Code, tote Tests und totes Markup zusammenhängen. Ein eigener Branch mit Browser-Gegenprobe ist sinnvoll.
+2. **Entwurfsbibliothek fehlertolerant laden** (siehe 1.1) ist auf diesem Branch umgesetzt und in Chromium und WebKit geprüft.
+3. **Alte Routing-Oberfläche weiter entfernen** (siehe 2.1). Der ungefährliche erste Teil ist umgesetzt; Markup, weitere Listener und CSS gehören weiter auf einen eigenen Branch mit Browser-Gegenprobe.
 4. **Testlisten automatisch bilden.** `scripts/run-tests.cjs` und `scripts/run-browser-tests.cjs` führen feste Listen. Eine neue Datei läuft erst mit, wenn jemand sie einträgt. Fünf Browserprüfungen sind so herausgefallen. Ein Glob über `*.test.cjs` und `scripts/check-*.cjs` verhindert das.
 5. **`index.html` nicht einchecken.** Die Datei ist ein 2,2 MB großes Abbild von `stageplot-studio.html`. Jede Änderung steht doppelt im Diff. Der Deploy-Job kann sie mit `npm run build` erzeugen. Abwägung: Wer das Repository ohne Node klont, hat dann keine fertige Seite.
 6. **Lint in die CI aufnehmen.** Eine ESLint-Konfiguration mit `no-undef`, `no-dupe-keys` und `no-unused-vars` über die zusammengeführten Skripte hat 1.2, 1.3 und 2.2 in Sekunden gefunden. `npm run check` prüft nur die Syntax.
@@ -174,6 +177,6 @@ Nach Nutzen geordnet.
 ## 5. Was nicht geprüft wurde
 
 - Die rund 7.000 handgeschriebenen Zeilen in `stageplot-studio.html` habe ich nicht Zeile für Zeile gelesen. Die Fehlersuche stützt sich auf Werkzeuge, Stichproben und den Browser-Lauf. Logikfehler in selten genutzten Abläufen können unentdeckt sein.
-- WebKit, echte Touch-Geräte und der Supabase-Betrieb (Login, Sync, Freigaben gegen einen echten Server).
+- Echte Touch-Geräte und der Supabase-Betrieb (Login, Sync, Freigaben gegen einen echten Server). WebKit lief am 15. November mit allen 24 Browserabläufen durch.
 - Die SQL-Migrationen in `supabase/migrations/`.
 - Ungenutzte Mitglieder der Modul-Schnittstellen (`StageplotMics.typical`, `StageplotPrint.copyArtwork` sind Kandidaten). Meine Auswertung dafür war zu grob für eine belastbare Aussage.
