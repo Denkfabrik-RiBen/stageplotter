@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const {launchBrowser, artifactPath, engine, assertNoOverflow} = require('./browser-qa.cjs');
 
 const consoles = {'x32-local':32,'x32-compact':16,'x32-rack':16,'x32-producer':16,wing:8,xr18:16,cdm32:32,avantis:12,'sq-rack':16,'cq-20b':16,'qu-16':16,'sq-5':16,ui16:12,ui24r:20};
+const fullscreenViewports = [{width:800,height:900},{width:1024,height:900},{width:1280,height:900},{width:1440,height:500}];
 const settled = page => page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const savedRouting = page => page.evaluate(() => {
   const {generatedAt, ...routing} = JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing;
@@ -63,6 +64,14 @@ async function checkLabels(panel, count, label) {
   assert.deepEqual(problems,[],label);
 }
 
+async function checkReadableInputs(panel, label) {
+  const undersized=await panel.locator('[data-rw-mixer-port]').evaluateAll(inputs=>inputs.flatMap(input=>{
+    const width=input.getBoundingClientRect().width;
+    return width<43?[{port:input.dataset.rwMixerPort,width}]:[];
+  }));
+  assert.deepEqual(undersized,[],label+' keeps physical inputs at a readable width');
+}
+
 (async()=>{
   const browser=await launchBrowser();
   try{
@@ -81,6 +90,19 @@ async function checkLabels(panel, count, label) {
       await checkLabels(page.locator('.rw-panel-fullscreen:modal'),count,model+' fullscreen');
       if(['x32-local','cdm32','ui24r'].includes(model))await page.locator('.rw-panel-fullscreen:modal').screenshot({path:artifactPath('mixer-labels-'+model+'-fullscreen-'+engine+'.png')});
       await page.keyboard.press('Escape');
+      for(const viewport of fullscreenViewports){
+        await page.setViewportSize(viewport);
+        await settled(page);
+        await panel.locator('[data-panel-expand]').click();
+        await settled(page);
+        const fullscreen=page.locator('.rw-panel-fullscreen:modal'),label=model+' fullscreen '+viewport.width+'x'+viewport.height;
+        await checkLabels(fullscreen,count,label);
+        await checkReadableInputs(fullscreen,label);
+        if(model==='x32-local'&&(viewport.width===800||viewport.height===500))await fullscreen.screenshot({path:artifactPath('mixer-labels-'+model+'-fullscreen-'+viewport.width+'x'+viewport.height+'-'+engine+'.png')});
+        await page.keyboard.press('Escape');
+      }
+      await page.setViewportSize({width:1440,height:900});
+      await settled(page);
       if(['x32-local','cdm32','ui24r'].includes(model)){
         await panel.screenshot({path:artifactPath('mixer-labels-'+model+'-'+engine+'.png')});
         for(let i=0;i<2;i++)await panel.getByRole('button',{name:'Ansicht vergrößern'}).click();
@@ -110,6 +132,6 @@ async function checkLabels(panel, count, label) {
       assert.deepEqual(await savedRouting(page),before,model+' view changes preserve saved routing and preamp state');
     }
     assert.deepEqual(errors,[]);
-    console.log('PASS: mixer signal labels on all 14 consoles, occupied mono/stereo inputs, 48 V, zoom, fullscreen and mobile ('+engine+').');
+    console.log('PASS: mixer signal labels on all 14 consoles, occupied mono/stereo inputs, 48 V, zoom, fullscreen at 800/1024/1280px and 1440x500, and mobile ('+engine+').');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

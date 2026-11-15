@@ -694,8 +694,9 @@
 #sp-prototype dialog.rw-panel-fullscreen[open] {position:fixed;inset:0;box-sizing:border-box;margin:0;width:100%;height:100dvh;max-width:none;max-height:none;padding:12px;border:0;border-radius:0;background:var(--sp-panel,#fff);color:var(--sp-ink,#18211a);display:grid;grid-template-rows:auto minmax(0,1fr);gap:8px}
 #sp-prototype .rw-panel-fullscreen header {display:flex;align-items:center;justify-content:space-between;gap:12px}
 #sp-prototype .rw-full-frame {container-type:size;display:grid;place-items:center;min-width:0;min-height:0}
-#sp-prototype .rw-panel-fullscreen .sp-stagebox-device-scroll {padding:0;overflow:visible;width:min(100cqw,calc(96cqh * var(--device-ratio)));background:transparent}
-#sp-prototype .rw-panel-fullscreen .sp-stagebox-device {min-width:0!important;width:100%}
+/* Preserve readable socket targets at every window size, including short windows. */
+#sp-prototype .rw-panel-fullscreen .sp-stagebox-device-scroll {padding:16px 4px 28px;overflow:auto;max-height:100%;width:min(100cqw,calc(96cqh * var(--device-ratio)));background:transparent}
+#sp-prototype .rw-panel-fullscreen .sp-stagebox-device {min-width:var(--jack-min-width)!important;width:100%}
 #sp-prototype .rw-panel-fullscreen .sp-stagebox-hotspot {container-type:inline-size}
 #sp-prototype .rw-full-devices {display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;padding:3px}
 #sp-prototype .rw-full-devices button,#sp-prototype [data-panel-collapse] {flex:none;white-space:nowrap}
@@ -777,8 +778,5 @@
   min-width:44px;min-height:44px;top:90%;
 }
 @media(max-width:780px) {
-  /* Keep readable labels in portrait fullscreen; pan the hardware horizontally. */
-  #sp-prototype .rw-panel-fullscreen .sp-stagebox-device-scroll {width:100%;max-height:100%;overflow:auto;padding:16px 4px 28px}
-  #sp-prototype .rw-panel-fullscreen .sp-stagebox-device {min-width:var(--jack-min-width)!important}
   #sp-prototype .sp-routing-workspace-v2 {min-width:0;max-width:100%;overflow-x:clip}
 }

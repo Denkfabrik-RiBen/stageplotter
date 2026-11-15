@@ -168,9 +168,16 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const screen=await fullscreen.boundingBox();
     assert.equal(screen.width,1440);
     assert.equal(screen.height,900);
-    const panelArea=await fullscreen.locator('.sp-stagebox-device').boundingBox();
+    const hardwareViewport=fullscreen.locator('.sp-stagebox-device-scroll');
+    const panelArea=await hardwareViewport.boundingBox();
     assert(panelArea.x>=0 && panelArea.x+panelArea.width<=1440 && panelArea.y+panelArea.height<=900);
     assert.equal(await fullscreen.locator('[data-rw-mixer-port]').count(),32);
+    assert(await fullscreen.locator('[data-rw-mixer-port]').evaluateAll(inputs=>inputs.every(input=>input.getBoundingClientRect().width>=43)),'Fullscreen keeps the inputs readable');
+    for(const n of [1,32]){
+      await socket(n).scrollIntoViewIfNeeded();
+      const input=await socket(n).boundingBox(),viewport=await hardwareViewport.boundingBox();
+      assert(input.x>=viewport.x-1 && input.x+input.width<=viewport.x+viewport.width+1 && input.y>=viewport.y-1 && input.y+input.height<=viewport.y+viewport.height+1,'Fullscreen input '+n+' can be reached by scrolling');
+    }
     await fullscreen.locator('[data-full-device="station-1"]').click();
     assert.equal(await fullscreen.locator('[data-rw-mixer-port]').count(),8);
     await fullscreen.locator('[data-rw-mixer-port="1"]').click();
