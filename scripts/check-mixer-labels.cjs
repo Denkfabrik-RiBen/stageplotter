@@ -254,6 +254,120 @@ async function checkFullscreenPreampScroll(page) {
   }
 }
 
+async function openGenericStagebox(page) {
+  await page.reload();
+  await page.locator('.sp-steps [data-view="routing"]').click();
+  await page.locator('[data-rw-tab="mixer"]').click();
+  await page.locator('[data-rw-mixer-device="station-1"]').click();
+  await settled(page);
+}
+
+async function genericStageboxFixture(page,count) {
+  await fixture(page,'x32-local',count);
+  await page.evaluate(count=>{
+    const key='stageplot-studio:workspace:v1',workspace=JSON.parse(localStorage.getItem(key)),doc=workspace.entry.document;
+    doc.objects=[{id:'station-1',type:'stagebox-'+count,label:'Generische Stagebox '+count,x:1,y:1,angle:0}];
+    for(const [i,row] of doc.stage.routing.inputs.entries()){
+      row.stagebox='station-1';row.stageboxPort=i+1;delete row.localPort;
+    }
+    doc.stage.routing.userInputs=Array.from({length:32},(_,i)=>i<count?{id:'station-1',port:i+1}:null);
+    doc.stage.routing.preampPower=[{device:'station-1',port:3}];
+    const draftKey='stageplot-studio:drafts:v1',library=JSON.parse(localStorage.getItem(draftKey));
+    library.entries[library.entries.findIndex(entry=>entry.id===workspace.entry.id)]=workspace.entry;
+    localStorage.setItem(key,JSON.stringify(workspace));localStorage.setItem(draftKey,JSON.stringify(library));
+  },count);
+  await openGenericStagebox(page);
+  // Persist the changed physical device through the same app normalizer used by real drafts.
+  const mono=page.locator('.mx-right [data-rw-preamp="3"]');
+  for(const enabled of [false,true]){
+    await mono.click();
+    await page.waitForFunction(enabled=>{
+      const power=JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower||[];
+      return power.some(entry=>entry.device==='station-1'&&entry.port===3)===enabled;
+    },enabled);
+  }
+  await settled(page);
+}
+
+async function checkGenericCards(surface,count,label) {
+  assert.equal(await surface.locator('.mx-local-port .mx-socket-badge').count(),count,label+' shows all occupied signals');
+  const problems=await surface.evaluate(root=>{
+    const issues=[],rect=element=>element.getBoundingClientRect();
+    const inside=(outer,inner)=>inner.left>=outer.left-1&&inner.right<=outer.right+1&&inner.top>=outer.top-1&&inner.bottom<=outer.bottom+1;
+    const overlaps=(a,b)=>Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;
+    const cards=[...root.querySelectorAll('.mx-local-port')],lamps=[...root.querySelectorAll('[data-rw-preamp]')];
+    for(const card of cards){
+      const port=card.dataset.rwMixerPort||card.dataset.rwMixerUserPort,badge=card.querySelector('.mx-socket-badge');
+      if(!badge){issues.push('IN '+port+' is missing its signal badge');continue;}
+      const badgeBox=rect(badge),cardBox=rect(card),glyph=badge.querySelector('.mx-socket-glyph'),caption=badge.querySelector('.mx-signal-caption');
+      if(!inside(cardBox,badgeBox))issues.push('IN '+port+' badge escapes its card');
+      if(!glyph||!caption?.textContent.trim()){issues.push('IN '+port+' is missing its instrument or signal name');continue;}
+      for(const [name,element] of [['instrument',glyph],['caption',caption],...([...badge.querySelectorAll('b,.mx-link-symbol')].filter(element=>!element.matches('.mx-link-symbol')||getComputedStyle(element).display!=='none').map(element=>['stereo marker',element]))]){
+        const bounds=rect(element);
+        if(!bounds.width||!bounds.height){issues.push('IN '+port+' '+name+' is hidden');continue;}
+        if(!inside(badgeBox,bounds)||!inside(cardBox,bounds))issues.push('IN '+port+' '+name+' escapes its badge/card');
+        for(const lamp of lamps)if(overlaps(bounds,rect(lamp)))issues.push('IN '+port+' '+name+' overlaps 48 V '+lamp.dataset.rwPreamp);
+        for(const neighbour of cards)if(neighbour!==card&&overlaps(bounds,rect(neighbour)))issues.push('IN '+port+' '+name+' enters another input card');
+      }
+      if(overlaps(rect(glyph),rect(caption)))issues.push('IN '+port+' instrument and caption overlap');
+      if(!glyph.textContent.trim()&&!glyph.querySelector('img,svg'))issues.push('IN '+port+' instrument is empty');
+      for(const text of [caption,...[...badge.querySelectorAll('b,.mx-link-symbol')].filter(element=>getComputedStyle(element).display!=='none')]){
+        const font=parseFloat(getComputedStyle(text).fontSize);
+        if(font<9||font>20)issues.push('IN '+port+' text has an unreadable generic-card font size '+font+'px');
+      }
+    }
+    for(let i=0;i<cards.length;i++)for(let j=i+1;j<cards.length;j++)if(overlaps(rect(cards[i]),rect(cards[j])))issues.push('Input cards overlap');
+    return issues;
+  });
+  if(problems.length)await surface.screenshot({path:artifactPath('mixer-generic-failure-'+label.replace(/[^a-z0-9]+/gi,'-')+'-'+engine+'.png')});
+  assert.deepEqual(problems,[],label);
+}
+
+async function checkGenericPreampAction(page) {
+  const before=await savedRouting(page),control=port=>page.locator('.mx-right [data-rw-preamp="'+port+'"]');
+  const waitForPair=enabled=>page.waitForFunction(enabled=>{
+    const power=JSON.parse(localStorage.getItem('stageplot-studio:workspace:v1')).entry.document.stage.routing.preampPower||[];
+    return [1,2].every(port=>power.some(entry=>entry.device==='station-1'&&entry.port===port)===enabled);
+  },enabled);
+  await control(1).click();await waitForPair(true);
+  for(const port of [1,2,3])assert.equal(await control(port).getAttribute('aria-pressed'),'true','Generic 48 V reflects both stereo sockets and the independent powered mono input');
+  assert.equal(await control(4).getAttribute('aria-pressed'),'false');
+  await openGenericStagebox(page);await waitForPair(true);
+  for(const port of [1,2])assert.equal(await control(port).getAttribute('aria-pressed'),'true','Generic stereo 48 V survives reload');
+  await control(2).click();await waitForPair(false);
+  assert.deepEqual(await savedRouting(page),before,'Generic stereo 48 V changes both physical keys while preserving signal names and mono preamps');
+}
+
+async function checkGenericStageboxes(page) {
+  for(const count of [8,16,32]){
+    await genericStageboxFixture(page,count);
+    await checkGenericPreampAction(page);
+    const before=await savedRouting(page),panel=page.locator('.mx-right .rw-zoom-panel');
+    for(const width of [1440,390]){
+      await page.setViewportSize({width,height:width===390?844:900});await settled(page);
+      const label='stagebox-'+count+' '+width;
+      await checkGenericCards(panel,count,label+' mixer');
+      await panel.screenshot({path:artifactPath('mixer-generic-'+count+'-'+width+'-'+engine+'.png')});
+      await panel.locator('[data-panel-expand]').click();await settled(page);
+      const fullscreen=page.locator('.rw-panel-fullscreen:modal');
+      await checkGenericCards(fullscreen,count,label+' mixer fullscreen');
+      await fullscreen.screenshot({path:artifactPath('mixer-generic-'+count+'-'+width+'-fullscreen-'+engine+'.png')});
+      await page.keyboard.press('Escape');
+      await page.locator('[data-rw-mixer-user-slot="1"]').click();
+      await page.locator('[data-rw-mixer-user-device="station-1"]').click();await settled(page);
+      const picker=page.locator('.mx-picker:modal');
+      await checkGenericCards(picker,count,label+' User In picker');
+      await assertNoOverflow(page,'.mx-picker:modal',label+' User In picker');
+      await picker.screenshot({path:artifactPath('mixer-generic-'+count+'-'+width+'-picker-'+engine+'.png')});
+      await picker.locator('[data-panel-expand]').click();await settled(page);
+      await checkGenericCards(page.locator('.rw-panel-fullscreen:modal'),count,label+' User In fullscreen');
+      await page.keyboard.press('Escape');await page.keyboard.press('Escape');
+    }
+    await page.setViewportSize({width:1440,height:900});await settled(page);
+    assert.deepEqual(await savedRouting(page),before,'Generic stagebox-'+count+' view checks preserve the saved routing');
+  }
+}
+
 async function checkPreampAction(page, panel, model) {
   const before=await savedRouting(page),control=()=>panel.locator('[data-rw-preamp="4"]');
   assert.equal(await control().getAttribute('aria-pressed'),'false');
@@ -329,7 +443,8 @@ async function checkStereoPreampAction(page, panel, model) {
     await page.locator('#sp-np-band').fill('Mixer Signalbezeichnungen QA');
     await page.locator('#sp-np-create').click();
     await page.waitForFunction(()=>localStorage.getItem('stageplot-studio:workspace:v1'));
-    for(const [model,count] of process.env.MIXER_LABELS_DENSE_ONLY==='1'?[]:Object.entries(consoles)){
+    const genericOnly=process.env.MIXER_LABELS_GENERIC_ONLY==='1',denseOnly=process.env.MIXER_LABELS_DENSE_ONLY==='1';
+    for(const [model,count] of genericOnly||denseOnly?[]:Object.entries(consoles)){
       await fixture(page,model,count);
       const panel=page.locator('.mx-right .rw-zoom-panel'),before=await savedRouting(page);
       await checkLabels(panel,count,model+' 100%');
@@ -384,9 +499,9 @@ async function checkStereoPreampAction(page, panel, model) {
       await settled(page);
       assert.deepEqual(await savedRouting(page),before,model+' view changes preserve saved routing and preamp state');
     }
-    await checkDenseStereoLayouts(page);
-    await checkFullscreenPreampScroll(page);
+    if(!genericOnly){await checkDenseStereoLayouts(page);await checkFullscreenPreampScroll(page);}
+    if(!denseOnly)await checkGenericStageboxes(page);
     assert.deepEqual(errors,[]);
-    console.log('PASS: '+(process.env.MIXER_LABELS_DENSE_ONLY==='1'?'Dense X32/SD16 stereo rings and stable fullscreen 48 V scrolling on X32/CDM32':'Variant B stereo rings and large L/R on all 14 consoles; shared physical 48 V, one-step undo, reload, independent mono controls, zoom, fullscreen at 800/1024/1280px and 1440x500, mobile, dense X32/SD16 pairs, and stable fullscreen preamp scrolling')+' ('+engine+').');
+    console.log('PASS: '+(genericOnly?'Generic 8/16/32-input stagebox cards in mixer, User In and fullscreen at desktop/mobile sizes, with shared physical 48 V and reload':denseOnly?'Dense X32/SD16 stereo rings and stable fullscreen 48 V scrolling on X32/CDM32':'Variant B stereo rings and large L/R on all 14 consoles; shared physical 48 V, one-step undo, reload, independent mono controls, zoom, fullscreen at 800/1024/1280px and 1440x500, mobile, dense X32/SD16 pairs, stable fullscreen preamp scrolling, and generic stagebox cards')+' ('+engine+').');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

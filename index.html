@@ -7767,24 +7767,24 @@ html,body { height:100%; overflow:hidden; }
   color:#21382c;box-shadow:inset 0 0 0 2px #ffffffb3,0 2px 5px #0006;
   font:700 clamp(9px,14cqw,24px)/1.04 system-ui;
 }
-#sp-prototype .rw-zoom-panel .mx-socket-badge .mx-socket-glyph {
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge .mx-socket-glyph {
   position:absolute;left:50%;top:26%;transform:translateX(-50%);display:grid;place-items:center;
   width:58%;height:33%;min-width:0;font-size:clamp(19px,39cqw,38px);color:#29483a;filter:drop-shadow(0 1px 1px #16291a24);
 }
-#sp-prototype .rw-zoom-panel .mx-socket-initials {font:750 clamp(12px,24cqw,28px)/1 system-ui}
-#sp-prototype .rw-zoom-panel .mx-socket-glyph :is(img,svg) {display:block;width:100%;height:100%;object-fit:contain;background:transparent;border-radius:0}
-#sp-prototype .rw-zoom-panel .mx-signal-caption {
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-initials {font:750 clamp(12px,24cqw,28px)/1 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-glyph :is(img,svg) {display:block;width:100%;height:100%;object-fit:contain;background:transparent;border-radius:0}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-signal-caption {
   position:absolute;left:11%;top:61%;width:78%;min-width:0;text-align:center;line-height:1.04;
   overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
 }
-#sp-prototype .rw-zoom-panel .mx-socket-badge b,
-#sp-prototype .rw-zoom-panel .mx-link-symbol {
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge b,
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-link-symbol {
   position:absolute;right:-3%;top:-8%;display:grid;place-items:center;
   width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);padding:0;border:1px solid #edf6e8;border-radius:50%;
   color:#f6ffec;background:#45693a;box-shadow:0 1px 2px #0005;font:800 clamp(9px,20cqw,28px)/1 system-ui;
 }
-#sp-prototype .rw-zoom-panel .mx-link-symbol {top:-3%;left:50%;right:auto;transform:translateX(-50%);width:auto;height:auto;padding:1px 3px;border-radius:8px;font:750 clamp(7px,13cqw,18px)/1.1 system-ui}
-#sp-prototype .rw-zoom-panel .mx-input-number,
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-link-symbol {top:-3%;left:50%;right:auto;transform:translateX(-50%);width:auto;height:auto;padding:1px 3px;border-radius:8px;font:750 clamp(7px,13cqw,18px)/1.1 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-input-number,
 #sp-prototype .rw-zoom-panel .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {
   position:absolute;z-index:1;left:0;top:-2%;transform:none;display:grid;place-items:center;
   width:clamp(14px,27cqw,40px);height:clamp(14px,27cqw,40px);min-width:0;padding:0;border:1px solid #edf4e8;border-radius:50%;
@@ -7792,7 +7792,7 @@ html,body { height:100%; overflow:hidden; }
   font:700 clamp(8px,17cqw,26px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;
 }
 #sp-prototype .rw-zoom-panel .sp-stagebox-image-port:not(:has(.mx-socket-badge)) .mx-input-number {top:50%;left:50%;transform:translate(-50%,-50%)}
-#sp-prototype .rw-zoom-panel [data-rw-mixer-user-port] .mx-signal-caption {display:-webkit-box}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port[data-rw-mixer-user-port] .mx-signal-caption {display:-webkit-box}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot>.rw-preamp {
   position:absolute;z-index:2;left:50%;top:96%;bottom:auto;transform:translateX(-50%);
   display:flex;align-items:center;justify-content:center;gap:3px;width:clamp(34px,64cqw,74px);height:clamp(14px,23cqw,26px);
@@ -7805,7 +7805,18 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .rw-preamp[aria-pressed=true] i {background:#ff6576;border-color:#ffdce0;box-shadow:0 0 3px #ff344e}
 #sp-prototype .rw-preamp:hover,#sp-prototype .rw-preamp:focus-visible {outline:2px solid #c9f500;outline-offset:1px}
 #sp-prototype .mx-output-caption {display:block;position:absolute;bottom:90%;left:50%;transform:translateX(-50%);width:max-content;max-width:115%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#252a2b;color:#eee;border-radius:3px;padding:1px 3px;font:650 clamp(8px,19cqw,16px)/1.1 system-ui;pointer-events:none}
-#sp-prototype .mx-generic-jack {position:relative}
+/* Generic stageboxes use responsive cards, independently of the photo overlays. */
+#sp-prototype .mx-local {grid-template-columns:repeat(auto-fit,minmax(min(110px,100%),1fr))}
+#sp-prototype .mx-generic-jack {position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
+#sp-prototype .mx-local .mx-local-port {display:grid;justify-items:stretch;align-content:start;gap:6px;width:100%;min-width:0;min-height:64px;white-space:normal;overflow-wrap:anywhere}
+#sp-prototype .mx-generic-jack > .mx-local-port {flex:1}
+#sp-prototype .mx-local-port .mx-socket-badge {display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:4px;width:100%;padding:5px}
+#sp-prototype .mx-local-port .mx-socket-glyph {grid-column:1;grid-row:1;width:28px;height:28px;font-size:18px}
+#sp-prototype .mx-local-port .mx-socket-initials {font:750 12px/1 system-ui}
+#sp-prototype .mx-local-port .mx-signal-caption {grid-column:2;grid-row:1;min-width:0;overflow-wrap:anywhere;font:650 11px/1.25 system-ui;text-align:left}
+#sp-prototype .mx-local-port .mx-socket-badge b {grid-column:1;grid-row:2;color:var(--rw-accent);font:800 12px/1.2 system-ui}
+#sp-prototype .mx-local-port .mx-link-symbol {grid-column:2;grid-row:2;color:var(--rw-accent);font:750 10px/1.2 system-ui;text-align:left}
+#sp-prototype .mx-local-port .mx-port-name {display:none}
 #sp-prototype .mx-generic-jack>.rw-preamp {display:flex;align-items:center;justify-content:center;gap:3px;min-height:24px;width:100%;padding:3px;border:1px solid var(--rw-border);border-radius:4px;background:var(--rw-soft);color:var(--rw-ink);font:650 10px/1 system-ui}
 #sp-prototype .mx-right .sp-stagebox-device:not(.rw-panel-fullscreen *) {min-width:calc(var(--jack-min-width) * var(--panel-scale,1))!important}
 
@@ -7829,10 +7840,10 @@ html,body { height:100%; overflow:hidden; }
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port {border:0!important;outline:none;box-shadow:none!important;background:transparent!important}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] > .sp-stagebox-image-port:focus-visible {outline:2px solid white;outline-offset:2px}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-socket-badge {border:1px solid #f7faec;background:radial-gradient(circle at 38% 26%,#fffdf0,#edecd9 86%);box-shadow:inset 0 0 0 1px #ffffffb3,0 0 0 1px #91a083;color:#082c17}
-#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] b {top:2%;left:15%;right:auto;width:70%;height:36%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#07351b;font:850 44cqw/.9 system-ui}
-#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-socket-glyph {top:44%;height:28%;width:52%;font-size:31cqw}
-#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-signal-caption {top:73%;left:10%;width:80%;font:800 max(9px,11cqw)/1.04 system-ui}
-#sp-prototype .rw-zoom-panel .mx-socket-badge[data-stereo-side] .mx-link-symbol {top:-12%;font-size:max(7px,10cqw)}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] b {top:2%;left:15%;right:auto;width:70%;height:36%;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#07351b;font:850 44cqw/.9 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-socket-glyph {top:44%;height:28%;width:52%;font-size:31cqw}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-signal-caption {top:73%;left:10%;width:80%;font:800 max(9px,11cqw)/1.04 system-ui}
+#sp-prototype .rw-zoom-panel .sp-stagebox-image-port .mx-socket-badge[data-stereo-side] .mx-link-symbol {top:-12%;font-size:max(7px,10cqw)}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-link-symbol {display:none}
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .mx-input-number,
 #sp-prototype .rw-zoom-panel .sp-stagebox-hotspot[data-stereo-pair] .sp-stagebox-image-port:has(.mx-socket-badge) > .rw-port-number {left:0;top:14%;width:23%;height:23%;font:750 14cqw/1 system-ui;background:#123a23;border:1px solid #f8f9eb;box-shadow:0 1px 2px #0008}
