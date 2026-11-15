@@ -266,7 +266,8 @@ async function genericStageboxFixture(page,count) {
   await fixture(page,'x32-local',count);
   await page.evaluate(count=>{
     const key='stageplot-studio:workspace:v1',workspace=JSON.parse(localStorage.getItem(key)),doc=workspace.entry.document;
-    doc.objects=[{id:'station-1',type:'stagebox-'+count,label:'Generische Stagebox '+count,x:1,y:1,angle:0}];
+    // Match the catalog's default device label; long signal names still exercise the cards.
+    doc.objects=[{id:'station-1',type:'stagebox-'+count,label:'Stagebox '+count,x:1,y:1,angle:0}];
     for(const [i,row] of doc.stage.routing.inputs.entries()){
       row.stagebox='station-1';row.stageboxPort=i+1;delete row.localPort;
     }
