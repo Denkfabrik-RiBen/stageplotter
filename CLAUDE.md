@@ -2,6 +2,8 @@
 
 This repository is the standalone 2D Stageplot Generator. Never mix it with Gigboard or the separate Stageplay 3D prototype.
 
+The [issue-tracking workflow in AGENTS.md](AGENTS.md#workflow) is binding throughout implementation and after merging, including progress updates, accurate validation reports and completion status.
+
 ## Before changing code
 
 - Read `README.md` and inspect the current working tree.
