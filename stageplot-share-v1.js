@@ -53,7 +53,8 @@
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);
       try{
         const response=await fetcher(config.url.replace(/\/$/,'')+'/rest/v1/rpc/stageplot_share_'+action,{method:'POST',headers,body:payload,signal:controller.signal,cache:'no-store',credentials:'omit'});
-        const data=await response.json();
+        // Proxies and outages answer with HTML; never surface a raw JSON parser message.
+        let data=null;try{data=await response.json();}catch(error){if(response.ok)throw new Error('Die Freigabe konnte nicht verarbeitet werden. Bitte erneut versuchen.');}
         if(!response.ok){
           const message=String(data?.message||'');
           if(message.includes('NOT_OWNER'))throw new Error('Diese ID ist bereits vergeben. Bitte das Projekt duplizieren und die Kopie teilen.');

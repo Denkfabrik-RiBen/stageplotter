@@ -15052,17 +15052,6 @@ function createStageplotSymbolV3(type, options = {}) {
     }
     if(variant!=='clapstack'){const bell=variant==='ride'?r*.23:variant==='china'?r*.16:r*.18;ellipse(x,y,bell,bell*.82,'#e7e7e7',.4);circle(x,y,.85,'#444',.2);line(x-1.3,y-.4,x+1.3,y+.4,.45);}end();
   };
-  const pedal = (x,y,angle=0,part='kick-pedal') => {
-    group('translate('+x+' '+y+') rotate('+angle+')',part);
-    // Toe/clamp at y=0; heel toward the seated player at negative y.
-    path('M-3.2-1H3.2L3.8-12Q3.7-15 0-16Q-3.7-15-3.8-12Z','#b9b9b9',.65);
-    path('M-2.2-3H2.2L2.4-11Q0-14-2.4-11Z','#ddd',.35);
-    for(const yy of [-5,-7.5,-10])path('M-1.5 '+yy+'L0 '+(yy+1)+'L1.5 '+yy,'none',.35);
-    rect(-2.8,-16,5.6,2,'#777',.4,.6);
-    rect(-4,-1.5,8,2,'#666',.45,.4);
-    if(part==='kick-pedal'){rod(0,-1,0,3,1);ellipse(0,3.5,2,1.2,'#eee',.5);}
-    end();
-  };
   const bongos = (x,y) => {
     group('','bongos');
     for(const [dx,r] of [[-4.8,5.2],[5,5.8]]){circle(x+dx,y,r,'#e7e7e7',.75);circle(x+dx,y,r-1,'#fff',.35);for(let i=0;i<6;i++){const a=i*Math.PI/3;rect(x+dx+Math.cos(a)*(r+.2)-.7,y+Math.sin(a)*(r+.2)-.5,1.4,1,'#888',.25,.25);}}
@@ -19001,19 +18990,6 @@ $('sp-x32-remove').addEventListener('click',()=>{
 });
 /* build-inline:end stageplot-x32-host-v1.js */
 
-  function renderLegacyRouting(){
-    if(!stage)return;syncRoutingFromStage(false,false);
-    for(const direction of ['inputs','outputs']){$('sp-'+(direction==='inputs'?'input':'output')+'-count').textContent=stage.routing[direction].length;$('sp-'+(direction==='inputs'?'input':'output')+'-tab').setAttribute('aria-selected',String(routingTab===direction));}
-    const stageboxMode=routingTab==='stageboxes';$('sp-routing').dataset.stageboxMode=String(stageboxMode);$('sp-stagebox-tab').setAttribute('aria-selected',String(stageboxMode));$('sp-stagebox-count').textContent=allRoutingStageboxes().length;root.querySelector('.sp-routing-table-wrap').hidden=stageboxMode;$('sp-stagebox-view').hidden=!stageboxMode;
-    for(const id of ['sp-routing-csv-import','sp-routing-csv'])$(id).hidden=stageboxMode;
-    $('sp-routing-summary').textContent=stage.routing.inputs.length+' Inputs · '+stage.routing.outputs.length+' Outputs';$('sp-routing-status').textContent='Instrument → Abnahme → Stagebox-Buchse → Pultkanal. Details über Bearbeiten. Sortieren behält Kanalnummern bei.';
-    if(stageboxMode){renderAudioFind();renderStageboxView();$('sp-routing-status').textContent='Freie Buchse: Signal zuordnen. Belegte Buchse: Details ansehen oder ändern.';return;}
-    const rows=stage.routing[routingTab],boxes=new Map(routingStageboxes(routingTab).map(box=>[box.id,box]));
-    $('sp-routing').dataset.audioDirection=routingTab;const headers=root.querySelector('.sp-routing-table thead tr').children;headers[1].textContent=routingTab==='inputs'?'CH':'OUT';headers[2].textContent=routingTab==='inputs'?'Signal / Quelle':'Ziel / Signal';
-    $('sp-routing-rows').innerHTML=audioRoutingRows(rows,routingTab);
-    $('sp-routing-empty').hidden=rows.length>0;renderAudioFind();
-
-  }
   function setChannelPillValue(id,value){
     const input=$(id),group=root.querySelector('[data-channel-pill-group="'+id+'"]');if(!input||!group)return;input.value=value;
     group.querySelectorAll('[data-channel-value]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.channelValue===String(value))));
@@ -19175,11 +19151,6 @@ function audioInputConnector(row,pickup){
   if(['DI','Mic'].includes(pickup))return 'XLR';if(pickup==='Digital'){const source=routeSourceObject(row),connector=source?objectIo(source).outputs.connector:row.connector;return ['Dante','MADI','USB'].includes(connector)?connector:'Digital';}
   const source=routeSourceObject(row);if(source?.type==='percussion')return generatedInputSpecs().find(spec=>spec.sourceKey===row.sourceKey)?.connector||row.connector||'XLR';return source?objectIo(source).outputs.connector:row.connector||'XLR';
 }
-function audioPatchButton(row,direction){
-  const source=routeSourceObject(row);if(row.connector==='Dante'&&source?.type==='laptop')return '<button class="sp-audio-patch-button" type="button" data-playback-open="'+esc(source.id)+'" aria-label="'+esc(row.instrument+' · Dante-Übergabe bearbeiten')+'">'+esc(playbackNetworkLocation(row))+'</button>';
-  const status=audioPatchStatus(row,direction),label=status==='unpatched'?'Anschließen':stageboxRouteLocation(row,direction)+(status==='review'?' · prüfen':'');
-  return '<button class="sp-audio-patch-button" type="button" data-audio-patch="'+row.id+'" data-patch-status="'+status+'" aria-label="'+esc(row.instrument+' · '+label)+'">'+esc(label)+'</button>';
-}
 function showAudioEditorPanel(name,{focus=false}={}){
   if(!['signal','chain','patch','more'].includes(name))name='signal';
   for(const button of $('sp-audio-editor-tabs').querySelectorAll('[data-audio-tab]')){
@@ -19338,11 +19309,6 @@ function moveAudioInstrument(rows,id,direction){
   const at=direction==='up'?rest.findIndex(row=>audioObjectKey(row)===neighbor):rest.findLastIndex(row=>audioObjectKey(row)===neighbor)+1;rest.splice(at,0,...group);return rest;
 }
 
-function audioRoutingRows(rows,direction){
-  return rows.map((row,index)=>{const object=routeSourceObject(row),first=index===0||audioObjectKey(rows[index-1])!==audioObjectKey(row),heading=first?'<div class="sp-route-instrument"><span>'+esc(object?.label||object&&byId[object.type]?.short||'Weitere Signale')+'</span><button type="button" data-route-object-move="up" data-route-object-id="'+row.id+'" aria-label="Instrumentgruppe nach oben">↑</button><button type="button" data-route-object-move="down" data-route-object-id="'+row.id+'" aria-label="Instrumentgruppe nach unten">↓</button></div>':'';const stereo=Boolean(row.stereoGroup),patch=stageboxRouteLocation(row,direction),kind=direction==='inputs'?({Mic:'Mikrofon',DI:'DI-Box',Direct:'Direkt / Line',Digital:'Digital'}[row.pickup]||row.signalType):({monitor:'Monitor',iem:'IEM',line:'Line'}[audioKind(row)]),members=(row.linkedSources||[]).length;
-    return '<tr tabindex="0" data-route-row="'+row.id+'" data-audio-stereo="'+stereo+'"><td><button class="sp-route-drag-handle" type="button" draggable="true" data-route-drag="'+row.id+'" aria-label="'+esc(row.instrument)+' verschieben" title="'+(stereo?'Stereopaar':'Signal')+' verschieben">⠿</button></td><td><button class="sp-route-number" type="button" data-route-number="'+row.id+'" aria-label="Kanalnummer für '+esc(row.instrument||'Signal')+' bearbeiten"><small class="sp-route-mobile-ch">'+(direction==='inputs'?'CH':'OUT')+'</small>'+(row.number||'—')+'</button></td><td>'+heading+'<strong>'+esc(row.instrument||'Unbenannt')+'</strong><small class="sp-route-mobile-meta">'+esc([stereo?row.mode:'Mono',row.microphone||kind].filter(Boolean).join(' · '))+'</small>'+(routeSourceObject(row)?.type==='laptop'?'<small>'+esc(playbackSourceHint(row))+'</small>':'')+(members?'<small>'+members+' weitere Bühnenobjekte im Signalweg</small>':'')+(routeFrequency(row)?'<small>Funk: '+esc(routeFrequency(row))+'</small>':'')+'</td><td>'+esc(stereo?row.mode:'Mono')+'</td><td>'+kind+'</td><td>'+esc(row.microphone||kind)+(row.phantom?' · 48 V':'')+'</td><td>'+(direction==='inputs'&&row.connector!=='Dante'?'<button class="sp-routing-phantom" type="button" data-route-phantom="'+row.id+'" aria-pressed="'+row.phantom+'">48V</button>':'—')+'</td><td>'+audioPatchButton(row,direction)+'</td><td data-route-notes="'+Boolean(row.notes)+'">'+esc(row.notes||'—')+'</td><td><button class="sp-button" type="button" data-route-edit="'+row.id+'">Bearbeiten</button></td></tr>';
-  }).join('');
-}
 function moveAudioGroup(rows,sourceId,targetId,placement='before'){
   const source=rows.find(row=>row.id===sourceId),target=rows.find(row=>row.id===targetId);if(!source||!target)return rows.slice();
   const moving=audioGroup(rows,source),targets=audioGroup(rows,target),ids=new Set(moving.map(row=>row.id));if(ids.has(targetId))return rows.slice();
@@ -19473,7 +19439,6 @@ function audioPatchSections(){
 }
 // Every microphone entry point uses the same identities, photos and picker.
 function audioMicPhoto(name){return StageplotMics.photo(name);}
-function audioMicBrand(name){return StageplotMics.brand(name);}
 function audioMicSuggestions(name){return StageplotMics.suggestions(name);}
 let audioCustomModel=false,audioQuickPatch=null,audioPickupModels={},audioLastPickup='Mic',audioMicPicker=null,audioMicPickerReset=true;
 function renderAudioMicPicker(){
@@ -20211,9 +20176,6 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     const direction=routingTab,boxes=routingStageboxes(direction),stamp=Date.now().toString(36);
     return rows.map(cells=>Object.fromEntries(keys.map((key,column)=>[key,cells[column]??'']).filter(([key])=>key))).filter(row=>String(row.instrument||'').trim()).map((row,index)=>{const box=boxes.find(item=>String(row.stagebox||'').trim().startsWith(item.name)),number=Number(row.number);return normalizeRouteChannel({id:'route-'+direction+'-csv-'+(index+1)+'-'+stamp,sourceKey:'',number:Number.isFinite(number)&&number>0?number:null,instrument:String(row.instrument||'').trim(),mode:row.mode,signalType:row.signalType,microphone:row.microphone,phantom:/^(48v|ja|yes|true|x|1)$/i.test(String(row.phantom||'').trim()),stagebox:box?.id||'',stageboxPort:null,notes:row.notes,frequencyBand:row.frequencyBand,manual:true},index,direction);});
   }
-  function exportRoutingCsv(){
-    if(!stage)return;const rows=[routingHeaders,...routingExportRows(routingTab)],csv='\ufeff'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n')+'\r\n';downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),exportModel.safeFilename(stage.title+'-'+routingTab,{extension:'csv'}));say('Routing als CSV exportiert');
-  }
   const xmlEsc=value=>safeSpreadsheetValue(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
   function xlsxSheet(rows){return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.map((row,r)=>'<row r="'+(r+1)+'">'+row.map((value,c)=>{const ref=String.fromCharCode(65+c)+(r+1);if(typeof value==='number'&&Number.isFinite(value))return '<c r="'+ref+'"><v>'+value+'</v></c>';return '<c r="'+ref+'" t="inlineStr"><is><t>'+xmlEsc(value)+'</t></is></c>';}).join('')+'</row>').join('')+'</sheetData></worksheet>';}
   const crcTable=(()=>{const table=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;table[n]=c>>>0;}return table;})();
@@ -20390,7 +20352,6 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
   $('sp-print-page').addEventListener('click',()=>printReport('stage'));
   $('sp-print-complete').addEventListener('click',()=>printReport('complete'));
   $('sp-routing-pdf').addEventListener('click',()=>{show('print');setExportIntent('technical');setPdfPreset('plan');$('sp-print-inputs').checked=true;$('sp-print-routing').checked=true;renderPrint();});
-  $('sp-routing-csv').addEventListener('click',exportRoutingCsv);
   $('sp-routing-xlsx').addEventListener('click',exportRoutingXlsx);
   $('sp-routing-csv-import').addEventListener('click',()=>$('sp-routing-csv-file').click());
   $('sp-routing-csv-file').addEventListener('change',async()=>{
@@ -20902,7 +20863,12 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     d.zOrder=(d.zOrder||[]).filter(partId=>partId!==id);drumSelectedPart=null;refreshDrumDialog();recordDrumHistory(before);
   }
   const drumPreviewHost=$('sp-drum-preview'),drumPaletteHost=$('sp-drum-palette');
-  drumPaletteHost.insertAdjacentHTML('beforeend','<h3>Percussion &amp; Gesang</h3>'+percussionModel.catalog.filter(c=>!['kick','snare','throne'].includes(c.id)).map(c=>'<button class="sp-drum-library-item" type="button" data-drum-add="extra-'+c.id+'"><svg viewBox="-50 -50 100 100" width="48" height="48" aria-hidden="true">'+percussionModel.imageMarkup(percussionModel.part(c.id,'p1'))+'</svg><span><strong>'+esc(c.name)+'</strong></span></button>').join(''));
+  // SVG images have no lazy loading: build the percussion palette when the designer first opens,
+  // so an app start does not download every percussion image.
+  function ensureDrumPalette(){
+    if(drumPaletteHost.dataset.percussionReady)return;drumPaletteHost.dataset.percussionReady='true';
+    drumPaletteHost.insertAdjacentHTML('beforeend','<h3>Percussion &amp; Gesang</h3>'+percussionModel.catalog.filter(c=>!['kick','snare','throne'].includes(c.id)).map(c=>'<button class="sp-drum-library-item" type="button" data-drum-add="extra-'+c.id+'"><svg viewBox="-50 -50 100 100" width="48" height="48" aria-hidden="true">'+percussionModel.imageMarkup(percussionModel.part(c.id,'p1'))+'</svg><span><strong>'+esc(c.name)+'</strong></span></button>').join(''));
+  }
   $('sp-drum-hardware').addEventListener('change',e=>{const key=e.target.dataset.drumExtraField,p=drumDraft?.extras?.parts.find(p=>'extra-'+p.id===drumSelectedPart);if(!p||!['label','width','depth'].includes(key)||!e.target.validity.valid)return;const before=drumStateSnapshot();p[key]=key==='label'?e.target.value:e.target.valueAsNumber/100;refreshDrumDialog();recordDrumHistory(before);});
   $('sp-drum-hardware').addEventListener('click',e=>{const pickup=e.target.closest('[data-drum-cajon-pickup]'),crash=e.target.closest('[data-drum-cajon-crash]'),p=drumDraft?.extras?.parts.find(p=>'extra-'+p.id===drumSelectedPart);if(!p)return;if(pickup){const before=drumStateSnapshot();p.pickup=pickup.dataset.drumCajonPickup;refreshDrumDialog();recordDrumHistory(before);}if(crash){const layout=drumModel.drumLayout(drumDraftType,drumDraft),part=layout.parts.find(p=>p.id===drumSelectedPart);addDrumPart('crash',drumStoredPoint({x:part.x+(crash.dataset.drumCajonCrash==='left'?25:-25),y:part.y+8},layout));}});
   function rotateDrumPart(id,amount){
@@ -21010,7 +20976,7 @@ root.addEventListener('click',e=>{const button=e.target.closest('[data-playback-
     const o=objects.find(v=>v.id===selected);if(!o||o.locked||!drumModel.isDrums(o.type))return;
     drumDialogReturnFocus=e?.currentTarget||$('sp-drums-open');
     cancelPlacement(false);finishEdit();spaceHeld=false;syncViewControls();drumView=null;drumViewPan=null;drumObjectId=o.id;drumDraftType='drums';drumDraft=StageplotMics.hydrateDrums(drumModel.normalizeDrums(o.drums),o.id,stage.routing);drumLaptopPatch={};$('sp-drum-patch-error').hidden=true;drumMicBaseline=clone(drumDraft);drumSelectedPart=null;drumPartDrag=null;drumPendingKind=null;drumHoverPart=null;activeDrumDesignId=null;drumDesignOverwriteId=null;drumHistory=[];drumFuture=[];drumEditBefore=null;
-    $('sp-drum-design-name').value=o.label&&o.label!==byId[o.type].short?o.label:'Mein Drumset';$('sp-drum-design-save').textContent='Als Vorlage speichern';$('sp-drum-hardware').replaceChildren();loadDrumDesignLibrary();drumDesignStatus('');refreshDrumDialog();setDrumMobilePanel('canvas');syncDrumHistory();$('sp-drum-dialog').showModal();
+    $('sp-drum-design-name').value=o.label&&o.label!==byId[o.type].short?o.label:'Mein Drumset';$('sp-drum-design-save').textContent='Als Vorlage speichern';$('sp-drum-hardware').replaceChildren();loadDrumDesignLibrary();drumDesignStatus('');refreshDrumDialog();setDrumMobilePanel('canvas');syncDrumHistory();ensureDrumPalette();$('sp-drum-dialog').showModal();
   }
   for(const id of ['sp-drums-open','sp-drum-hover-open'])$(id).addEventListener('click',openSelectedDrumDesigner);
   $('sp-stagebox-hover-open').addEventListener('click',()=>{const object=objects.find(item=>item.id===selected);if(object&&stageboxCapacity[object.type])openStageboxIo(object.id);});

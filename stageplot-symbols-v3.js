@@ -259,17 +259,6 @@ function createStageplotSymbolV3(type, options = {}) {
     }
     if(variant!=='clapstack'){const bell=variant==='ride'?r*.23:variant==='china'?r*.16:r*.18;ellipse(x,y,bell,bell*.82,'#e7e7e7',.4);circle(x,y,.85,'#444',.2);line(x-1.3,y-.4,x+1.3,y+.4,.45);}end();
   };
-  const pedal = (x,y,angle=0,part='kick-pedal') => {
-    group('translate('+x+' '+y+') rotate('+angle+')',part);
-    // Toe/clamp at y=0; heel toward the seated player at negative y.
-    path('M-3.2-1H3.2L3.8-12Q3.7-15 0-16Q-3.7-15-3.8-12Z','#b9b9b9',.65);
-    path('M-2.2-3H2.2L2.4-11Q0-14-2.4-11Z','#ddd',.35);
-    for(const yy of [-5,-7.5,-10])path('M-1.5 '+yy+'L0 '+(yy+1)+'L1.5 '+yy,'none',.35);
-    rect(-2.8,-16,5.6,2,'#777',.4,.6);
-    rect(-4,-1.5,8,2,'#666',.45,.4);
-    if(part==='kick-pedal'){rod(0,-1,0,3,1);ellipse(0,3.5,2,1.2,'#eee',.5);}
-    end();
-  };
   const bongos = (x,y) => {
     group('','bongos');
     for(const [dx,r] of [[-4.8,5.2],[5,5.8]]){circle(x+dx,y,r,'#e7e7e7',.75);circle(x+dx,y,r-1,'#fff',.35);for(let i=0;i<6;i++){const a=i*Math.PI/3;rect(x+dx+Math.cos(a)*(r+.2)-.7,y+Math.sin(a)*(r+.2)-.5,1.4,1,'#888',.25,.25);}}
