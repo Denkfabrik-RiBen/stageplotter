@@ -799,10 +799,19 @@
         <div class="sp-shortcut-grid"><span>Ansicht verschieben</span><kbd>Leertaste</kbd><span>Objekt verschieben</span><kbd>← ↑ ↓ →</kbd><span>Objektmenü öffnen</span><span>··· / Rechtsklick / ⇧ F10</span><span>Objektmenü am Handy</span><span>Lange drücken</span><span>Drehen</span><kbd>R / ⇧ R</kbd><span>Am Handy drehen</span><span>Zwei Finger am Objekt</span><span>Am Handy zoomen</span><span>Zwei Finger auf freier Fläche</span><span>Löschen</span><kbd>Backspace</kbd><span>Zoom</span><kbd>+ / − / 0</kbd><span>Canvas-Fokus</span><kbd>F</kbd><span>Mehrfachauswahl</span><kbd>⌘/Ctrl + Klick</kbd><span>Beschriftung bearbeiten</span><kbd>Doppelklick</kbd><span>Alle Objekte auswählen</span><kbd>⌘/Ctrl A</kbd><span>Auswahl duplizieren</span><kbd>⌘/Ctrl D</kbd><span>Rückgängig</span><kbd>⌘/Ctrl Z</kbd><span>Speichern</span><kbd>⌘/Ctrl S</kbd><span>Hilfe</span><kbd>?</kbd><span>Platzierung abbrechen</span><kbd>Esc</kbd></div>
       </section>
       <section class="sp-help-section sp-release-notes" aria-labelledby="sp-release-title">
-        <div class="sp-release-heading"><div><h3 id="sp-release-title">Release Notes</h3><p class="sp-muted">Änderungen nach Datum zusammengefasst.</p></div><span class="sp-version-badge" data-release-version="0.1.0-beta.32">v0.1.0-beta.32</span></div>
+        <div class="sp-release-heading"><div><h3 id="sp-release-title">Release Notes</h3><p class="sp-muted">Änderungen nach Datum zusammengefasst.</p></div><span class="sp-version-badge" data-release-version="0.1.0-beta.33">v0.1.0-beta.33</span></div>
         <div class="sp-release-list">
           <article class="sp-release-card" data-current="true">
-            <header><div><strong>v0.1.0-beta.32</strong><span>Aktuell</span></div><time datetime="2026-11-14">14. November 2026</time></header>
+            <header><div><strong>v0.1.0-beta.33</strong><span>Aktuell</span></div><time datetime="2026-11-16">16. November 2026</time></header>
+            <h4>Mixer-Signale, Stereo-Paare und 48 V</h4>
+            <ul>
+              <li><strong>Signalbilder:</strong> Kleine Instrumentbilder und lesbare Signalnamen direkt an den belegten Eingangsbuchsen. Die Darstellung passt sich dem Gerät, Zoom und Vollbild an.</li>
+              <li><strong>Stereo und 48 V:</strong> Benachbarte Stereo-Eingänge erscheinen als gemeinsamer Doppelring mit großen L/R-Markierungen und STEREO-Kennzeichnung. Die rote 48-V-Taste schaltet beide physischen Eingänge gemeinsam. Der Zustand wird mit dem Projekt gespeichert; ein Rückgängig-Schritt stellt beide Eingänge wieder her. Beim Schalten bleibt die Vollbildansicht an ihrer Position.</li>
+              <li><strong>Generische Stageboxen:</strong> Modelle mit 8, 16 oder 32 Eingängen zeigen kompakte Karten mit Instrumentbild, Signalname und Stereo-Markierung. Die Karten in Mixer und User In passen sich auch schmalen Bildschirmen an, ohne andere Karten oder 48-V-Tasten zu überlagern.</li>
+            </ul>
+          </article>
+          <article class="sp-release-card">
+            <header><div><strong>v0.1.0-beta.32</strong></div><time datetime="2026-11-14">14. November 2026</time></header>
             <h4>Mixer- und Stagebox-Routing</h4><ul><li>Block-Patch oder User In pro Achterblock wählen. Signale lassen sich an den Buchsen zuweisen und ziehen. Die Geräteansicht zeigt die Belegung und Stereopaare. Die 48-V-Einstellung lässt sich für jeden Mikrofoneingang im Projekt speichern.</li></ul>
             <h4>Kanalplanung, PDF und Drumdesigner</h4><ul><li>Nach Kanalnummer sortierte Input-Liste mit direktem Tauschen und gezieltem Einfügen. Import und Export direkt in der Liste öffnen.</li><li>PDF-Tabellen mit Schriftgröße und Zeilenabstand; überhohe Tabellenzeilen werden auf Folgeseiten fortgesetzt.</li><li>Sidesnares von 6 bis 14 Zoll, freie Drehung über einen Drehkreis und Laptop-L/R im Drumdesigner.</li></ul><h4>X32-Szenen im Routing</h4>
             <ul><li>Ein Wizard führt durch Inputauswahl, Pult- oder Stagebox-Anschluss, Busverwendung und Ausgangsziele. Passende Stageboxen lassen sich direkt hinzufügen und ihre Buchsen im Gerätebild anklicken. Die I/O-Liste zeigt Inputs, Busse, Matrizen, Effekte und aufgelöste Ausgangswege getrennt. Offene Zuordnungen bleiben sichtbar. Klangbearbeitung und Ausgangs-Patch bleiben erhalten; die Originalszene wird lokal mit dem Projekt gesichert.</li></ul>
@@ -924,7 +933,7 @@
         </div>
       </section>
     </div>
-    <p class="sp-help-foot">Stageplot Studio v0.1.0-beta.32 · 2D · lokal und offline</p>
+    <p class="sp-help-foot">Stageplot Studio v0.1.0-beta.33 · 2D · lokal und offline</p>
   </dialog>
   <dialog id="sp-account-dialog" class="sp-clear-dialog sp-account-dialog" aria-labelledby="sp-account-title">
     <div class="sp-dialog-heading"><div><span class="sp-eyebrow">DEIN EQUIPMENT · DEINE PROJEKTE</span><h2 id="sp-account-title">Account &amp; Inventar</h2></div><button type="button" class="sp-button" id="sp-account-close" aria-label="Account und Inventar schließen">×</button></div>
