@@ -156,9 +156,11 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     const leftBadge=page.locator('[data-rw-mixer-port="11"] .mx-socket-badge b');
     const sideSize=()=>leftBadge.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
     const beforeSize=await sideSize();
+    const beforeSocket=await socket(11).boundingBox();
     await zoom.getByRole('button',{name:'Ansicht vergrößern'}).click({clickCount:1});
     await zoom.getByRole('button',{name:'Ansicht vergrößern'}).click();
-    assert.equal(await sideSize(),beforeSize*2);
+    assert((await socket(11).boundingBox()).width>=beforeSocket.width*1.95,'Zoom doubles the physical input target');
+    assert((await sideSize())>=beforeSize,'Stereo markers remain readable while zooming');
     await leftBadge.scrollIntoViewIfNeeded();
     await page.locator('.mx-right .rw-zoom-panel').screenshot({path:artifactPath('mixer-buchsen-zoom.png')});
     await zoom.locator('[data-panel-expand]').click();
@@ -211,7 +213,7 @@ const {launchBrowser, artifactPath, assertNoOverflow} = require('./browser-qa.cj
     await click('mixer-user-slot',9);
     await click('mixer-user-device','station-1');
     const kickJack=page.locator('.mx-picker [data-rw-mixer-user-port="1"]');
-    assert.equal(await kickJack.locator('.mx-port-name').innerText(),'Kick Out');
+    assert.equal(await kickJack.locator('.mx-signal-caption').innerText(),'Kick Out');
     assert(await kickJack.isDisabled());
     assert(await page.locator('.mx-picker [data-rw-mixer-user-port="2"] .mx-port-free').isVisible());
     await page.keyboard.press('Escape');

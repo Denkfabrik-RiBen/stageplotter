@@ -38,7 +38,7 @@
       const key=global.StageplotRoutingModel.preampKey(device);
       const active=state.routing.preampPower?.some(entry=>entry.device===key&&entry.port===port)===true;
       const label=device.name+' · IN '+port+' · 48 V';
-      return '<button type="button" class="rw-preamp"'+attrs({'data-rw-preamp':port,'data-device':device.id,'data-model':device.type,'aria-pressed':String(active),'aria-label':label,title:label+(active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i></button>';
+      return '<button type="button" class="rw-preamp"'+attrs({'data-rw-preamp':port,'data-device':device.id,'data-model':device.type,'aria-pressed':String(active),'aria-label':label,title:label+(active?' · Ein':' · Aus')})+(readonly()?' disabled':'')+'><i aria-hidden="true"></i><span aria-hidden="true">48 V</span></button>';
     }
     function zoomableSurface(type, renderPort, directions, deviceId) {
       const device=mixerDevices().find(item=>item.id===deviceId);
@@ -142,8 +142,9 @@
       const compactSymbol=/^keys(?:-|$)/.test(type||'')?'🎹':/^mic(?:-|$)/.test(type||'')?'🎤':'';
       const glyph=compactSymbol|| (drum?'<img src="stageplot-assets/drums/'+drum[1]+'" alt="">':type?icon(source||type):'');
       const initials=name.trim().split(/[\s·_-]+/u).slice(0,2).map(word=>Array.from(word)[0]).join('').toLocaleUpperCase('de');
-      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">⚭</span>':'')+'</span>';
+      return '<span class="mx-socket-badge" aria-hidden="true"><span class="mx-socket-glyph">'+(glyph||esc(initials||'♪'))+'</span>'+'<span class="mx-signal-caption">'+esc((side?baseName(name):name).replace(/^Drums\s*·\s*/,'')||name)+'</span>'+(side?'<b>'+side+'</b>':'')+(side&&row.stereoGroup?'<span class="mx-link-symbol" aria-hidden="true">SL</span>':'')+'</span>';
     }
+    const socketNumber=port=>'<span class="mx-input-number" aria-hidden="true">'+port+'</span>';
     const physicalOrigin=group=>group?.rows.find(row=>row.id===group.id)||group?.rows[0];
     let sourcePicker=null;
     const transferNames={move:'Verschieben',duplicate:'Duplizieren',switch:'Tauschen'};
@@ -274,7 +275,7 @@
           const label='IN '+n+' · '+(occupied?row.instrument:'Frei');
           const name=occupied?row.instrument.split(' · ').filter(part=>part!=='L'&&part!=='R').pop():'';
           const marker=occupied?'<span class="mx-port-name">'+esc(name||row.instrument)+'</span>':'<span class="mx-port-free" aria-hidden="true">+</span>';
-          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+marker+(overlay?'':'IN '+n)+'</button>';
+          return '<button type="button"'+attrs({'data-rw-mixer-user-port':n,'data-device':device.id,'data-used':String(occupied),class:overlay?'rw-port sp-stagebox-image-port':'mx-local-port','aria-pressed':String(patch?.id===device.id&&patch.port===n),'aria-label':label,title:label})+(blocked?' disabled':'')+'>'+socketBadge(row)+(overlay?socketNumber(n)+(occupied?'':marker):marker+'IN '+n)+'</button>';
         };
         const hardware=overlay?zoomableSurface(device.type,(_,n)=>port(n),['inputs'],device.id):gridSurface(device,port);
         return '<dialog class="mx-picker" aria-labelledby="mx-picker-title"><header><h2 id="mx-picker-title">User In '+userSlot+' · Buchse für CH '+userSlot+'</h2><button data-rw-mixer-close aria-label="Schließen">×</button></header><div class="mx-devices">'+devices.map(item=>mixerChoice(item.name,'mixer-user-device',item.id,device.id===item.id)).join('')+'</div><div class="mx-port-key"><span>＋ Frei</span><span>● Belegt</span></div>'+hardware+(error?'<p role="alert">'+esc(error)+'</p>':'')+'</dialog>';
@@ -387,7 +388,7 @@
         const origin=physicalOrigin(group),names=origin?.instrument||'';
         const split=splitLabel(group);
         const label=['IN '+n,names||'Frei',split].filter(Boolean).join(' · ');
-        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?'':'IN '+n)+'</button>';
+        return '<button type="button" class="'+(overlay?'rw-port sp-stagebox-image-port':'mx-local-port')+'"'+attrs({'data-rw-mixer-port':n,'data-device':selected.id,'data-socket-source':group?.id,'data-occupant-channel':used?.number,'data-used':String(!!names),'data-selected':String(port===n),'aria-pressed':String(port===n),'aria-label':label,title:label})+'>'+socketBadge(origin)+(overlay?socketNumber(n):'IN '+n)+'</button>';
       };
       const hardware=overlay?zoomableSurface(selected.type,(direction,n)=>{
         if(direction==='inputs')return socket(n);

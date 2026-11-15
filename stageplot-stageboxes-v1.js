@@ -1523,7 +1523,17 @@
   function surface(type,renderPort,directions=['inputs','outputs']){
     const m=get(type);if(!m)return '';
     const [x,y,w,h]=m.viewBox,percent=n=>Number(n.toFixed(4));
-    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>'<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%">'+renderPort(direction,index+1)+'</span>')).join('');
+    // Size signal cards from physical neighbours, including reverse-numbered and
+    // multi-row panels. Dense rows keep the card within the socket face.
+    const allPorts=[...m.ports.inputs,...m.ports.outputs];
+    const sockets=directions.flatMap(direction=>m.ports[direction].map(([px,py],index)=>{
+      const neighbours=allPorts.filter(([a,b])=>a!==px||b!==py);
+      const columnGap=Math.min(...neighbours.filter(([,b])=>Math.abs(b-py)<m.diameter*.6).map(([a])=>Math.abs(a-px)));
+      const rowGap=Math.min(...neighbours.filter(([a,b])=>Math.abs(a-px)<m.diameter&&Math.abs(b-py)>m.diameter*.6).map(([,b])=>Math.abs(b-py)));
+      const layout=!Number.isFinite(rowGap)?'single':rowGap/m.diameter<1.6?'compact':'rows';
+      const labelWidth=Math.min(1.24,columnGap/m.diameter-.1);
+      return '<span class="sp-stagebox-hotspot" data-socket-direction="'+direction+'" data-signal-layout="'+layout+'" style="left:'+percent((px-x)/w*100)+'%;top:'+percent((py-y)/h*100)+'%;width:'+percent(m.diameter/w*100)+'%;height:'+percent(m.diameter/h*100)+'%;--signal-width:'+percent(labelWidth*100)+'%">'+renderPort(direction,index+1)+'</span>';
+    })).join('');
     // Min width preserves a 44px target even on the densest 16-column rack.
     const minWidth=Math.ceil(w/m.diameter*44);
     return '<div class="sp-stagebox-device-scroll" tabindex="0" role="region" aria-label="'+esc(m.brand+' '+m.name+' · Buchsenansicht')+'"><div class="sp-stagebox-device" data-stagebox-model="'+m.type+'" style="aspect-ratio:'+w+'/'+h+';--jack-min-width:'+minWidth+'px;min-width:calc('+minWidth+'px * var(--panel-scale,1))">'+routingPicture(m)+sockets+'</div></div>';
