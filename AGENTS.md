@@ -1,9 +1,17 @@
-# Repository instructions
+# Stageplot Generator
 
-Follow `CLAUDE.md` for the shared project boundaries and validation rules.
+Offline-first 2D stage plot designer for bands and sound engineers: stage editor, drum, percussion and orchestra editors, routing, print view and project export.
 
-- Keep the 2D Stageplot Generator independent from Gigboard and Stageplay 3D.
-- Preserve offline-first saving and migration of existing local drafts.
-- The modules listed in `MODULES` in `scripts/build-inline.cjs` are the single source; run `npm run build` after editing them to refresh the embedded copies in the HTML. Never hand-edit the embedded blocks.
-- Run `npm test` after every implementation change.
+See `README.md` for features, key files and the release process. `CLAUDE.md` holds the binding rules for illustrations, product photos and release notes.
+
+## Commands
+
+See `package.json` for all scripts. Run `npm run` to list them.
+
+## Workflow
+
+- `stageplot-studio.html` is canonical. The modules in `MODULES` (`scripts/build-inline.cjs`) are the single source for its embedded blocks: edit the module, run `npm run build`, never hand-edit between the `build-inline` markers.
+- Run `npm test` after every code change. Check behavior or layout changes in the app via `npm run dev`.
+- Keep saving local-first and existing browser-storage drafts loadable.
 - Never commit secrets, exported projects or personal contact data.
+- Never mix this repo with Gigboard or Stageplay 3D.
