@@ -2,7 +2,7 @@
 
 Offline-first 2D stage plot designer for bands and sound engineers: stage editor, drum, percussion and orchestra editors, routing, print view and project export.
 
-See `README.md` for features, key files and the release process. `CLAUDE.md` holds the binding rules for illustrations, product photos and release notes.
+See `README.md` for features, key files and the release process. `ARBEITSREGELN.md` holds the binding rules for illustrations, product photos, release notes and Supabase. `PRODUKTPLAN.md` holds the target group, Standard/Pro split and roadmap.
 
 ## Commands
 

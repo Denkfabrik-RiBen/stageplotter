@@ -1,31 +1,15 @@
 # Claude working agreement
 
-This repository is the standalone 2D Stageplot Generator. Never mix it with Gigboard or the separate Stageplay 3D prototype.
+@AGENTS.md
 
-The [issue-tracking workflow in AGENTS.md](AGENTS.md#workflow) is binding throughout implementation and after merging, including progress updates, accurate validation reports and completion status.
+## Starten und prüfen
 
-## Before changing code
+- `npm run dev` → http://127.0.0.1:8872/
+- `npm run build` after editing any module in `MODULES` (`scripts/build-inline.cjs`).
+- `npm test` after every code change; `npm run test:browser` for UI changes. Report browser validation separately from static checks.
 
-- Read `README.md` and inspect the current working tree.
-- Preserve user changes and browser-storage compatibility.
-- Treat `stageplot-studio.html` as canonical.
-- Do not replace local-first persistence with cloud-only writes.
-- Do not commit exported user projects, credentials or personal contact data.
+## Nur bei Bedarf lesen
 
-## Instrument and equipment illustrations
-
-- Fixed user rule: always use image generation for new or replacement instrument/equipment illustrations and save the resulting raster assets locally. Do not substitute hand-coded SVG paths or CSS drawings for these images.
-- Research the characteristic anatomy of new instrument variants first. Keep an asset manifest with prompts, reference sources and generation provenance. SVG may position the raster image without redrawing the instrument.
-
-- Microphone catalog pictures and named DI-box product pictures are explicit exceptions: use only real photographs of the correct product. Never generate catalog photos; label representative photos for generic types. Keep source/credit metadata with the local files.
-
-## After changing code
-
-- When editing any module listed in `MODULES` in `scripts/build-inline.cjs` (most `stageplot-*-v*.js` and `.css` files, for example `stageplot-symbols-v3.js` or `stageplot-audio-v1.js`), run `npm run build` to regenerate the embedded copies in `stageplot-studio.html` and `index.html`. These files are the single source; never hand-edit the embedded blocks (between the `build-inline:start/end` markers).
-- Run `npm test`.
-- Verify the actual app through `npm run dev` when behavior or layout changed.
-- Report browser validation separately from static or syntax checks.
-- Keep Stageplot assets local so the editor continues to work offline.
-- Maintain the in-app release notes regularly. Before each publication, check which user-visible changes are missing and summarize related improvements in one dated entry when appropriate; a separate entry for every small fix is unnecessary. Describe shipped behavior, and keep the current entry, version badge, help footer, README, package.json and package-lock.json consistent. Preserve earlier release entries.
-
-The optional Supabase login and sync client are prepared. Production credentials and live integration testing remain outstanding; see `ACCOUNT_SETUP.md`. Keep the default public configuration empty and the SDK bundle local. Run `npm run build:vendor` when updating its dependencies.
+- `README.md`: features and key files. Read only the section relevant to the task, not the whole file.
+- `PRODUKTPLAN.md`: target group, Standard/Pro split and current roadmap. Read before product or scope decisions.
+- `ARBEITSREGELN.md`: binding rules for instrument/equipment images, release notes and Supabase. Read before working on any of these.
