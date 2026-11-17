@@ -2,7 +2,7 @@
 
 Eigenständiger, offline-first Stageplot-Designer mit Bühneneditor, Drum-, Percussion- und Orchester-Editor, Routing, Druckansicht und Projekt-Export.
 
-**Beta live:** https://diceben.github.io/stageplot-generator/
+**Beta live:** https://denkfabrik-riben.github.io/stageplotter/
 
 Die Bausteinbibliothek zeigt acht Kategorien als kompakte Liste und gruppiert Modellvarianten. Die globale Suche findet Objekte und einzelne Modelle. Auf dem Desktop öffnet die Modellauswahl neben der Bibliothek; Favoriten lassen sich dort für einzelne Modelle speichern. Zusätzliche Abschnitte bündeln Zubehör. Auf dem Handy ist die Kategorienliste aufklappbar; Suchtreffer bleiben über der Tastatur erreichbar.
 
