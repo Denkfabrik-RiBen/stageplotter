@@ -23,3 +23,17 @@ See `package.json` for all scripts. Run `npm run` to list them.
 - Keep saving local-first and existing browser-storage drafts loadable.
 - Never commit secrets, exported projects or personal contact data.
 - Never mix this repo with Gigboard or Stageplay 3D.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues of `Denkfabrik-RiBen/stageplotter` (via `gh`), not as files in `issues/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default triage roles, except `ready-for-agent` = `AFK` and `ready-for-human` = `HITL`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root, created only when needed. See `docs/agents/domain.md`.
