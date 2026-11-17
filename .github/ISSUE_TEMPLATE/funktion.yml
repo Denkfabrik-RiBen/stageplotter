@@ -1,0 +1,48 @@
+name: Neue Funktion
+description: Eine dünne, durchgehende Scheibe einer Funktion.
+labels: ["funktion"]
+body:
+  - type: textarea
+    id: ziel
+    attributes:
+      label: Was man danach in der App sehen oder anklicken kann
+      description: Jedes Ticket liefert etwas Sichtbares, nicht nur Hintergrundlogik.
+    validations:
+      required: true
+  - type: input
+    id: zieldokument
+    attributes:
+      label: Zieldokument
+      description: Link oder Issue-Nummer des Zieldokuments, aus dem dieses Ticket stammt.
+  - type: textarea
+    id: fertig
+    attributes:
+      label: Fertig, wenn
+      description: Prüfbare Kriterien, die ein Test abdecken kann.
+    validations:
+      required: true
+  - type: textarea
+    id: nicht
+    attributes:
+      label: Nicht dazu
+      description: Was ausdrücklich nicht Teil dieses Tickets ist.
+  - type: dropdown
+    id: typ
+    attributes:
+      label: Typ
+      description: AFK = die KI kann es allein erledigen. HITL = ein Mensch muss mitentscheiden.
+      options:
+        - AFK
+        - HITL
+    validations:
+      required: true
+  - type: input
+    id: blockiert
+    attributes:
+      label: Blockiert durch
+      placeholder: "nichts, oder #123"
+  - type: input
+    id: wer
+    attributes:
+      label: Wer arbeitet dran
+      description: Beim Start eintragen, damit nicht zwei gleichzeitig dasselbe bauen.

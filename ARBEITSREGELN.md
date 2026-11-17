@@ -18,3 +18,9 @@ Diese Regeln gelten nur für die jeweilige Aufgabe. `CLAUDE.md` verweist hierher
 
 - The optional Supabase login and sync client are prepared. Production credentials and live integration testing remain outstanding; see `ACCOUNT_SETUP.md`.
 - Keep the default public configuration empty and the SDK bundle local. Run `npm run build:vendor` when updating its dependencies.
+
+## Review durch eine zweite KI
+
+- Review neuer Commits in einer frischen Sitzung, bevorzugt mit dem jeweils anderen Werkzeug (Claude baut, Codex prüft, oder umgekehrt).
+- Der Reviewer repariert nichts. Jedes Problem wird ein eigenes GitHub-Issue mit Vorlage „Bug“ und Label `AFK` oder `HITL`.
+- Satz für den Reviewer: „Prüf die Commits seit main kritisch. Suche nach Fehlern und nach Stellen, die etwas Bestehendes kaputt machen könnten. Repariere nichts. Leg jedes Problem als eigenes GitHub-Issue mit der Vorlage Bug an.“
