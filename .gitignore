@@ -13,3 +13,6 @@ __pycache__/
 *.scn
 npm-debug.log*
 test-results/
+
+# Lokale Sitzungsübergabe (nicht versioniert)
+issues/

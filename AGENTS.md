@@ -14,6 +14,10 @@ See `package.json` for all scripts. Run `npm run` to list them.
 - Keep the associated GitHub issue updated at meaningful milestones, when scope or findings change, and after merging. Record implemented changes, the linked PR/commit, the checks actually run with their results, scope and limitations, and an actionable checklist of remaining agreed work.
 - Distinguish automated test samples from comprehensive testing and user acceptance. Do not claim broader validation than was performed.
 - Close the issue and set its project status to `Done` only when the agreed scope is complete, including any user testing or approval explicitly requested for that issue. After merging, verify both issue and project status; if a PR auto-closed an incomplete issue, reopen it, restore an active project status and document what remains.
+- One issue per session. Write a failing test first, run it red, then implement until it is green, then run all tests. Report the test that went red.
+- Anything noticed outside the current issue (bugs, review findings, ideas) becomes a new GitHub issue using the templates in `.github/ISSUE_TEMPLATE/`; do not fix it on the side.
+- Label each issue `AFK` (an agent can finish it alone) or `HITL` (a human must decide). When starting, fill in who is working on it.
+- When a session must stop before the issue is done, write the state to `issues/uebergabe.md` (local, git-ignored): what is done, what is missing, affected files, what was tried last.
 - `stageplot-studio.html` is canonical. The modules in `MODULES` (`scripts/build-inline.cjs`) are the single source for its embedded blocks: edit the module, run `npm run build`, never hand-edit between the `build-inline` markers.
 - Run `npm test` after every code change. Check behavior or layout changes in the app via `npm run dev`.
 - Keep saving local-first and existing browser-storage drafts loadable.

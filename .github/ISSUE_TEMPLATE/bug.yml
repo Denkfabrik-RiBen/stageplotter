@@ -1,0 +1,56 @@
+name: Bug
+description: Etwas funktioniert nicht so, wie es soll.
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: ausloesen
+    attributes:
+      label: So löst man ihn aus
+      description: Schritte, die den Fehler zuverlässig zeigen.
+      placeholder: |
+        1. Zwei Mikrofone auf die Bühne ziehen
+        2. Eines teilweise über das andere schieben
+        3. Auf das untere klicken
+    validations:
+      required: true
+  - type: textarea
+    id: passiert
+    attributes:
+      label: Was passiert
+    validations:
+      required: true
+  - type: textarea
+    id: soll
+    attributes:
+      label: Was passieren soll
+    validations:
+      required: true
+  - type: textarea
+    id: fertig
+    attributes:
+      label: Fertig, wenn
+      description: Woran ein Test erkennt, dass es behoben ist. Bei Optik messbar formulieren, z. B. „Der Rand des Popups geht nicht über den Bildschirmrand hinaus.“
+      placeholder: Ein Test beweist, dass beide Mikrofone anklickbar bleiben.
+    validations:
+      required: true
+  - type: dropdown
+    id: typ
+    attributes:
+      label: Typ
+      description: AFK = die KI kann es allein erledigen. HITL = ein Mensch muss mitentscheiden.
+      options:
+        - AFK
+        - HITL
+    validations:
+      required: true
+  - type: input
+    id: blockiert
+    attributes:
+      label: Blockiert durch
+      placeholder: "nichts, oder #123"
+  - type: input
+    id: wer
+    attributes:
+      label: Wer arbeitet dran
+      description: Beim Start eintragen, damit nicht zwei gleichzeitig dasselbe bauen.
